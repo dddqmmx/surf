@@ -5,6 +5,7 @@ from cryptography.hazmat.primitives import serialization
 
 from util.encryption.encryption_ras import generate_key_pair
 
+
 class InitConsumer(AsyncWebsocketConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(args, kwargs)
@@ -23,7 +24,6 @@ class InitConsumer(AsyncWebsocketConsumer):
             'public_key': serialized_public_key.decode('utf-8')
         }
         await self.send(text_data=json.dumps(initJson))
-
 
     async def disconnect(self, close_code):
         pass

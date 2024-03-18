@@ -1,16 +1,12 @@
 # yourapp/consumers.py
 import base64
 import json
-import uuid
 
-from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from cryptography.hazmat.primitives import serialization
 
-from server.models import User
-from util.encryption.encryption_ras import generate_key_pair, decrypt_data, encrypt_with_serialized_public_key, \
-    encrypt_data
-from server.PgModel import PgModel
+from util.encryption.encryption_ras import generate_key_pair, decrypt_data, encrypt_data
+from util.PgModel import PgModel
 
 
 class LoginConsumer(AsyncWebsocketConsumer):
