@@ -1,0 +1,24 @@
+<!-- yourapp/templates/yourapp/index.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Chat</title>
+</head>
+<body>
+    <script>
+        const socket = new WebSocket('ws://127.0.0.1:8000/ws/chat/');
+
+        socket.onmessage = function (e) {
+            const data = JSON.parse(e.data);
+            console.log(data.message);
+        };
+
+        socket.onclose = function (e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+        const messageToSend = {'message': 'Hello, WebSocket!'};
+        socket.send(JSON.stringify(messageToSend));
+    </script>
+</body>
+</html>
