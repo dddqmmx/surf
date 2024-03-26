@@ -3,10 +3,9 @@ from abc import ABC
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from surf.modules.util import EncryptionStrategy
 
 
-class ARC4Encryption(EncryptionStrategy, ABC):
+class ARC4Encryption(ABC):
 
     def __init__(self, key):
         sha256_hash = hashlib.sha256()

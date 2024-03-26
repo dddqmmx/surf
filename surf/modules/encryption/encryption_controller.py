@@ -1,7 +1,7 @@
 from surf.modules.util import EncryptionStrategy
-from surf.modules.util.encryption.encryption_strategy_class.aes_encryption import AESEncryption
-from surf.modules.util.encryption.encryption_strategy_class.arc4_encryption import ARC4Encryption
-from surf.modules.util.encryption.encryption_strategy_class.blowfish_encryption import BlowfishEncryption
+from surf.modules.encryption.models.aes_encryption import AESEncryption
+from surf.modules.encryption.models.arc4_encryption import ARC4Encryption
+from surf.modules.encryption.models.blowfish_encryption import BlowfishEncryption
 from surf.modules.util import TripleDESEncryption
 
 
