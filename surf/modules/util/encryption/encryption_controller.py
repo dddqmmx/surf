@@ -1,10 +1,8 @@
-from abc import ABC
-
-from util.encryption.encryption_strategy import EncryptionStrategy
-from util.encryption.encryption_strategy_class.aes_encryption import AESEncryption
-from util.encryption.encryption_strategy_class.arc4_encryption import ARC4Encryption
-from util.encryption.encryption_strategy_class.blowfish_encryption import BlowfishEncryption
-from util.encryption.encryption_strategy_class.triple_des_encryption import TripleDESEncryption
+from surf.modules.util import EncryptionStrategy
+from surf.modules.util.encryption.encryption_strategy_class.aes_encryption import AESEncryption
+from surf.modules.util.encryption.encryption_strategy_class.arc4_encryption import ARC4Encryption
+from surf.modules.util.encryption.encryption_strategy_class.blowfish_encryption import BlowfishEncryption
+from surf.modules.util import TripleDESEncryption
 
 
 class EncryptionController(EncryptionStrategy):

@@ -5,7 +5,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes, AEADDecryptionContext
 
-from util.encryption.encryption_strategy import EncryptionStrategy
+from surf.modules.util import EncryptionStrategy
 
 
 class AESEncryption(EncryptionStrategy, ABC):

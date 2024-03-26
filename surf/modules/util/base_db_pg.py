@@ -3,7 +3,7 @@ import re
 from psycopg2.pool import SimpleConnectionPool
 
 
-class PgModel(object):
+class BaseDBPG(object):
     def __init__(self):
         self.table_clumns_dict = {}
         self.trans_conn = None
@@ -356,7 +356,7 @@ class PgModel(object):
 
 
 if __name__ == "__main__":
-    pg = PgModel()
+    pg = BaseDBPG()
     sql = """
     SELECT * FROM public.user
     """

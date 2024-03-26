@@ -1,12 +1,7 @@
-import base64
-import json
-
 from channels.generic.websocket import AsyncWebsocketConsumer
-from cryptography.hazmat.primitives import serialization
 
-from util.PgModel import PgModel
-from util.creat_ras_key import generate_key_pair
-from util.encryption.encryption_ras import decrypt_data, encrypt_data
+from surf.modules.util import PgModel
+from surf.modules.util import generate_key_pair
 
 
 class ChatConsumer(AsyncWebsocketConsumer):

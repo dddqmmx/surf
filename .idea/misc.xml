@@ -3,7 +3,7 @@
   <component name="Black">
     <option name="executionMode" value="BINARY" />
     <option name="pathToExecutable" value="D:\anaconda3\Scripts\black.exe" />
-    <option name="sdkUUID" value="b1a0b081-4b30-4a5e-b3f2-f3ac6105db30" />
+    <option name="sdkName" value="gobang" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.9 (surf)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="gobang" project-jdk-type="Python SDK" />
 </project>

@@ -3,8 +3,8 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from cryptography.hazmat.primitives import serialization
 
-from util.encryption.encryption_ras import generate_key_pair
-from util.session.session_util import Session
+from surf.modules.util import generate_key_pair
+from surf.modules.util import Session
 
 
 class KeyExchangeConsumer(AsyncWebsocketConsumer):
