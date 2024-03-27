@@ -3,11 +3,8 @@
 import os
 import sys
 
-from surf import settings
-
 
 def main():
-
     """Run administrative tasks."""
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "surf.settings")
     try:
