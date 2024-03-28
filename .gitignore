@@ -6,3 +6,6 @@
 *.iml
 out
 gen
+
+# pyc files
+*.pyc
