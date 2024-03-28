@@ -1,14 +1,13 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 
-from surf.modules.util import PgModel
-from surf.modules.util import generate_key_pair
+from surf.modules.util import Pg
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(args, kwargs)
         self.public_key = None
-        self.pg = PgModel()
+        self.pg = Pg()
 
     async def connect(self):
         await self.accept()
