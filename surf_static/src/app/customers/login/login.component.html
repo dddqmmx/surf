@@ -1,0 +1,18 @@
+<div style="background: #222;height: 100vh;width: 100vw; display: flex; justify-content: center; align-items: center;">
+  <div class="login-div" style="background: #fff; padding: 40px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);">
+    <h1 style="text-align: center; color: #333;margin-bottom: 20px">登录</h1>
+    <div
+      style="text-align: center; margin-bottom: 20px; border: 2px dashed #007bff; padding: 20px; border-radius: 10px;"
+      (drop)="onFileDrop($event)"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)">
+      <label for="file-upload" style="cursor: pointer;">
+        <input id="file-upload" type="file" style="display: none;" (change)="onFileSelect($event)">
+        <img style="width: 100px; height: 100px; border: none; border-radius: 50%; margin-bottom: 10px;" src="assets/bg-upload.svg">
+        <p style="color: #007bff;">将登录文件拖放到此处或点击此处上传</p>
+      </label>
+    </div>
+    <div *ngIf="fileDropped" style="text-align: center; color: green; margin-bottom: 10px;">文件已经选择</div>
+    <button (click)="login()" style="background: #007bff; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; display: block; margin: 0 auto;">点击登录</button>
+  </div>
+</div>
