@@ -356,6 +356,7 @@ class BaseDBPG(object):
 
 
 if __name__ == "__main__":
+    print(__file__)
     pg = BaseDBPG()
     sql = """
     SELECT * FROM public.user
