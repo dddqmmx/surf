@@ -3,6 +3,7 @@
   <component name="Black">
     <option name="executionMode" value="BINARY" />
     <option name="pathToExecutable" value="D:\anaconda3\Scripts\black.exe" />
+    <option name="sdkName" value="D:\anaconda3\envs\chatglm3" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.9" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="D:\anaconda3\envs\chatglm3" project-jdk-type="Python SDK" />
 </project>

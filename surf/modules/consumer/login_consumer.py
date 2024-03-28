@@ -4,9 +4,9 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from cryptography.hazmat.primitives import serialization
 
-from surf.modules.util import PgModel
-from surf.modules.util import generate_key_pair
-from surf.modules.util import decrypt_data, encrypt_data
+from surf.modules.util import Pg
+# from surf.modules.util import generate_key_pair
+# from surf.modules.util import decrypt_data, encrypt_data
 from surf.modules.util import Session
 
 
@@ -14,7 +14,7 @@ class LoginConsumer(AsyncWebsocketConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(args, kwargs)
         self.public_key = None
-        self.pg = PgModel()
+        self.pg = Pg()
 
     async def connect(self):
         await self.accept()

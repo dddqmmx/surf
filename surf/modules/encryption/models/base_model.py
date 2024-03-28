@@ -6,20 +6,20 @@ File Name       : base_model.py
 Last Edit Time  : 
 """
 from abc import ABC
-from aes_model import AESEncryption
-from arc4_model import ARC4Encryption
-from blowfish_model import BlowfishEncryption
-from triple_des_model import TripleDESEncryption
+from .aes_model import AESEncryption
+from .arc4_model import ARC4Encryption
+from .blowfish_model import BlowfishEncryption
+from .triple_des_model import TripleDESEncryption
 
 
 class BaseModel(ABC):
-    aes = AESEncryption(ABC)
-    arc4 = ARC4Encryption(ABC)
-    blowfish = BlowfishEncryption(ABC)
-    triple_des = TripleDESEncryption(ABC)
 
-    def __init__(self):
-        self.setEncryptType()
+    def __init__(self, name, abc):
+        self.setEncryptType(name)
+        self.aes = AESEncryption(abc)
+        self.arc4 = ARC4Encryption(abc)
+        self.blowfish = BlowfishEncryption(abc)
+        self.triple_des = TripleDESEncryption(abc)
         pass
 
     def setEncryptType(self, name="aes"):

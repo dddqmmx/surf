@@ -77,18 +77,18 @@ WSGI_APPLICATION = "surf.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        # "ENGINE": "django.db.backends.sqlite3",
-        # "NAME": BASE_DIR / "db.sqlite3",
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'surf',  # 数据库名称
-        'USER': 'postgres',  # 拥有者，这个一般没修改
-        'PASSWORD': '114514',  # 密码，自己设定的
-        'HOST': '192.168.6.130',  # 默认的就没写
-        'PORT': '',
-    }
-}
+# DATABASES = {
+#     "default": {
+#         # "ENGINE": "django.db.backends.sqlite3",
+#         # "NAME": BASE_DIR / "db.sqlite3",
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'surf',  # 数据库名称
+#         'USER': 'postgres',  # 拥有者，这个一般没修改
+#         'PASSWORD': '114514',  # 密码，自己设定的
+#         'HOST': 'www.dddqmmx.asia',  # 默认的就没写
+#         'PORT': '',
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

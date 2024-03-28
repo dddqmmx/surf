@@ -1,8 +1,9 @@
-from surf.modules.util import EncryptionStrategy
-from surf.modules.encryption.models.aes_encryption import AESEncryption
-from surf.modules.encryption.models.arc4_encryption import ARC4Encryption
-from surf.modules.encryption.models.blowfish_encryption import BlowfishEncryption
-from surf.modules.util import TripleDESEncryption
+from .encryption_strategy import EncryptionStrategy
+from .models import BaseModel
+# from models.aes_encryption import AESEncryption
+# from models.arc4_encryption import ARC4Encryption
+# from models.blowfish_encryption import BlowfishEncryption
+# from surf.modules.util import TripleDESEncryption
 
 
 class EncryptionController(EncryptionStrategy):
@@ -14,13 +15,17 @@ class EncryptionController(EncryptionStrategy):
         encryption_type, encryption_key = info.split(':')
         encryption_key = encryption_key.encode('utf-8')
         if encryption_type == 'aes':
-            return AESEncryption(encryption_key)
+            return BaseModel(name="aes", abc=encryption_key)
+            # return AESEncryption(encryption_key)
         elif encryption_type == 'blowfish':
-            return BlowfishEncryption(encryption_key)
+            return BaseModel(name="blowfish", abc=encryption_key)
+            # return BlowfishEncryption(encryption_key)
         elif encryption_type == 'triple_des':
-            return TripleDESEncryption(encryption_key)
+            return BaseModel(name="triple_des", abc=encryption_key)
+            # return TripleDESEncryption(encryption_key)
         elif encryption_type == 'arc4':
-            return ARC4Encryption(encryption_key)
+            return BaseModel(name="arc4", abc=encryption_key)
+            # return ARC4Encryption(encryption_key)
         else:
             return None
 
