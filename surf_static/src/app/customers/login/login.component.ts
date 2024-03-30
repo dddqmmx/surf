@@ -112,8 +112,8 @@ export class LoginComponent {
         const command =  json.command;
         if (command == "to_url"){
           const url = json.url;
-          if (url == 'chat'){
-            self.router.navigate(['/login/'])
+          if (url == 'main'){
+            self.router.navigate(['/CustomersModule/chat'])
           }
         }
       };

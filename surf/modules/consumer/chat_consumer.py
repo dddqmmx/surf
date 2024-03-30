@@ -1,3 +1,5 @@
+import json
+
 from channels.generic.websocket import AsyncWebsocketConsumer
 
 from surf.modules.util import Pg
@@ -16,4 +18,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         pass
 
     async def receive(self, text_data):
-        pass
+        receiveJson = json.loads(text_data)
+        command = receiveJson['command']
+        if 'send_message' == command:
+            pass

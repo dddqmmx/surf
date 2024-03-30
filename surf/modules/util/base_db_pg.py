@@ -356,18 +356,18 @@ class BaseDBPG(object):
 
 
 if __name__ == "__main__":
-    print(__file__)
+    # print(__file__)
     pg = BaseDBPG()
-    sql = """
-    SELECT * FROM public.user
-    """
-    res = pg.query(sql)
-    for item in res:
-        print(item['uuid'])
-        print(item['nickname'])
-        print(item['public_key'])
-        print()
-        print()
+    # sql = """
+    # SELECT * FROM public.user
+    # """
+    # res = pg.query(sql)
+    # for item in res:
+    #     print(item['uuid'])
+    #     print(item['nickname'])
+    #     print(item['public_key'])
+    #     print()
+    #     print()
     # print(res)
     # print("")
     # print("")
@@ -402,5 +402,5 @@ if __name__ == "__main__":
             "public_key": '131331'
         }
     ]
-    # res = pg.save('public.user', filters, debug=True)
-    # print(res)
+    res = pg.save('public.user', filters, debug=True)
+    print(res)
