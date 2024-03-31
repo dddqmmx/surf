@@ -11,6 +11,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.public_key = None
         self.pg = Pg()
 
+
     async def connect(self):
         await self.accept()
 
