@@ -14,7 +14,7 @@ class ESClient:
             return
         self.__initialized = True
         self.es_conn = None
-        self.hosts = [{'host': '192.168.6.130', 'port': 9200}]  # 默认配置
+        self.hosts = [{'host': 'www.dddqmmx.asia', 'port': 9200}]  # 默认配置
         self.username = None
         self.password = None
         self.minconn = 1
