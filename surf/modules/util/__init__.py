@@ -7,3 +7,4 @@ Last Edit Time  :
 """
 from .base_db_pg import BaseDBPG as Pg
 from .session_util import Session
+from .es_client import ESClient as Ec
