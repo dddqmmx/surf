@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from surf.modules.util.es_client import ESClient
 
 # 创建 ESClient 实例
@@ -5,16 +7,19 @@ es_client = ESClient()
 
 # # 创建文档
 index_name = 'message'
-# doc_body = {
-#     'name': 'John Doe',
-#     'age': 30,
-#     'email': 'john.doe@example.com'
-# }
-# try:
-#     create_response = es_client.index(index_name, doc_body, id=None)
-#     print(f"Document created: {create_response['result']}")
-# except Exception as e:
-#     print(f"Error creating document: {e}")
+doc_body = {
+    'chat_uuid': 'bfd83b81-e041-4570-a822-65321f63b70b',
+    'message_type': 'text',
+    'message_value': 'if u touch her ill fuckign end u',
+    'user_uuid': 'a5fa4363-6710-4621-b745-9a7f6e6d7e89',
+    'timestamp': datetime.now().timestamp()
+}
+#
+try:
+    create_response = es_client.index(index_name, doc_body, id=None)
+    print(f"Document created: {create_response['result']}")
+except Exception as e:
+    print(f"Error creating document: {e}")
 
 # # 获取文档
 # doc_id = create_response['_id']
@@ -37,16 +42,16 @@ index_name = 'message'
 #     print(f"Error updating document: {e}")
 #
 # 搜索文档
-search_body = {
-    'query': {
-        'match_all': {}
-    }
-}
-try:
-    search_response = es_client.search(index_name, search_body)
-    print(f"Search results: {search_response['hits']['hits'][0]['_source']}")
-except Exception as e:
-    print(f"Error searching documents: {e}")
+# search_body = {
+#     'query': {
+#         'match_all': {}
+#     }
+# }
+# try:
+#     search_response = es_client.search(index_name, search_body)
+#     print(f"Search results: {search_response['hits']['hits'][0]['_source']}")
+# except Exception as e:
+#     print(f"Error searching documents: {e}")
 #
 # # 删除文档
 # try:
@@ -55,7 +60,7 @@ except Exception as e:
 # except Exception as e:
 #     print(f"Error deleting document: {e}")
 #
-# # 删除索引
+# 删除索引
 # try:
 #     delete_response = es_client.delete_index(index_name)
 #     print(f"Index deleted: {delete_response}")

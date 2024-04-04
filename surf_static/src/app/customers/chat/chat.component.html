@@ -3,13 +3,14 @@
     <h1 style="margin: 0;">Internet Chat Room</h1>
   </div>
   <div style="flex-grow: 1; overflow-y: auto; padding: 10px;">
-    <p><span style="color: #0077b6; font-weight: bold; margin-right: 10px;">InternetPaul</span><span>Hello! How are you today?</span></p>
-    <p><span style="color: #6c757d; font-weight: bold; margin-right: 10px;">GregSteven52</span><span>ur a giant pussy</span></p>
-    <p><span style="color: #0077b6; font-weight: bold; margin-right: 10px;">InternetPaul</span><img style="height: 40px; width: 40px;" src="assets/img.png" alt=""></p>
-    <p><span style="color: #0077b6; font-weight: bold; margin-right: 10px;">InternetPaul</span><span>The only pussy I know is your daughter's</span></p>
-    <p><span style="color: #6c757d; font-weight: bold; margin-right: 10px;">GregSteven52</span><span>if u touch her ill fuckign end u</span></p>
+    <div *ngFor="let message of messageList">
+      <p><span style="color: #0077b6; font-weight: bold; margin-right: 10px;">{{message.user_uuid}}</span><span>{{message.message_value}}</span></p>
+    </div>
   </div>
   <div style="background: #333; padding: 10px; position: absolute; bottom: 0; left: 0; right: 0; display: flex;">
-    <input style="flex: 1; padding: 5px; border: 1px solid #ccc; border-radius: 3px;" placeholder="Type your message...">
+    <input
+      #inputBox
+      (keyup.enter)="sendMessage(inputBox.value)"
+      style="flex: 1; padding: 5px; border: 1px solid #ccc; border-radius: 3px;" placeholder="Type your message...">
   </div>
 </div>

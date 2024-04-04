@@ -109,6 +109,7 @@ export class LoginComponent {
       };
       this.socket.onmessage = function (e: { data: any; }) {
         const json = JSON.parse(e.data)
+        console.log(json)
         const command =  json.command;
         if (command == "to_url"){
           const url = json.url;
@@ -122,9 +123,9 @@ export class LoginComponent {
     }
   }
 
-  send(massage: string){
+  send(message: string){
       if (this.socket != null) {
-        this.socket.send(massage);
+        this.socket.send(message);
         // const encryptedData = this.cryptoService.encryptData((massage));
         // console.log(encryptedData)
         // if (typeof encryptedData === "string") {

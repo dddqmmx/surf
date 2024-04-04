@@ -27,28 +27,24 @@ class LoginConsumer(AsyncWebsocketConsumer):
         command = receiveJson['command']
         if 'login' == command:
             session_id = receiveJson['session_id']
-            print(session_id)
-            print(Session.get_session_by_id(session_id))
-            session = Session.get_session_by_id(session_id);
+            session = Session.get_session_by_id(session_id)
             if session:
                 public_key = session.get('client_public_key')
-                sql = "select count(1) from public.user where public_key = %s"
+                sql = "select * from public.user where public_key = %s"
                 res = self.pg.query(sql, (public_key,))
-                if res[0].get('count') > 0:
+                if len(res) > 0:
                     print(1)
-                    requestJson = {
-                        'command': 'to_url',
-                        'url': 'main'
-                    }
-                    await self.send(json.dumps(requestJson))
+
                 else:
                     print(2)
                     filters = {
                         "public_key": public_key
                     }
                     self.pg.save('public.user', filters, primary='uuid')
-                    requestJson = {
-                        'command': 'to_url',
-                        'url': 'main'
-                    }
-                    await self.send(json.dumps(requestJson))
+                print(res[0]['uuid'])
+                session.set('uuid', res[0]['uuid'])
+                requestJson = {
+                    'command': 'to_url',
+                    'url': 'main'
+                }
+                await self.send(json.dumps(requestJson))
