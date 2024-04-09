@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'daphne',
     'channels',  # channels应用
     'surf.modules.server',
+    'surf.modules.consumer',
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
