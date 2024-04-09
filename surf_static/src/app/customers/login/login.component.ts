@@ -5,6 +5,7 @@ import { CryptoService } from '../../services/crypto/crypto.service';
 import {util} from "node-forge";
 import {Base64} from "jsencrypt/lib/lib/asn1js/base64";
 import { Router ,NavigationExtras} from '@angular/router';
+import {LocalDataService} from "../../services/local_data/local-data.service";
 
 @Component({
   selector: 'app-login',
@@ -17,8 +18,9 @@ import { Router ,NavigationExtras} from '@angular/router';
 })
 export class LoginComponent {
 
-  constructor(private cryptoService: CryptoService,private router: Router) {
+  constructor(private cryptoService: CryptoService,private localDataService:LocalDataService,private router: Router) {
     this.cryptoService = cryptoService;
+    this.localDataService = localDataService;
   }
 
   socket: WebSocket | undefined;
@@ -58,6 +60,7 @@ export class LoginComponent {
     if (this.isJSON(this.fileContent)) {
       const userFile = JSON.parse(this.fileContent)
       const serverAddress = userFile.server_address;
+      this.localDataService.serverAddress = serverAddress;
       const publicKey = userFile.public_key;
       const privateKey = atob(userFile.private_key);
       console.log(privateKey)

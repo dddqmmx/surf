@@ -41,8 +41,8 @@ class LoginConsumer(AsyncWebsocketConsumer):
                         "public_key": public_key
                     }
                     self.pg.save('public.user', filters, primary='uuid')
-                print(res[0]['uuid'])
-                session.set('uuid', res[0]['uuid'])
+                print(res[0]['user_uuid'])
+                session.set('user_uuid', res[0]['user_uuid'])
                 requestJson = {
                     'command': 'to_url',
                     'url': 'main'
