@@ -7,6 +7,7 @@ from surf.modules.util import Ec
 
 connectUsers = []
 
+
 class ChatConsumer(AsyncWebsocketConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(args, kwargs)
@@ -21,26 +22,26 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         pass
 
-    async def receive(self, text_data):
+    async def receive(self, text_data=None, bytes_data=None):
         receive_json = json.loads(text_data)
         command = receive_json['command']
         if 'get_message' == command:
             index_name = 'message'
             search_body = {
-              "query": {
-                "match": {
-                  "chat_uuid": "bfd83b81-e041-4570-a822-65321f63b70b"
-                }
-              },
-              "sort": [
-                {
-                  "timestamp": {
-                    "order": "asc"
-                  }
-                }
-              ],
-              "size": 20,
-              "track_scores": True
+                "query": {
+                    "match": {
+                        "chat_uuid": "bfd83b81-e041-4570-a822-65321f63b70b"
+                    }
+                },
+                "sort": [
+                    {
+                        "timestamp": {
+                            "order": "asc"
+                        }
+                    }
+                ],
+                "size": 20,
+                "track_scores": True
             }
             search_response = self.ec.search(index_name, search_body)['hits']['hits']
             messages = []
@@ -56,7 +57,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             message = receive_json['message']
             session = Session.get_session_by_id(receive_json["session_id"])
             message['user_uuid'] = session.get('user_uuid')
-            del(receive_json['session_id'])
+            del (receive_json['session_id'])
             for connectUser in connectUsers:
                 await connectUser.send(
                     json.dumps({

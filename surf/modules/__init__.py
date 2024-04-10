@@ -20,7 +20,7 @@ for module_name in modules_dir:
             # 导入模块
             module_routing = importlib.import_module(f".{module_name}.routing", package="surf.modules")
             # 提取url_patterns
-            url_patterns = getattr(module_routing, 'url_patterns')
+            url_patterns = getattr(module_routing, 'url')
             all_url_patterns.extend(url_patterns)
         except AttributeError:
             # 没有找到url_patterns，忽略模块
