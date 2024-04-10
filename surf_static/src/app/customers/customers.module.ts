@@ -7,14 +7,14 @@ import { ChatComponent } from './chat/chat.component';
 
 
 @NgModule({
-  declarations: [
+    declarations: [
 
-  ],
-  imports: [
-    CommonModule,
-    CustomersRoutingModule,
-    HelloComponent,
-    ChatComponent
-  ]
+    ],
+    imports: [
+        CommonModule,
+        CustomersRoutingModule,
+        HelloComponent,
+        ChatComponent
+    ]
 })
 export class CustomersModule { }

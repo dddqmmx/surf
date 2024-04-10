@@ -7,13 +7,13 @@ import { LoginComponent } from './login/login.component';
 
 
 const routes: Routes = [
-  {path:"hello",component:HelloComponent},
-  {path:"chat",component:ChatComponent},
-  {path:"login",component:LoginComponent}
+    {path:"hello",component:HelloComponent},
+    {path:"chat",component:ChatComponent},
+    {path:"login",component:LoginComponent}
 ];
 
 @NgModule({
-  imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+    imports: [RouterModule.forChild(routes)],
+    exports: [RouterModule]
 })
 export class CustomersRoutingModule { }
