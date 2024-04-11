@@ -22,7 +22,7 @@ class LoginConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         pass
 
-    async def receive(self, text_data):
+    async def receive(self, text_data=None, bytes_data=None):
         receiveJson = json.loads(text_data)
         command = receiveJson['command']
         if 'login' == command:
@@ -31,7 +31,7 @@ class LoginConsumer(AsyncWebsocketConsumer):
             if session:
                 public_key = session.get('client_public_key')
                 sql = "select * from public.user where public_key = %s"
-                res = self.pg.query(sql, (public_key,))
+                res = self.pg.query(sql, [public_key])
                 if len(res) > 0:
                     print(1)
 
