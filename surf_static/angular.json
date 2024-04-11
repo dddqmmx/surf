@@ -55,6 +55,9 @@
                 },
                 "serve": {
                     "builder": "@angular-devkit/build-angular:dev-server",
+                    "options": {
+                        "host": "::"
+                    },
                     "configurations": {
                         "production": {
                             "buildTarget": "surf-server:build:production"
@@ -91,5 +94,8 @@
                 }
             }
         }
+    },
+    "cli": {
+      "analytics": "bf64070a-2e1a-4e7a-bc71-24b918ff0e8f"
     }
 }
