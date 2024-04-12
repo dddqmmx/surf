@@ -23,7 +23,6 @@ DROP TABLE IF EXISTS t_user_friends;
 DROP TABLE IF EXISTS t_users;
 
 
-DROP TABLE IF EXISTS t_users;
 CREATE TABLE t_users
 (
     c_user_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -32,7 +31,6 @@ CREATE TABLE t_users
     c_user_info jsonb
 );
 
-DROP TABLE IF EXISTS t_user_friends;
 CREATE TABLE t_user_friends (
     c_user_id VARCHAR(36) NOT NULL,
     c_friend_id VARCHAR(36) NOT NULL,
@@ -43,7 +41,6 @@ CREATE TABLE t_user_friends (
     FOREIGN KEY (c_friend_id) REFERENCES t_users(c_user_id) ON DELETE CASCADE
 );
 
-DROP TABLE IF EXISTS t_servers;
 CREATE TABLE t_servers(
     c_server_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
     c_description TEXT,
@@ -56,7 +53,6 @@ CREATE TABLE t_servers(
 );
 
 
-DROP TABLE IF EXISTS t_channels;
 CREATE TABLE t_channels (
     c_channel_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
     c_server_id VARCHAR(36) NOT NULL,
@@ -68,7 +64,6 @@ CREATE TABLE t_channels (
     FOREIGN KEY (c_server_id) REFERENCES t_servers(c_server_id) ON DELETE CASCADE
 );
 
-DROP TABLE IF EXISTS t_roles;
 CREATE TABLE t_roles (
     c_role_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
     c_server_id VARCHAR(36) NOT NULL,
@@ -77,7 +72,6 @@ CREATE TABLE t_roles (
     FOREIGN KEY (c_server_id) REFERENCES t_servers(c_server_id)
 );
 
-DROP TABLE IF EXISTS t_server_members;
 CREATE TABLE t_server_members (
     c_member_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
     c_server_id VARCHAR(36) NOT NULL,
@@ -88,13 +82,11 @@ CREATE TABLE t_server_members (
     FOREIGN KEY (c_role_id) REFERENCES t_roles(c_role_id)
 );
 
-DROP TABLE IF EXISTS t_permissions;
 CREATE TABLE t_permissions (
     c_permission_id INTEGER PRIMARY KEY,
     c_description TEXT NOT NULL
 );
 
-DROP TABLE IF EXISTS t_user_roles;
 CREATE TABLE t_user_roles (
     c_user_id VARCHAR(32) NOT NULL,
     c_role_id VARCHAR(36) NOT NULL,
@@ -105,7 +97,6 @@ CREATE TABLE t_user_roles (
     FOREIGN KEY (c_server_id) REFERENCES t_servers(c_server_id)
 );
 
-DROP TABLE IF EXISTS t_audit_logs;
 CREATE TABLE t_audit_logs (
     c_log_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
     c_user_id VARCHAR(32) NOT NULL,
@@ -115,7 +106,6 @@ CREATE TABLE t_audit_logs (
     FOREIGN KEY (c_user_id) REFERENCES t_users(c_user_id)
 );
 
-DROP TABLE IF EXISTS t_channel_members;
 CREATE TABLE t_channel_members (
     c_channel_id VARCHAR(36) NOT NULL,
     c_user_id VARCHAR(32) NOT NULL,
@@ -125,7 +115,6 @@ CREATE TABLE t_channel_members (
     FOREIGN KEY (c_user_id) REFERENCES t_users(c_user_id)
 );
 
-DROP TABLE IF EXISTS t_message_metadata;
 CREATE TABLE t_message_metadata (
     c_message_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
     c_channel_id VARCHAR(36) NOT NULL,
