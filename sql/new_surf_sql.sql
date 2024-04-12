@@ -55,6 +55,14 @@ CREATE TABLE t_channels (
     FOREIGN KEY (c_server_id) REFERENCES t_servers(c_server_id) ON DELETE CASCADE
 );
 
+DROP TABLE IF EXISTS t_roles;
+CREATE TABLE t_roles (
+    c_role_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
+    c_server_id VARCHAR(36) NOT NULL,
+    c_name VARCHAR NOT NULL,
+    c_permissions INTEGER NOT NULL,
+    FOREIGN KEY (c_server_id) REFERENCES t_servers(c_server_id)
+);
 
 DROP TABLE IF EXISTS t_server_members;
 CREATE TABLE t_server_members (
@@ -65,15 +73,6 @@ CREATE TABLE t_server_members (
     FOREIGN KEY (c_server_id) REFERENCES t_servers(c_server_id),
     FOREIGN KEY (c_user_id) REFERENCES t_users(c_user_id),
     FOREIGN KEY (c_role_id) REFERENCES t_roles(c_role_id)
-);
-
-DROP TABLE IF EXISTS t_roles;
-CREATE TABLE t_roles (
-    c_role_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
-    c_server_id VARCHAR(36) NOT NULL,
-    c_name VARCHAR NOT NULL,
-    c_permissions INTEGER NOT NULL,
-    FOREIGN KEY (c_server_id) REFERENCES t_servers(c_server_id)
 );
 
 DROP TABLE IF EXISTS t_permissions;
