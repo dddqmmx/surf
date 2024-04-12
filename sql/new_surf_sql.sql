@@ -18,6 +18,16 @@ CREATE TABLE t_users
     c_user_info jsonb
 );
 
+DROP TABLE IF EXISTS t_user_friends;
+CREATE TABLE t_user_friends (
+    c_user_id VARCHAR(36) NOT NULL,
+    c_friend_id VARCHAR(36) NOT NULL,
+    c_status VARCHAR(10) CHECK (c_status IN ('pending', 'accepted', 'blocked')),
+    c_create_time BIGINT NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::BIGINT,
+    PRIMARY KEY (c_user_id, c_friend_id),
+    FOREIGN KEY (c_user_id) REFERENCES t_users(c_user_id) ON DELETE CASCADE,
+    FOREIGN KEY (c_friend_id) REFERENCES t_users(c_user_id) ON DELETE CASCADE
+);
 
 DROP TABLE IF EXISTS t_servers;
 CREATE TABLE t_servers(
@@ -113,6 +123,12 @@ CREATE TABLE t_message_metadata (
     FOREIGN KEY (c_user_id) REFERENCES t_users(c_user_id)
 );
 
+-- 为用户ID和好友ID创建索引以优化查找性能
+CREATE INDEX idx_user_friends_user_id ON t_user_friends (c_user_id);
+CREATE INDEX idx_user_friends_friend_id ON t_user_friends (c_friend_id);
+
+-- 创建复合索引以优化特定查询，如检索用户所有待处理的好友请求
+CREATE INDEX idx_user_friends_status ON t_user_friends (c_user_id, c_status);
 
 -- 为用户ID创建索引
 CREATE INDEX idx_user_id ON t_users (c_user_id);
