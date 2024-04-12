@@ -102,7 +102,7 @@ CREATE TABLE t_channel_members (
     FOREIGN KEY (c_user_id) REFERENCES t_users(c_user_id)
 );
 
-DROP TABLE IF EXISTS t_channel_members;
+DROP TABLE IF EXISTS t_message_metadata;
 CREATE TABLE t_message_metadata (
     c_message_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
     c_channel_id VARCHAR(36) NOT NULL,
