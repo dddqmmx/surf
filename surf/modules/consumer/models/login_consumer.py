@@ -30,21 +30,24 @@ class LoginConsumer(AsyncWebsocketConsumer):
             session = Session.get_session_by_id(session_id)
             if session:
                 public_key = session.get('client_public_key')
-                sql = "select * from public.user where public_key = %s"
+                sql = "SELECT c_user_id as id FROM public.t_users WHERE c_public_key = %s"
                 res = self.pg.query(sql, [public_key])
                 if len(res) > 0:
                     print(1)
-
+                    user_id = res[0]['id']
                 else:
                     print(2)
                     filters = {
-                        "public_key": public_key
+                        "c_public_key": public_key
                     }
-                    self.pg.save('public.user', filters, primary='uuid')
-                print(res[0]['user_uuid'])
-                session.set('user_uuid', res[0]['user_uuid'])
-                requestJson = {
-                    'command': 'to_url',
-                    'url': 'main'
-                }
-                await self.send(json.dumps(requestJson))
+                    user_id = self.pg.save('public.t_users', filters, return_id=True, return_id_clumn="c_user_id")
+                print(user_id)
+                if user_id is not False:
+                    session.set('user_uuid', user_id)
+                    requestJson = {
+                        'command': 'to_url',
+                        'url': 'main'
+                    }
+                    await self.send(json.dumps(requestJson))
+                else:
+                    print("登录你麻痹")
