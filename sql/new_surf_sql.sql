@@ -10,6 +10,19 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TABLE IF EXISTS t_message_metadata;
+DROP TABLE IF EXISTS t_channel_members;
+DROP TABLE IF EXISTS t_audit_logs;
+DROP TABLE IF EXISTS t_user_roles;
+DROP TABLE IF EXISTS t_permissions;
+DROP TABLE IF EXISTS t_server_members;
+DROP TABLE IF EXISTS t_roles;
+DROP TABLE IF EXISTS t_channels;
+DROP TABLE IF EXISTS t_servers;
+DROP TABLE IF EXISTS t_user_friends;
+DROP TABLE IF EXISTS t_users;
+
+
 DROP TABLE IF EXISTS t_users;
 CREATE TABLE t_users
 (
