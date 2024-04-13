@@ -4,12 +4,14 @@ import { RouterModule, Routes } from '@angular/router';
 import { HelloComponent } from './hello/hello.component';
 import { ChatComponent } from './chat/chat.component';
 import { LoginComponent } from './login/login.component';
+import {MainComponent} from "./main/main.component";
 
 
 const routes: Routes = [
     {path: '', pathMatch: 'full', redirectTo: 'login'},
     {path:"hello",component:HelloComponent},
     {path:"chat",component:ChatComponent},
+    {path:"main",component:MainComponent},
     {path:"login",component:LoginComponent}
 ];
 
