@@ -2,7 +2,7 @@ import json
 
 from channels.generic.websocket import AsyncWebsocketConsumer
 
-from surf.modules.util import Pg, Session
+from surf.modules.util import BaseModel, Session
 from surf.modules.util import Ec
 
 connectUsers = []
@@ -12,7 +12,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(args, kwargs)
         self.public_key = None
-        self.pg = Pg()
+        self.pg = BaseModel()
         self.ec = Ec()
 
     async def connect(self):
