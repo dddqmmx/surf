@@ -27,12 +27,19 @@ class UserConsumer(AsyncWebsocketConsumer):
         receive_json = json.loads(text_data)
         command = receive_json['command']
         session_id = receive_json['session_id']
-        if 'login' == command:
-            await self.login(session_id)
+        if command in self.func_dict.keys():
+            await self.func_dict.get(command)(session_id)
 
-    async def login(self, session_id):
-        request_json = self.service.login(session_id)
-        if request_json is not False:
-            await self.send(json.dumps(request_json))
+    async def login(self, session_id: str):
+        respond_json = self.user_service.login(session_id)
+        if respond_json is not False:
+            await self.send(json.dumps(respond_json))
         else:
             print("登录失败")
+
+    async def get_user_data(self, session_id: str):
+        respond_json = self.user_service.get_user_data(session_id)
+        if respond_json is not False:
+            await self.send(json.dumps(respond_json))
+        else:
+            print("获取失败")
