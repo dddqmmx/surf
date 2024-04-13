@@ -11,10 +11,11 @@ class UserConsumer(AsyncWebsocketConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(args, kwargs)
         self.public_key = None
-        self.service = UserService()
-        # self.func_dict = {
-        #     'login': self.login
-        # }
+        self.user_service = UserService()
+        self.func_dict = {
+            'login': self.login,
+            'get_user_data': self.get_user_data
+        }
 
     async def connect(self):
         await self.accept()
