@@ -1,8 +1,9 @@
 # yourapp/routing.py
 
 from django.urls import re_path
-from surf.modules.consumer import (ChatConsumer, KeyExchangeConsumer)
 from .user_consumer import UserConsumer
+from .chat_consumer import ChatConsumer
+from .key_exchange_consumer import KeyExchangeConsumer
 
 url = [
     re_path(r'ws/chat/$', ChatConsumer.as_asgi()),
