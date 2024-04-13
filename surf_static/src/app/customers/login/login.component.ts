@@ -113,11 +113,11 @@ export class LoginComponent {
             this.socket.onmessage = function (e: { data: any; }) {
                 const json = JSON.parse(e.data)
                 console.log(json)
-                const command =    json.command;
+                const command = json.command;
                 if (command == "to_url"){
                     const url = json.url;
                     if (url == 'main'){
-                        self.router.navigate(['/CustomersModule/chat'])
+                        self.router.navigate(['/CustomersModule/main'])
                     }
                 }
             };
