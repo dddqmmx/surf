@@ -7,7 +7,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from surf.modules.consumer.services import UserService
 
 
-class LoginConsumer(AsyncWebsocketConsumer):
+class UserConsumer(AsyncWebsocketConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(args, kwargs)
         self.public_key = None

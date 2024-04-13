@@ -99,7 +99,7 @@ export class LoginComponent {
         if (this.isJSON(this.fileContent)) {
             const userFile = JSON.parse(this.fileContent)
             const serverAddress = userFile.server_address;
-            this.socket = new WebSocket('ws://'+serverAddress+'/ws/login/');
+            this.socket = new WebSocket('ws://'+serverAddress+'/ws/user/');
             this.socket.onopen = function () {
                 const requestJson = {
                     'command': 'login',
