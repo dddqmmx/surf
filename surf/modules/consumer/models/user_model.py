@@ -21,7 +21,17 @@ class UserModel(BaseModel):
             sql = "SELECT c_user_id as id FROM public.t_users WHERE c_public_key = %s"
             res = super().query(sql, [public_key])
         except Exception as e:
-            print(f"""{e}\n{traceback.format_exc()}""")
+            print(f"""get userid by user's public_key fails, key:{public_key}\n{e}\n{traceback.format_exc()}""")
+        finally:
+            return res
+
+    def get_userdata_by_userid(self, user_id):
+        res = []
+        try:
+            sql = "SELECT c_nickname as nickname, c_user_info as info FROM public.t_users WHERE c_user_id = %s"
+            res = super().query(sql, [user_id])
+        except Exception as e:
+            print(f"""get user data by userid fails, userid: {user_id}\n{e}\n{traceback.format_exc()}""")
         finally:
             return res
 
