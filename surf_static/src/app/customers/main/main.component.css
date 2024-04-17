@@ -78,7 +78,7 @@ body {
 .chat-content {
     background-color: #36393f;
     color: white;
-    padding: 20px;
+    /*padding: 20px;*/
     flex: 1;
     overflow-y: auto;
     order: 1;

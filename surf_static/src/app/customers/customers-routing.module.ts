@@ -11,7 +11,13 @@ const routes: Routes = [
     {path: '', pathMatch: 'full', redirectTo: 'login'},
     {path:"hello",component:HelloComponent},
     {path:"chat",component:ChatComponent},
-    {path:"main",component:MainComponent},
+    {
+        path:"main",
+        component:MainComponent,
+        children:[
+            {path:"chat",component:ChatComponent}
+        ]
+    },
     {path:"login",component:LoginComponent}
 ];
 

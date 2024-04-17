@@ -1,6 +1,15 @@
-import { Routes } from '@angular/router';
+// import { Routes } from '@angular/router';
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
 
 export const routes: Routes = [
-    {path:'',pathMatch:'full',redirectTo:'CustomersModule'},
-    {path:'CustomersModule',loadChildren:()=>import('./customers/customers.module').then(m=>m.CustomersModule)}
+{
+    path: '',
+    loadChildren: () => import('./customers/customers.module').then(m => m.CustomersModule)
+  }
 ];
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { }

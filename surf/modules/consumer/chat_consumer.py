@@ -56,7 +56,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         elif 'send_message' == command:
             message = receive_json['message']
             session = Session.get_session_by_id(receive_json["session_id"])
-            message['user_uuid'] = session.get('user_uuid')
+            message['user_id'] = session.get('user_id')
             del (receive_json['session_id'])
             for connectUser in connectUsers:
                 await connectUser.send(

@@ -3,7 +3,7 @@
 Created By      : ZedFeorius
 Created Time    : 2024/4/13 19:42
 File Name       : user_model
-Project Name    : surf-websocket
+Project Name    : surf-extreme
 Last Edit Time  : 
 """
 import traceback
