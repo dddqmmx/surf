@@ -33,7 +33,7 @@ def decrypt_data(ciphertext, private_key):
     return None
 
 def encrypt_data(data, public_key):
-    block_size = 1  # 调整块大小以符合你的加密算法的要求
+    block_size = 464  # 调整块大小以符合你的加密算法的要求
     message_bytes = data.encode('utf-8')
     encrypted_chunks = []
     for i in range(0, len(message_bytes), block_size):
@@ -79,12 +79,6 @@ Wu+JV14e2Q5IsM7mhZNBZyJ4qJ6u0T1gDT2vVX3ukZ6vkg6VkX7qLQMD95gG0f7i
 pJ1tPY5s0mhNdTIJo80sNNsCAwEAAQ==
 -----END PUBLIC KEY-----
 
-    """  # 请替换为合适的公钥
+    """
     encrypted_data = encrypt_data(data, public_key)
     print("Encrypted Data:", encrypted_data)
-
-    # encrypted_chunks = encrypted_data.split(' ')
-    # decrypted_chunks = [base64.b64decode(chunk) for chunk in encrypted_chunks]
-    # decrypted_data = b' '.join(decrypted_chunks)
-    # original_data = decrypted_data.decode('utf-8')
-    # print(original_data)
