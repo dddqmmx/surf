@@ -11,9 +11,9 @@ import traceback
 from surf.modules.util import BaseModel
 
 
-class UserModel(object):
+class UserModel(BaseModel):
     def __init__(self):
-        self.__pg = BaseModel()
+        super().__init__()
 
     def get_userid_by_public_key(self, public_key):
         res = []
