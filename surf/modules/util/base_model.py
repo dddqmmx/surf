@@ -11,4 +11,4 @@ from .base_db_pg import BaseDBPG
 
 class BaseModel(object):
     def __init__(self):
-        self.__pg = BaseDBPG()
+        self._pg = BaseDBPG()

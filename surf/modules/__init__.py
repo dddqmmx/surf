@@ -14,11 +14,11 @@ modules_dir = os.listdir(MODULES_PATH)
 all_url_patterns = []
 
 for module_name in modules_dir:
-    module_routing_path = os.path.join(MODULES_PATH, module_name, 'routing.py')
+    module_routing_path = os.path.join(MODULES_PATH, module_name, 'core', 'routing.py')
     if os.path.isfile(module_routing_path):
         try:
             # 导入模块
-            module_routing = importlib.import_module(f".{module_name}.routing", package="surf.modules")
+            module_routing = importlib.import_module(f".{module_name}.core.routing", package="surf.modules")
             # 提取url_patterns
             url_patterns = getattr(module_routing, 'url')
             all_url_patterns.extend(url_patterns)
