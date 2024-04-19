@@ -50,6 +50,16 @@ body {
 .sidebar-nav li {
     margin-bottom: 10px;
 }
+.avatar {
+    border-radius: 50%;
+    height: 48px;
+    width: 48px;
+    transition: transform 0.3s ease;
+}
+
+.avatar:hover {
+    transform: scale(1.2);
+}
 
 .sidebar-nav a {
     color: white;

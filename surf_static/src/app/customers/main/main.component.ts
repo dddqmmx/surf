@@ -4,6 +4,7 @@ import {CryptoService} from "../../services/crypto/crypto.service";
 import {LocalDataService} from "../../services/local_data/local-data.service";
 import {Router, RouterOutlet} from "@angular/router";
 import {ChatComponent} from "../chat/chat.component";
+import {SidebarServerComponent} from "../sidebar-server/sidebar-server.component";
 
 @Component({
   selector: 'app-main',
@@ -11,7 +12,8 @@ import {ChatComponent} from "../chat/chat.component";
     imports: [
         NgForOf,
         ChatComponent,
-        RouterOutlet
+        RouterOutlet,
+        SidebarServerComponent
     ],
   templateUrl: './main.component.html',
   styleUrl: './main.component.css'

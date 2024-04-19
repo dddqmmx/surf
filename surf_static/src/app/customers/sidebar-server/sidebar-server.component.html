@@ -1,0 +1,11 @@
+<div class="channel-info-container">
+  <h2>{{ channelInfo.server_nane }}</h2>
+  <div *ngFor="let channelClass of channelInfo.channel_classes" class="channel-class">
+    <h3 class="channel-class-title">{{ channelClass.channel_class_name }}</h3>
+    <ul class="channel-list">
+      <li *ngFor="let channel of channelClass.channels" class="channel">
+        {{ channel.channel_name }} - {{ channel.channel_type }}
+      </li>
+    </ul>
+  </div>
+</div>
