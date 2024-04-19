@@ -64,6 +64,13 @@ CREATE TABLE t_channels (
     FOREIGN KEY (c_server_id) REFERENCES t_servers(c_server_id) ON DELETE CASCADE
 );
 
+CREATE TABLE t_channel_group(
+    c_group_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
+    c_channel_id VARCHAR(36) NOT NULL,
+    c_group_name VARCHAR NOT NULL,
+    FOREIGN KEY (c_channel_id) REFERENCES t_channels(c_channel_id) ON DELETE CASCADE
+);
+
 CREATE TABLE t_roles (
     c_role_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
     c_server_id VARCHAR(36) NOT NULL,
