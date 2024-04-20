@@ -5,61 +5,13 @@
                 <img class="avatar" style="border-radius: 50%" src="assets/mike2.png" height="48" width="48">
             </div>
             <div style="margin-top: 10px;margin-bottom: 10px;height: 1px;width: 48px;background: white"></div>
-            <div class="avatar-container" style="margin-top: 10px;margin-bottom: 10px;">
+            <div *ngFor="let serverInfo of servers" class="avatar-container" style="margin-top: 10px;margin-bottom: 10px;">
                 <img class="avatar" src="assets/mike1.jpg" height="48" width="48">
+                <p class="name">{{ serverInfo.server_name }}</p>
             </div>
-            <div class="avatar-container" style="margin-top: 10px;margin-bottom: 10px;">
-                <img class="avatar" src="assets/mike1.jpg" height="48" width="48">
+            <div>
+                <img class="avatar" (click)="toggleChatPopup()" style="border-radius: 50%;background: #36393f" src="assets/add_FILL0_wght400_GRAD0_opsz24.svg" height="48" width="48">
             </div>
-            <div class="avatar-container" style="margin-top: 10px;margin-bottom: 10px;">
-                <img class="avatar" src="assets/mike1.jpg" height="48" width="48">
-            </div>
-            <div class="avatar-container" style="margin-top: 10px;margin-bottom: 10px;">
-                <img class="avatar" src="assets/mike1.jpg" height="48" width="48">
-            </div>
-            <div class="avatar-container" style="margin-top: 10px;margin-bottom: 10px;">
-                <img class="avatar" src="assets/mike1.jpg" height="48" width="48">
-            </div>
-            <div class="avatar-container" style="margin-top: 10px;margin-bottom: 10px;">
-                <img class="avatar" src="assets/mike1.jpg" height="48" width="48">
-            </div>
-            <div class="avatar-container" style="margin-top: 10px;margin-bottom: 10px;">
-                <img class="avatar" src="assets/mike1.jpg" height="48" width="48">
-            </div>
-            <div class="avatar-container" style="margin-top: 10px;margin-bottom: 10px;">
-                <img class="avatar" src="assets/mike1.jpg" height="48" width="48">
-            </div>
-            <div class="avatar-container" style="margin-top: 10px;margin-bottom: 10px;">
-                <img class="avatar" src="assets/mike1.jpg" height="48" width="48">
-            </div>
-            <div class="avatar-container" style="margin-top: 10px;margin-bottom: 10px;">
-                <img class="avatar" src="assets/mike1.jpg" height="48" width="48">
-            </div>
-            <div class="avatar-container" style="margin-top: 10px;margin-bottom: 10px;">
-                <img class="avatar" src="assets/mike1.jpg" height="48" width="48">
-            </div>
-            <div class="avatar-container" style="margin-top: 10px;margin-bottom: 10px;">
-                <img class="avatar" src="assets/mike1.jpg" height="48" width="48">
-            </div>
-            <div class="avatar-container" style="margin-top: 10px;margin-bottom: 10px;">
-                <img class="avatar" src="assets/mike1.jpg" height="48" width="48">
-            </div>
-            <div class="avatar-container" style="margin-top: 10px;margin-bottom: 10px;">
-                <img class="avatar" src="assets/mike1.jpg" height="48" width="48">
-            </div>
-            <div class="avatar-container" style="margin-top: 10px;margin-bottom: 10px;">
-                <img class="avatar" src="assets/mike1.jpg" height="48" width="48">
-            </div>
-            <div class="avatar-container" style="margin-top: 10px;margin-bottom: 10px;">
-                <img class="avatar" src="assets/mike1.jpg" height="48" width="48">
-            </div>
-            <div class="avatar-container" style="margin-top: 10px;margin-bottom: 10px;">
-                <img class="avatar" src="assets/mike1.jpg" height="48" width="48">
-            </div>
-            <div class="avatar-container" style="margin-top: 10px;margin-bottom: 10px;">
-                <img class="avatar" src="assets/mike1.jpg" height="48" width="48">
-            </div>
-
         </div>
     </div>
     <div class="main-content">
@@ -69,29 +21,25 @@
             </div>
             <div class="chat-content">
                 <router-outlet/>
-<!--                <div *ngFor="let obj of data.objects">-->
-<!--                  <div>{{ obj.user.user_nickname }}</div>-->
-<!--                  <div>{{ obj.user.user_info.email }}</div>-->
-<!--                  <div>{{ obj.user.user_info.phone }}</div>-->
-<!--                </div>-->
-<!--                <app-chat></app-chat>-->
-<!--                <h2>gen shin</h2>-->
-<!--                <div class="message">-->
-<!--                    <span class="username">InternetPal</span>: Hello! How are you today?-->
-<!--                </div>-->
-<!--                <div class="message">-->
-<!--                    <span class="username">GregSteven52</span>: ur a giant pussy-->
-<!--                </div>-->
-<!--                <div class="message">-->
-<!--                    <span class="username">InternetPal</span>: <img src="image/img_1.png" style="max-width: 50px;max-height: 50px">-->
-<!--                </div>-->
-<!--                <div class="message">-->
-<!--                    <span class="username">InternetPal</span>: The only pussy I know is your daughter's.-->
-<!--                </div>-->
-<!--                <div class="message">-->
-<!--                    <span class="username">GregSteven52</span>: if u touch her ill fuckign end u-->
-<!--                </div>-->
             </div>
         </section>
     </div>
 </div>
+
+<!-- 聊天弹窗 -->
+<div *ngIf="chatPopupVisible" id="chatPopup" class="chat-popup">
+  <button class="close-btn" (click)="toggleChatPopup()">X</button>
+  <div class="chat-header">
+    <h2>创建服务器</h2>
+  </div>
+  <div class="preview-container" id="previewContainer">
+      <input type="file" style="display: none" accept="image/*" class="chat-input" id="fileInput" (change)="onFileSelected($event)">
+      <div class="drag-drop-area" id="dragDropArea" (click)="openFileInput()">拖拽或点击上传</div>
+      <img id="preview" class="preview-image" src="favicon.ico" alt="预览图像">
+  </div>
+  <input type="text" class="chat-input" placeholder="服务器名称">
+  <input type="text" class="chat-input" placeholder="注释">
+  <button type="button" (click)="createServer()" class="chat-send-btn">创建</button>
+</div>
+
+

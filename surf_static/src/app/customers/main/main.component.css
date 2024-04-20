@@ -121,3 +121,119 @@ footer img {
     margin: 5px;
     vertical-align: middle;
 }
+
+.avatar-container .name {
+    display: none;
+}
+
+.avatar-container:hover .name {
+    display: block;
+}
+
+.avatar-container {
+    position: relative;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    height: 48px;
+}
+
+.name {
+    position: absolute;
+    left: 60px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* 弹窗样式 */
+    .chat-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border: 1px solid #ccc;
+      background-color: #f1f1f1;
+      width: 300px;
+      max-width: 100%;
+      padding: 20px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+
+    /* 头部样式 */
+    .chat-popup .chat-header {
+      margin-bottom: 20px;
+    }
+
+    /* 输入框样式 */
+    .chat-popup .chat-input {
+      width: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+    }
+
+    /* 发送按钮样式 */
+    .chat-popup .chat-send-btn {
+      width: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+      border: none;
+      background-color: #af4c4c;
+      color: white;
+      cursor: pointer;
+    }
+
+    /* 返回按钮样式 */
+    .chat-popup .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 16px;
+      background-color: transparent;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* 预览图像容器样式 */
+    .preview-container {
+      width: 150px;
+      height: 150px;
+      margin: 0 auto 20px;
+      position: relative;
+      overflow: hidden;
+      border-radius: 50%;
+    }
+
+    /* 预览图像样式 */
+    .preview-image {
+      max-width: 100%;
+      max-height: 100%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: none;
+    }
+
+    /* 拖拽区域样式 */
+    .drag-drop-area {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    /* 拖拽区域激活样式 */
+    .drag-drop-area.active {
+      background-color: rgba(0, 0, 0, 0.7);
+    }
