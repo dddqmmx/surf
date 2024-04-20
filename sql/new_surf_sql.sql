@@ -12,6 +12,7 @@ $$ LANGUAGE plpgsql;
 
 DROP TABLE IF EXISTS t_message_metadata;
 DROP TABLE IF EXISTS t_channel_members;
+DROP TABLE IF EXISTS t_channel_groups;
 DROP TABLE IF EXISTS t_audit_logs;
 DROP TABLE IF EXISTS t_user_roles;
 DROP TABLE IF EXISTS t_permissions;
@@ -21,6 +22,7 @@ DROP TABLE IF EXISTS t_channels;
 DROP TABLE IF EXISTS t_servers;
 DROP TABLE IF EXISTS t_user_friends;
 DROP TABLE IF EXISTS t_users;
+
 
 
 CREATE TABLE t_users
@@ -52,23 +54,22 @@ CREATE TABLE t_servers(
     c_is_private BOOLEAN NOT NULL DEFAULT TRUE
 );
 
+CREATE TABLE t_channel_groups(
+    c_group_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
+    c_server_id VARCHAR(36) NOT NULL,
+    c_group_name VARCHAR NOT NULL,
+    FOREIGN KEY (c_server_id) REFERENCES t_servers(c_server_id) ON DELETE CASCADE
+);
 
 CREATE TABLE t_channels (
     c_channel_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
-    c_server_id VARCHAR(36) NOT NULL,
+    c_group_id VARCHAR(36) NOT NULL,
     c_name VARCHAR NOT NULL,
     c_type VARCHAR(10) CHECK (c_type IN ('text', 'voice')) NOT NULL,
     c_description TEXT,
     c_create_by VARCHAR(32) NOT NULL,
     c_create_time BIGINT NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::BIGINT,
-    FOREIGN KEY (c_server_id) REFERENCES t_servers(c_server_id) ON DELETE CASCADE
-);
-
-CREATE TABLE t_channel_group(
-    c_group_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
-    c_channel_id VARCHAR(36) NOT NULL,
-    c_group_name VARCHAR NOT NULL,
-    FOREIGN KEY (c_channel_id) REFERENCES t_channels(c_channel_id) ON DELETE CASCADE
+    FOREIGN KEY (c_group_id) REFERENCES t_channel_groups(c_group_id) ON DELETE CASCADE
 );
 
 CREATE TABLE t_roles (
@@ -144,8 +145,11 @@ CREATE INDEX idx_user_id ON t_users (c_user_id);
 -- 为服务器ID创建索引
 CREATE INDEX idx_server_id ON t_servers (c_server_id);
 CREATE INDEX idx_server_id_on_members ON t_server_members (c_server_id);
-CREATE INDEX idx_server_id_on_channels ON t_channels (c_server_id);
+CREATE INDEX idx_server_id_on_channel_groups ON t_channel_groups (c_server_id);
 CREATE INDEX idx_server_id_on_roles ON t_roles (c_server_id);
+-- 为频道分组ID创建索引
+CREATE INDEX idx_channel_group_id ON t_channel_groups (c_group_id);
+CREATE INDEX idx_channel_group_id_on_channels ON t_channels (c_group_id);
 -- 为频道ID创建索引
 CREATE INDEX idx_channel_id ON t_channels (c_channel_id);
 CREATE INDEX idx_channel_id_on_messages ON t_message_metadata (c_channel_id);
