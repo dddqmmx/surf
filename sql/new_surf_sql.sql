@@ -11,11 +11,10 @@ END;
 $$ LANGUAGE plpgsql;
 
 DROP TABLE IF EXISTS t_message_metadata;
-DROP TABLE IF EXISTS t_channels;
 DROP TABLE IF EXISTS t_channel_members;
+DROP TABLE IF EXISTS t_channels;
 DROP TABLE IF EXISTS t_channel_groups;
 DROP TABLE IF EXISTS t_audit_logs;
-DROP TABLE IF EXISTS t_user_roles;
 DROP TABLE IF EXISTS t_permissions;
 DROP TABLE IF EXISTS t_server_members;
 DROP TABLE IF EXISTS t_roles;
@@ -47,7 +46,7 @@ CREATE TABLE t_servers(
     c_server_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
     c_description TEXT,
     c_name VARCHAR NOT NULL DEFAULT generate_random_nickname(),
-    c_owner_id VARCHAR(32) NOT NULL,
+    c_owner_id VARCHAR(36) NOT NULL,
     c_create_time BIGINT NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::BIGINT,
     c_icon_url VARCHAR,
     c_is_active BOOLEAN NOT NULL DEFAULT TRUE,
@@ -67,7 +66,7 @@ CREATE TABLE t_channels (
     c_name VARCHAR NOT NULL,
     c_type VARCHAR(10) CHECK (c_type IN ('text', 'voice')) NOT NULL,
     c_description TEXT,
-    c_create_by VARCHAR(32) NOT NULL,
+    c_create_by VARCHAR(36) NOT NULL,
     c_create_time BIGINT NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::BIGINT,
     FOREIGN KEY (c_group_id) REFERENCES t_channel_groups(c_group_id) ON DELETE CASCADE
 );
@@ -76,18 +75,17 @@ CREATE TABLE t_roles (
     c_role_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
     c_server_id VARCHAR(36) NOT NULL,
     c_name VARCHAR NOT NULL,
-    c_permissions INTEGER NOT NULL,
-    FOREIGN KEY (c_server_id) REFERENCES t_servers(c_server_id)
+    c_permissions jsonb NOT NULL default '[1,2,3]',
+    FOREIGN KEY (c_server_id) REFERENCES t_servers(c_server_id) ON DELETE CASCADE
 );
 
 CREATE TABLE t_server_members (
     c_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
     c_server_id VARCHAR(36) NOT NULL,
-    c_user_id VARCHAR(32) NOT NULL,
-    c_role_id VARCHAR(36),
-    FOREIGN KEY (c_server_id) REFERENCES t_servers(c_server_id),
-    FOREIGN KEY (c_user_id) REFERENCES t_users(c_user_id),
-    FOREIGN KEY (c_role_id) REFERENCES t_roles(c_role_id)
+    c_user_id VARCHAR(36) NOT NULL,
+    c_roles jsonb,
+    FOREIGN KEY (c_server_id) REFERENCES t_servers(c_server_id) ON DELETE CASCADE,
+    FOREIGN KEY (c_user_id) REFERENCES t_users(c_user_id) ON DELETE CASCADE
 );
 
 CREATE TABLE t_permissions (
@@ -95,42 +93,33 @@ CREATE TABLE t_permissions (
     c_description TEXT NOT NULL
 );
 
-CREATE TABLE t_user_roles (
-    c_user_id VARCHAR(32) NOT NULL,
-    c_role_id VARCHAR(36) NOT NULL,
-    c_server_id VARCHAR(36) NOT NULL,
-    PRIMARY KEY (c_user_id, c_role_id, c_server_id),
-    FOREIGN KEY (c_user_id) REFERENCES t_users(c_user_id),
-    FOREIGN KEY (c_role_id) REFERENCES t_roles(c_role_id),
-    FOREIGN KEY (c_server_id) REFERENCES t_servers(c_server_id)
-);
 
 CREATE TABLE t_audit_logs (
     c_log_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
-    c_user_id VARCHAR(32) NOT NULL,
+    c_user_id VARCHAR(36) NOT NULL,
     c_action TEXT NOT NULL,
     c_description TEXT,
     c_timestamp BIGINT NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::BIGINT,
-    FOREIGN KEY (c_user_id) REFERENCES t_users(c_user_id)
+    FOREIGN KEY (c_user_id) REFERENCES t_users(c_user_id) ON DELETE CASCADE
 );
 
 CREATE TABLE t_channel_members (
     c_channel_id VARCHAR(36) NOT NULL,
-    c_user_id VARCHAR(32) NOT NULL,
+    c_user_id VARCHAR(36) NOT NULL,
     c_permissions INTEGER NOT NULL,
     PRIMARY KEY (c_channel_id, c_user_id),
     FOREIGN KEY (c_channel_id) REFERENCES t_channels(c_channel_id) ON DELETE CASCADE,
-    FOREIGN KEY (c_user_id) REFERENCES t_users(c_user_id)
+    FOREIGN KEY (c_user_id) REFERENCES t_users(c_user_id) ON DELETE CASCADE
 );
 
 CREATE TABLE t_message_metadata (
     c_message_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
     c_channel_id VARCHAR(36) NOT NULL,
-    c_user_id VARCHAR(32) NOT NULL,
+    c_user_id VARCHAR(36) NOT NULL,
     c_message_type VARCHAR(20) NOT NULL,
     c_timestamp BIGINT NOT NULL,
     FOREIGN KEY (c_channel_id) REFERENCES t_channels(c_channel_id) ON DELETE CASCADE,
-    FOREIGN KEY (c_user_id) REFERENCES t_users(c_user_id)
+    FOREIGN KEY (c_user_id) REFERENCES t_users(c_user_id) ON DELETE CASCADE
 );
 
 -- 为用户ID和好友ID创建索引以优化查找性能
@@ -155,11 +144,55 @@ CREATE INDEX idx_channel_id ON t_channels (c_channel_id);
 CREATE INDEX idx_channel_id_on_messages ON t_message_metadata (c_channel_id);
 
 
-CREATE INDEX idx_user_roles_user_server ON t_user_roles (c_user_id, c_server_id);
 CREATE INDEX idx_audit_logs_timestamp ON t_audit_logs (c_timestamp);
 
 CREATE INDEX idx_message_type ON t_message_metadata (c_message_type);
 CREATE INDEX idx_message_user_id ON t_message_metadata (c_user_id);
 
 
+CREATE OR REPLACE FUNCTION check_permissions_exist()
+RETURNS TRIGGER AS $$
+DECLARE
+    permission_id INT;
+BEGIN
+    -- 遍历 JSONB 数组中的每个元素
+    FOR permission_id IN SELECT jsonb_array_elements_text(NEW.c_permissions)::int
+    LOOP
+        -- 检查元素是否存在于 t_permissions 表中
+        IF NOT EXISTS (SELECT 1 FROM t_permissions WHERE c_permission_id = permission_id) THEN
+            RAISE EXCEPTION 'Permission ID % does not exist in t_permissions.', permission_id;
+        END IF;
+    END LOOP;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION check_roles_exist()
+RETURNS TRIGGER AS $$
+DECLARE
+    role_id INT;
+BEGIN
+    -- 遍历 JSONB 数组中的每个元素
+    FOR role_id IN SELECT jsonb_array_elements_text(NEW.c_roles)::int
+    LOOP
+        -- 检查元素是否存在于 t_permissions 表中
+        IF NOT EXISTS (SELECT 1 FROM t_roles WHERE c_role_id = role_id) THEN
+            RAISE EXCEPTION 'Permission ID % does not exist in t_permissions.', role_id;
+        END IF;
+    END LOOP;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_check_permissions
+BEFORE INSERT OR UPDATE ON t_roles
+FOR EACH ROW EXECUTE FUNCTION check_permissions_exist();
+
+
 INSERT INTO t_users(c_user_id, c_nickname, c_public_key, c_user_info) VALUES ('e2cfa16b-c7a3-46f0-9995-22e2ae333e3e','80e6701cacfccc7e5c0b1767a466b993','LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQ0lqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FnOEFNSUlDQ2dLQ0FnRUF1YXNhRHcxVnpmeTJKU3BnVTMrRApEeTB0QzVadXFNSjhOanpnQk85UEtBcVU4QXdiem1WdEY5M0tieU8xd0xSTGJySXkxR0tJVlBkd0ZwOVVuNlZ2ClJNeHIxQ0hmRHY2WFFpYUpmbjJLZ1FaQ1lDcmo4REorcG84N2FneVF3R2s2ZEpDc2ZNOHoxenNqZ3dQQkxyTHMKcHo4aWZGcGNJUkkvWDF1a3RUS1JzaHhWVkh0OGtYYjVrRDl6SUM1ekRRcVBMeVc1TnFoUFZEbU1UdnFvdG05SwpicllqSnltbi9xaTJuVGplcDNaKzFxbHp5NmdPRXF4S3pralZwd1lyMlNsbWFEQU5iT2RKanJuQVdsNHFVNXN3CnorMzRWTklkaHJTSnhXRjBRR2MzaU82UENZS29mYWVsUWJYZjI3UTF5Uk1TdTYxL0hqdmhWUWNvTnYxeTFQT2cKSllkb2xiREwwYW9pWFNXOWZOK2hHd3RmZjczdjIwemV1N3RGWWowbTViczFFd3JvK2RjUjZsQmFUUHBRZnZDLwpydWVKaHpNZzAvZ3hvTFFBakI3eTlNVnVQYTNEUFVpSVFpdktHeGtUN3ZKdlN5WGdCb29KOHZiNE16dElIb1BGCngxb3RmQ05PajhVdGlwdG4rOFFTUXZ0UXJFdklZdVpaOERnSUd1NmtRVzFEMzZhRG1iVFdra00vTUw3UmRGN20KMVpOb3JBMzFnT3JQWnByTlRQUzlxRWtTY2x4dWxoZ3VHd2ZYUEcwTlk0NVZxNlhoUW1MR0NGMFVaWHhrRXllagpXdStKVjE0ZTJRNUlzTTdtaFpOQlp5SjRxSjZ1MFQxZ0RUMnZWWDN1a1o2dmtnNlZrWDdxTFFNRDk1Z0cwZjdpCnBKMXRQWTVzMG1oTmRUSUpvODBzTk5zQ0F3RUFBUT09Ci0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo=','{"email": "woshishabi@gmail.com", "phone": "1145141919810"}')
+
+INSERT INTO t_permissions (c_permission_id, c_description) VALUES (1, 'Permission 1');
+INSERT INTO t_permissions (c_permission_id, c_description) VALUES (2, 'Permission 2');
+INSERT INTO t_permissions (c_permission_id, c_description) VALUES (3, 'Permission 3');
