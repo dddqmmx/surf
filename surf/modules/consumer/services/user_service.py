@@ -58,7 +58,8 @@ class UserService(object):
                         "user_info": res[0]["info"]
                     }
                     respond_json = {
-                        'objects': [
+                        'command': "user_data",
+                        'message': [
                             {
                                 "user": user_dict,
                                 "servers": []
