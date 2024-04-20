@@ -35,6 +35,5 @@ class UserModel(BaseModel):
         finally:
             return res
 
-
-
-
+    def save_user(self, filters: dict, primary="c_user_id") -> str or bool:
+        self._pg.save("t_users", filters, primary, return_id=True, return_id_clumn="c_user_id")

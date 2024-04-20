@@ -31,8 +31,7 @@ class UserService(object):
                     filters = {
                         "c_public_key": public_key
                     }
-                    user_id = self.__userModel.save('public.t_users', filters, return_id=True,
-                                                    return_id_clumn="c_user_id")
+                    user_id = self.__userModel.save_user(filters)
                 print(user_id)
                 if user_id is not False:
                     session.set('user_id', user_id)
