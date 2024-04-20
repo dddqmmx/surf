@@ -14,9 +14,9 @@ class BaseDBPG(object):
         self.timing_end = None
 
         self.schema = "public"
-        self.setConnPool()
+        self._setConnPool()
 
-    def setConnPool(self):
+    def _setConnPool(self):
         if not hasattr(self, "conn_pool") or not self.conn_pool:
             self.conn_pool = SimpleConnectionPool(
                 minconn="1",
@@ -28,12 +28,12 @@ class BaseDBPG(object):
                 password='114514'
             )
 
-    def get_Schema(self):
+    def _get_Schema(self):
         if not hasattr(self, "schema"):
             return 'public'
         return self.schema
 
-    def set_Schema(self, schema, conn):
+    def _set_Schema(self, schema, conn):
         if not hasattr(conn, 'search_path_set') or not conn.search_path_set:
             self.schema = schema
             cur = conn.cursor()
@@ -45,23 +45,23 @@ class BaseDBPG(object):
             finally:
                 cur.close()
 
-    def getConn(self):
+    def _getConn(self):
         conn = self.conn_pool.getconn()
         return conn
 
-    def releaseConn(self, conn):
+    def _releaseConn(self, conn):
         self.conn_pool.putconn(conn)
 
-    def closeAllConn(self):
+    def _closeAllConn(self):
         self.conn_pool.closeall()
 
-    def debugSql(self, sql, params):
+    def _debugSql(self, sql, params):
         if params:
             for param in params:
                 sql = re.sub(r"%\w", "'%s'" % str(param), sql, count=1)
         print(sql)
 
-    def formatSqlParams(self, sql, filters, re_str=None):
+    def _formatSqlParams(self, sql, filters, re_str=None):
         re_str = re_str if re_str else r'{(\w*)}'
         field_list = re.compile(re_str).findall(sql)
         params = []
@@ -72,7 +72,7 @@ class BaseDBPG(object):
 
     def getClumnsByTable(self, table):
         if table not in self.table_clumns_dict:
-            params = table.split(".") if '.' in table else [self.get_Schema(), table]
+            params = table.split(".") if '.' in table else [self._get_Schema(), table]
             sql = """
             SELECT column_name FROM information_schema.columns WHERE table_schema = %s AND table_name = %s
             """
@@ -81,7 +81,7 @@ class BaseDBPG(object):
             self.table_clumns_dict[table] = column
         return self.table_clumns_dict[table]
 
-    def slimSql(self, sql):
+    def _slimSql(self, sql):
         sql = re.sub('\n', ' ', sql)
         sql = re.sub(' +', ' ', sql)
         return sql
@@ -98,11 +98,11 @@ class BaseDBPG(object):
         :return: 结果
         """
         if debug:
-            self.debugSql(sql, params)
-        conn = self.getConn()
+            self._debugSql(sql, params)
+        conn = self._getConn()
         cur = conn.cursor()
         try:
-            sql = self.slimSql(sql)
+            sql = self._slimSql(sql)
             cur.execute(sql, params)
             res = []
             try:
@@ -126,15 +126,15 @@ class BaseDBPG(object):
         finally:
             if cur:
                 cur.close()
-                self.releaseConn(conn)
+                self._releaseConn(conn)
 
-    def queryFormat(self, sql, keys=None, filters=None, re_str=None, debug=False):
-        sql, params = self.formatSqlParams(sql, filters, re_str)
+    def _queryFormat(self, sql, keys=None, filters=None, re_str=None, debug=False):
+        sql, params = self._formatSqlParams(sql, filters, re_str)
         if debug:
-            self.debugSql(sql, params)
+            self._debugSql(sql, params)
         return self.query(sql, params, keys, debug=debug)
 
-    def formateOrderLimit(self, filters):
+    def _formateOrderLimit(self, filters):
         sql = ''
         if 'orderField' in filters and "orderMode" in filters:
             if filters['orderField'] and filters['orderMode']:
@@ -149,7 +149,7 @@ class BaseDBPG(object):
         return sql
 
     def queryPage(self, filters, sql, params=None, keys=None, debug=False):
-        list_sql = sql + self.formatSqlParams(filters)
+        list_sql = sql + self._formatSqlParams(filters, )
         count_sql = "SELECT COUNT(1) AS total_counts FROM (" + sql + ") AS TMP_COUNT"
         list = self.query(list_sql, params, keys=keys, debug=debug)
         count = self.query(count_sql, params)[0]['total_counts']
@@ -159,7 +159,7 @@ class BaseDBPG(object):
         }
         return result
 
-    def getUpdatesqlParams(self, table, filters, primary=None, return_id=False, return_id_clumn='ID'):
+    def _getUpdatesqlParams(self, table, filters, primary=None, return_id=False, return_id_clumn='ID'):
         primary = 'id' if not primary else primary
         clumns = self.getClumnsByTable(table)
         upd_arr = []
@@ -184,23 +184,23 @@ class BaseDBPG(object):
         """
         return sql, params
 
-    def update(self, table, filters, primary=None, debug=False, return_id=False, return_id_clumn='ID'):
+    def _update(self, table, filters, primary=None, debug=False, return_id=False, return_id_clumn='ID'):
         if type(filters) == type([]):
-            return self.updateBat(table, filters, primary, debug, return_id, return_id_clumn)
+            return self._updateBat(table, filters, primary, debug, return_id, return_id_clumn)
         elif type(filters) == type({}):
-            return self.updateSingel(table, filters, primary, debug, return_id, return_id_clumn)
+            return self._updateSingel(table, filters, primary, debug, return_id, return_id_clumn)
         else:
             print("Fa Q")
             return False
 
-    def updateSingel(self, table, filters, primary=None, debug=False, return_id=False, return_id_clumn='ID'):
-        conn = self.getConn()
+    def _updateSingel(self, table, filters, primary=None, debug=False, return_id=False, return_id_clumn='ID'):
+        conn = self._getConn()
         cur = conn.cursor()
         try:
-            sql, params = self.getUpdatesqlParams(table, filters, primary, return_id, return_id_clumn)
+            sql, params = self._getUpdatesqlParams(table, filters, primary, return_id, return_id_clumn)
             if debug:
-                self.debugSql(sql, params)
-            sql = self.slimSql(sql)
+                self._debugSql(sql, params)
+            sql = self._slimSql(sql)
             cur.execute(sql, params)
             result = cur.fetchone()[0] if return_id else True
             conn.commit()
@@ -212,23 +212,23 @@ class BaseDBPG(object):
         finally:
             if cur:
                 cur.close()
-                self.releaseConn(conn)
+                self._releaseConn(conn)
 
-    def updateBat(self, table, filters, primary=None, debug=False, return_id=False, return_id_clumn='ID'):
+    def _updateBat(self, table, filters, primary=None, debug=False, return_id=False, return_id_clumn='ID'):
         ids = []
-        conn = self.getConn()
+        conn = self._getConn()
         cur = conn.cursor()
         try:
             for sin_filter in filters:
-                sql, params = self.getUpdatesqlParams(table, sin_filter, primary, return_id, return_id_clumn)
+                sql, params = self._getUpdatesqlParams(table, sin_filter, primary, return_id, return_id_clumn)
                 if debug:
-                    self.debugSql(sql, params)
-                sql = self.slimSql(sql)
+                    self._debugSql(sql, params)
+                sql = self._slimSql(sql)
                 cur.execute(sql, params)
                 if return_id:
                     id = cur.fetchone()[0]
                     ids.append(id)
-            result = cur.fetchone()[0] if return_id else True
+            result = ids if return_id else True
             conn.commit()
             return result
         except Exception as e:
@@ -238,9 +238,9 @@ class BaseDBPG(object):
         finally:
             if cur:
                 cur.close()
-                self.releaseConn(conn)
+                self._releaseConn(conn)
 
-    def delKeyByClumns(self, filters, clumns, table):
+    def _delKeyByClumns(self, filters, clumns, table):
         del_keys = []
         for k, v in filters.items():
             if k not in clumns:
@@ -250,9 +250,9 @@ class BaseDBPG(object):
             print(del_keys)
         return filters
 
-    def getInsertSqlParams(self, table, filters, return_id=False, return_id_clumn='ID'):
+    def _getInsertSqlParams(self, table, filters, return_id=False, return_id_clumn='ID'):
         clumns = self.getClumnsByTable(table)
-        filters = self.delKeyByClumns(filters, clumns, table)
+        filters = self._delKeyByClumns(filters, clumns, table)
         params = list(filters.values())
         values = ['%s'] * len(params)
         if return_id_clumn != 'ID' and return_id_clumn not in clumns:
@@ -263,23 +263,23 @@ class BaseDBPG(object):
         """
         return sql, params
 
-    def insert(self, table, filters, debug=False, return_id=False, return_id_clumn='ID'):
+    def _insert(self, table, filters, debug=False, return_id=False, return_id_clumn='ID'):
         if type(filters) == type([]):
-            return self.insertBat(table, filters, debug, return_id, return_id_clumn)
+            return self._insertBat(table, filters, debug, return_id, return_id_clumn)
         elif type(filters) == type({}):
-            return self.insertSingel(table, filters, debug, return_id, return_id_clumn)
+            return self._insertSingel(table, filters, debug, return_id, return_id_clumn)
         else:
             print("Fa Q")
             return False
 
-    def insertSingel(self, table, filters, debug=False, return_id=False, return_id_clumn='ID'):
-        conn = self.getConn()
+    def _insertSingel(self, table, filters, debug=False, return_id=False, return_id_clumn='ID'):
+        conn = self._getConn()
         cur = conn.cursor()
         try:
-            sql, params = self.getInsertSqlParams(table, filters, return_id=return_id, return_id_clumn=return_id_clumn)
+            sql, params = self._getInsertSqlParams(table, filters, return_id=return_id, return_id_clumn=return_id_clumn)
             if debug:
-                self.debugSql(sql, params)
-            sql = self.slimSql(sql)
+                self._debugSql(sql, params)
+            sql = self._slimSql(sql)
             cur.execute(sql, params)
             result = cur.fetchone()[0] if return_id else True
             conn.commit()
@@ -291,25 +291,25 @@ class BaseDBPG(object):
         finally:
             if cur:
                 cur.close()
-                self.releaseConn(conn)
+                self._releaseConn(conn)
 
-    def insertBat(self, table, filters, debug=False, return_id=False, return_id_clumn='ID'):
+    def _insertBat(self, table, filters, debug=False, return_id=False, return_id_clumn='ID'):
         ids = []
-        conn = self.getConn()
+        conn = self._getConn()
         cur = conn.cursor()
         try:
             for sin_filter in filters:
-                sql, params = self.getInsertSqlParams(table, sin_filter, return_id=return_id,
-                                                      return_id_clumn=return_id_clumn)
+                sql, params = self._getInsertSqlParams(table, sin_filter, return_id=return_id,
+                                                       return_id_clumn=return_id_clumn)
                 if debug:
-                    self.debugSql(sql, params)
-                sql = self.slimSql(sql)
+                    self._debugSql(sql, params)
+                sql = self._slimSql(sql)
                 print(params)
                 cur.execute(sql, params)
                 if return_id:
                     id = cur.fetchone()[0]
                     ids.append(id)
-            result = cur.fetchone()[0] if return_id else True
+            result = ids if return_id else True
             conn.commit()
             return result
         except Exception as e:
@@ -319,26 +319,27 @@ class BaseDBPG(object):
         finally:
             if cur:
                 cur.close()
-                self.releaseConn(conn)
+                self._releaseConn(conn)
 
     def save(self, table, filters, primary=None, debug=False, return_id=False, return_id_clumn='ID'):
         primary = 'id' if not primary else primary
         if type(filters) == type([]):
-            return self.saveBat(table, filters, primary, debug=debug, return_id=return_id, return_id_clumn=return_id_clumn)
+            return self._saveBat(table, filters, primary, debug=debug, return_id=return_id, return_id_clumn=return_id_clumn)
         elif type(filters) == type({}):
-            return self.saveSingel(table, filters, primary, debug=debug, return_id=return_id, return_id_clumn=return_id_clumn)
+            return self._saveSingel(table, filters, primary, debug=debug, return_id=return_id, return_id_clumn=return_id_clumn)
         else:
             print("Fa Q")
             return False
 
-    def saveSingel(self, table, filters, primary=None, debug=False, return_id=False, return_id_clumn='ID'):
+    def _saveSingel(self, table, filters, primary=None, debug=False, return_id=False, return_id_clumn='ID'):
         primary = 'id' if not primary else primary
         if primary in filters:
-            return self.update(table, filters, primary, debug=debug, return_id = return_id, return_id_clumn=return_id_clumn)
+            return self._update(table, filters, primary, debug=debug, return_id=return_id,
+                                return_id_clumn=return_id_clumn)
         else:
-            return  self.insert(table, filters, debug=debug, return_id=return_id,return_id_clumn=return_id_clumn)
+            return self._insert(table, filters, debug=debug, return_id=return_id, return_id_clumn=return_id_clumn)
 
-    def saveBat(self, table, filters, primary=None, debug=False, return_id=False, return_id_clumn='ID'):
+    def _saveBat(self, table, filters, primary=None, debug=False, return_id=False, return_id_clumn='ID'):
         primary = 'id' if not primary else primary
         upd_arr = []
         ins_arr = []
@@ -349,10 +350,101 @@ class BaseDBPG(object):
                 ins_arr.append(sin_filter)
         ids = []
         if len(ins_arr) > 0:
-            return self.insertBat(table, ins_arr,debug=debug, return_id=return_id, return_id_clumn=return_id_clumn)
+            return self._insertBat(table, ins_arr,debug=debug, return_id=return_id, return_id_clumn=return_id_clumn)
         if len(upd_arr) > 0:
-            self.updateBat(table, upd_arr,debug=debug, return_id=return_id, return_id_clumn=return_id_clumn)
+            self._updateBat(table, upd_arr,debug=debug, return_id=return_id, return_id_clumn=return_id_clumn)
 
+    def delete(self, table, filters, debug=False):
+        """
+        删除数据，支持单条和批量删除
+
+        :param table: 表名
+        :param filters: 删除条件，可以是字典或包含多个字典的列表
+        :param debug: 是否打印SQL语句
+        :return: 删除操作是否成功
+        """
+        if isinstance(filters, dict):
+            return self._deleteSingle(table, filters, debug)
+        elif isinstance(filters, list):
+            return self._deleteBatch(table, filters, debug)
+        else:
+            print("Invalid filters type")
+            return False
+
+    def _deleteSingle(self, table, filters, debug=False):
+        """
+        执行单条删除操作
+
+        :param table: 表名
+        :param filters: 单个删除条件字典
+        :param debug: 是否打印SQL语句
+        :return: 删除操作是否成功
+        """
+        conn = self._getConn()
+        cur = conn.cursor()
+        try:
+            clumns = self.getClumnsByTable(table)
+            conditions = []
+            params = []
+            for key, value in filters.items():
+                if key in clumns:
+                    conditions.append(f"{key} = %s")
+                    params.append(value)
+            conditions_str = " AND ".join(conditions)
+            sql = f"DELETE FROM {table} WHERE {conditions_str}"
+            if debug:
+                self._debugSql(sql, params)
+            sql = self._slimSql(sql)
+            cur.execute(sql, params)
+            conn.commit()
+            return True
+        except Exception as e:
+            conn.rollback()
+            print(str(e))
+            return False
+        finally:
+            if cur:
+                cur.close()
+                self._releaseConn(conn)
+
+    def _deleteBatch(self, table, filters, debug=False):
+        """
+        执行批量删除操作
+
+        :param table: 表名
+        :param filters: 包含多个删除条件的列表
+        :param debug: 是否打印SQL语句
+        :return: 删除操作是否成功
+        """
+        conn = self._getConn()
+        cur = conn.cursor()
+        try:
+            results = []
+            for filters in filters:
+                clumns = self.getClumnsByTable(table)
+                conditions = []
+                params = []
+                for key, value in filters.items():
+                    if key in clumns:
+                        conditions.append(f"{key} = %s")
+                        params.append(value)
+                conditions_str = " AND ".join(conditions)
+                sql = f"DELETE FROM {table} WHERE {conditions_str}"
+                if debug:
+                    self._debugSql(sql, params)
+                sql = self._slimSql(sql)
+                cur.execute(sql, params)
+                results.append(cur.rowcount > 0)
+            conn.commit()
+            return all(results)
+        except Exception as e:
+            conn.rollback()
+            print(str(e))
+            return False
+        finally:
+            if cur:
+                cur.close()
+                self._releaseConn(conn)
 
 
 if __name__ == "__main__":
