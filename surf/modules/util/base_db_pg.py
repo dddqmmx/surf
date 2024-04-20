@@ -228,7 +228,7 @@ class BaseDBPG(object):
                 if return_id:
                     id = cur.fetchone()[0]
                     ids.append(id)
-            result = cur.fetchone()[0] if return_id else True
+            result = ids if return_id else True
             conn.commit()
             return result
         except Exception as e:
@@ -309,7 +309,7 @@ class BaseDBPG(object):
                 if return_id:
                     id = cur.fetchone()[0]
                     ids.append(id)
-            result = cur.fetchone()[0] if return_id else True
+            result = ids if return_id else True
             conn.commit()
             return result
         except Exception as e:
