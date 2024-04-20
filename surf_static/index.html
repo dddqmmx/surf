@@ -6,19 +6,20 @@
     <title>WebSocket Chat</title>
 </head>
 <body>
-    <script>
-        const socket = new WebSocket('ws://127.0.0.1:8000/ws/chat/');
+<!--    <script>-->
+<!--        const socket = new WebSocket('ws://127.0.0.1:8000/ws/chat/');-->
 
-        socket.onmessage = function (e) {
-            const data = JSON.parse(e.data);
-            console.log(data.message);
-        };
+<!--        socket.onmessage = function (e) {-->
+<!--            const data = JSON.parse(e.data);-->
+<!--            console.log(data.message);-->
+<!--        };-->
 
-        socket.onclose = function (e) {
-            console.error('Chat socket closed unexpectedly');
-        };
-        const messageToSend = {'message': 'Hello, WebSocket!'};
-        socket.send(JSON.stringify(messageToSend));
-    </script>
+<!--        socket.onclose = function (e) {-->
+<!--            console.error('Chat socket closed unexpectedly');-->
+<!--        };-->
+<!--        const messageToSend = {'message': 'Hello, WebSocket!'};-->
+<!--        socket.send(JSON.stringify(messageToSend));-->
+<!--    </script>-->
+    <h1>我是傻逼</h1>
 </body>
 </html>

@@ -28,7 +28,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         command = receive_json['command']
         session_id = receive_json['session_id']
         if command in self.func_dict.keys():
-            await self.func_dict.get(command)(session_id)
+            await self.func_dict.get(command)(str(session_id))
 
     async def login(self, session_id: str):
         respond_json = self.user_service.login(session_id)
