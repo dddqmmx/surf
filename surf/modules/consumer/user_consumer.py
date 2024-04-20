@@ -1,13 +1,10 @@
-import base64
 import json
-import traceback
-
-from channels.generic.websocket import AsyncWebsocketConsumer
 
 from surf.modules.consumer.services import UserService
+from surf.modules.util import BaseConsumer
 
 
-class UserConsumer(AsyncWebsocketConsumer):
+class UserConsumer(BaseConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(args, kwargs)
         self.public_key = None
