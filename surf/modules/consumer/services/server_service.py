@@ -104,9 +104,49 @@ class ServerService(object):
                 print('delete error server done')
             return json.dumps(respond_json)
 
-    def create_channel_group(self, filters):
-        pass
+    def create_channel_group(self, text_data):
+        respond_json = {
+            "command": "create_result",
+            "message": False
+        }
+        try:
+            if text_data:
+                filters = text_data.get("channel_group", None)
+                if filters:
+                    group_id = self.__channelModel.save_channel_group(filters)
+                    if group_id is not False:
+                        respond_json["message"] = True
+                    else:
+                        print("create failed")
+                else:
+                    print("params channel_group error")
+            else:
+                print("text_data is empty")
+        except Exception as e:
+            print(f"create channel group error\n{e}\n{traceback.format_exc()}")
+        finally:
+            return json.dumps(respond_json)
 
-    def create_channel(self, filters):
-        pass
+    def create_channel(self, text_data):
+        respond_json = {
+            "command": "create_result",
+            "message": False
+        }
+        try:
+            if text_data:
+                filters = text_data.get("channel", None)
+                if filters:
+                    group_id = self.__channelModel.save_channel(filters)
+                    if group_id is not False:
+                        respond_json["message"] = True
+                    else:
+                        print("create failed")
+                else:
+                    print("params channel_group error")
+            else:
+                print("text_data is empty")
+        except Exception as e:
+            print(f"create channel group error\n{e}\n{traceback.format_exc()}")
+        finally:
+            return json.dumps(respond_json)
     

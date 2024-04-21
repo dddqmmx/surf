@@ -16,7 +16,9 @@ class ServerConsumer(BaseConsumer):
         super().__init__(*args, **kwargs)
         self.server_service = ServerService()
         self.func_dict = {
-            "create_server": self.create_server
+            "create_server": self.create_server,
+            "create_channel_group": self.create_channel_group,
+            "create_channel": self.create_channel
         }
 
     async def connect(self):
@@ -34,4 +36,14 @@ class ServerConsumer(BaseConsumer):
     async def create_server(self, text_data):
         if text_data:
             respond_json = self.server_service.create_server(text_data)
+            await self.send(respond_json)
+
+    async def create_channel_group(self, text_data):
+        if text_data:
+            respond_json = self.server_service.create_channel_group(text_data)
+            await self.send(respond_json)
+
+    async def create_channel(self, text_data):
+        if text_data:
+            respond_json = self.server_service.create_channel(text_data)
             await self.send(respond_json)
