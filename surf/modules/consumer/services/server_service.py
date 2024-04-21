@@ -37,8 +37,8 @@ class ServerService(object):
                 filters = text_data.get("server", None)
                 if filters:
                     if isinstance(filters, dict):
-                        filters["owner_id"] = Session.get_session_by_id(filter["session_id"]).get("user_id")
-                        server_filter = {f"c_{k}": v for k, v in filter.items()}
+                        filters["owner_id"] = Session.get_session_by_id(filters["session_id"]).get("user_id")
+                        server_filter = {f"c_{k}": v for k, v in filters.items()}
                         server_id = self.__serverModel.save_server(server_filter)
                         if server_id:
                             permissions = self.__roleModel.get_all_permissions()
@@ -113,7 +113,7 @@ class ServerService(object):
             if text_data:
                 filters = text_data.get("channel_group", None)
                 if filters:
-                    group_id = self.__channelModel.save_channel_group(filters)
+                    group_id = self.__channelModel.save_channel_group({f"c_{k}": v for k, v in filters.items()})
                     if group_id is not False:
                         respond_json["message"] = True
                     else:
@@ -136,7 +136,7 @@ class ServerService(object):
             if text_data:
                 filters = text_data.get("channel", None)
                 if filters:
-                    group_id = self.__channelModel.save_channel(filters)
+                    group_id = self.__channelModel.save_channel({f"c_{k}": v for k, v in filters.items()})
                     if group_id is not False:
                         respond_json["message"] = True
                     else:
@@ -149,4 +149,3 @@ class ServerService(object):
             print(f"create channel group error\n{e}\n{traceback.format_exc()}")
         finally:
             return json.dumps(respond_json)
-    
