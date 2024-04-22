@@ -159,3 +159,22 @@ class ServerService(object):
             print(f"create channel group error\n{e}\n{traceback.format_exc()}")
         finally:
             return json.dumps(respond_json)
+
+    def add_server_member(self, text_data):
+        respond_json = {
+            "command": "add_result",
+            "message": False
+        }
+        try:
+            if text_data:
+                filters = text_data.get("server_member", None)
+                if filters:
+                    filters['role_id'] = self.__roleModel.get_server_role_by_name(filters)
+                    respond_json["message"] = self.__serverModel.save_server_user(
+                        {f"c_{k}": v for k, v in filters.items()})
+                else:
+                    print("filters is None")
+        except Exception as e:
+            print(f"""{e}\n{traceback.format_exc()}""")
+        finally:
+            return json.dumps(respond_json)
