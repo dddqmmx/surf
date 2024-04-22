@@ -51,11 +51,11 @@ class ServerService(object):
                                 {
                                     "c_server_id": server_id,
                                     "c_name": "普通成员",
-                                    "c_permissions": json.dumps([permissions[0]])
+                                    "c_permissions": json.dumps([permissions[0]['id']])
                                 }
                             ]
                             role_ids = self.__roleModel.create_role(filters)
-                            if len(role_ids) == 2:
+                            if role_ids is not False and len(role_ids) == 2:
                                 filters = {"c_server_id": server_id, "c_user_id": server_filter["c_owner_id"],
                                            "c_roles": json.dumps([role_ids[0]])}
                                 res = self.__serverModel.save_server_user(filters=filters)
@@ -63,7 +63,7 @@ class ServerService(object):
                                     filters = [{"c_server_id": server_id, "c_group_name": "文字频道分组"},
                                                {"c_server_id": server_id, "c_group_name": "语音频道分组"}]
                                     res = self.__channelModel.save_channel_group(filters)
-                                    if len(res) == 2:
+                                    if res is not False and len(res) == 2:
                                         filters = [
                                             {
                                                 "c_group_id": res[0],
