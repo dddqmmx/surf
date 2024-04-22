@@ -26,3 +26,13 @@ class RoleModel(BaseModel):
 
     def create_role(self, filters):
         return self._pg.save("t_roles", filters, return_id=True, return_id_clumn="c_role_id")
+
+    def get_server_role_by_name(self, filters):
+        result = []
+        try:
+            sql = """SELECT c_role_id as id FROM public.t_roles WHERE c_server_id = %s AND c_name = %s"""
+            result = self._pg.query(sql, [filters['server_id'], filters['name']])
+        except Exception as e:
+            print(f"failed to get server's role by id:{e}\n{traceback.format_exc()}")
+        finally:
+            return result
