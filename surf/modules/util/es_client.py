@@ -88,15 +88,13 @@ class ESClient:
                         "_op_type": bulk_type,
                         "_id": item["_id"],
                         "_source": item["_source"],
-                        "_type": item["_type"],
                         "_index": item["_index"],
                     }
                 else:
                     yield {
                         "_id": item["_id"],
                         "_source": item["_source"],
-                        "_type": item["_type"],
                         "_index": item["_index"],
                     }
         except Exception as e:
-            error_msg = f"Function generator error. Error:{e}\n{traceback.format_exc()}"
+            print(f"Function generator error. Error:{e}\n{traceback.format_exc()}")
