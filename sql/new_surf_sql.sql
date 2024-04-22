@@ -212,3 +212,9 @@ INSERT INTO public.t_channel_groups (c_group_id, c_server_id, c_group_name) VALU
 
 INSERT INTO public.t_channels (c_channel_id, c_group_id, c_name, c_type, c_description, c_create_by, c_create_time) VALUES ('aa6cd21b-7080-4e65-9059-8a6a8c303cbb', '97096b43-2de4-43ac-9024-ebb63ed3ec1e', '默认文字频道', 'text', '这是一个文字频道', 'e2cfa16b-c7a3-46f0-9995-22e2ae333e3e', 1713630328);
 INSERT INTO public.t_channels (c_channel_id, c_group_id, c_name, c_type, c_description, c_create_by, c_create_time) VALUES ('0362e80c-839b-4ee6-9e77-c2cb6668c961', '680c0836-58c4-43fb-8fb8-23a2103ffcdd', '默认语音频道', 'voice', '这是一个语音频道', 'e2cfa16b-c7a3-46f0-9995-22e2ae333e3e', 1713630328);
+
+INSERT INTO public.t_channel_chats (c_chat_id, c_channel_id, c_status) VALUES ('2aad344b-30d3-4af4-81ae-64f193fddbda', 'aa6cd21b-7080-4e65-9059-8a6a8c303cbb', 0);
+INSERT INTO public.t_channel_chats (c_chat_id, c_channel_id, c_status) VALUES ('6119b821-8b66-4548-b6e2-cf00cfbbf224', 'aa6cd21b-7080-4e65-9059-8a6a8c303cbb', 0);
+INSERT INTO public.t_channel_chats (c_chat_id, c_channel_id, c_status) VALUES ('9c9f1f7a-673f-45aa-88c1-2a9052f0a5bd', 'aa6cd21b-7080-4e65-9059-8a6a8c303cbb', 0);
+INSERT INTO public.t_channel_chats (c_chat_id, c_channel_id, c_status) VALUES ('4ee9ae41-3458-4e85-919d-cf54087d241a', 'aa6cd21b-7080-4e65-9059-8a6a8c303cbb', 0);
+INSERT INTO public.t_channel_chats (c_chat_id, c_channel_id, c_status) VALUES ('8f33a6b4-4c0c-4c39-b381-9faa1796907a', 'aa6cd21b-7080-4e65-9059-8a6a8c303cbb', 0);
