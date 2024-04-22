@@ -42,12 +42,22 @@ class ServerService(object):
                         server_id = self.__serverModel.save_server(server_filter)
                         if server_id:
                             permissions = self.__roleModel.get_all_permissions()
-                            filters = {"c_server_id": server_id, "c_name": "服务器拥有者",
-                                       "c_permissions": json.dumps([item['id'] for item in permissions])}
-                            role_id = self.__roleModel.create_role(filters)
-                            if role_id:
+                            filters = [
+                                {
+                                    "c_server_id": server_id,
+                                    "c_name": "服务器拥有者",
+                                    "c_permissions": json.dumps([item['id'] for item in permissions])
+                                },
+                                {
+                                    "c_server_id": server_id,
+                                    "c_name": "普通成员",
+                                    "c_permissions": json.dumps([permissions[0]])
+                                }
+                            ]
+                            role_ids = self.__roleModel.create_role(filters)
+                            if len(role_ids) == 2:
                                 filters = {"c_server_id": server_id, "c_user_id": server_filter["c_owner_id"],
-                                           "c_roles": json.dumps([role_id])}
+                                           "c_roles": json.dumps([role_ids[0]])}
                                 res = self.__serverModel.save_server_user(filters=filters)
                                 if res:
                                     filters = [{"c_server_id": server_id, "c_group_name": "文字频道分组"},
