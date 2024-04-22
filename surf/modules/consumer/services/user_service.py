@@ -74,14 +74,19 @@ class UserService(object):
             print(f"""{e}\n{traceback.format_exc()}""")
             return False
 
-    def search_user(self, user_id):
+    def search_user(self, user_id_list):
         respond_json = {
             'command': "search_result",
-            'message': {}
+            'message': [],
+            'status': False
         }
         try:
-            res = self.__userModel.get_userdata_by_userid(user_id)
-            respond_json['message'] = {"user_nickname": res[0]["nickname"], "user_info": res[0]["info"]}
+            if isinstance(user_id_list, list):
+                res = self.__userModel.get_userdata_by_userid(user_id_list)
+                if len(res) > 0:
+                    for item in res:
+                        respond_json['message'].append({"user_nickname": item["nickname"], "user_info": item["info"]})
+                        respond_json['status'] = True
         except Exception as e:
             print(f"""{e}\n{traceback.format_exc()}""")
         finally:
