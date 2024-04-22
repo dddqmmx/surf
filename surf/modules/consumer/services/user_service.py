@@ -52,7 +52,7 @@ class UserService(object):
             session = Session.get_session_by_id(session_id)
             user_id = session.get("user_id")
             if session:
-                res = self.__userModel.get_userdata_by_userid(user_id)
+                res = self.__userModel.get_userdata_by_userid([user_id])
                 if len(res) > 0:
                     user_dict = {
                         "user_nickname": res[0]["nickname"],
