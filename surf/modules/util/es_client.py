@@ -1,4 +1,7 @@
+import traceback
+
 from elasticsearch import Elasticsearch
+
 
 class ESClient:
     _instance = None
@@ -74,3 +77,26 @@ class ESClient:
     def count(self, index, doc_type, body=None):
         self.__ensure_connection()
         return self.es_conn.count(index=index, doc_type=doc_type, body=body)
+
+    def generator(self, data_list, bulk_type=None):
+        # 往ES中插入数据的生成器
+        # bulk_type: create-存在则不更新
+        try:
+            for item in data_list:
+                if bulk_type:
+                    yield {
+                        "_op_type": bulk_type,
+                        "_id": item["_id"],
+                        "_source": item["_source"],
+                        "_type": item["_type"],
+                        "_index": item["_index"],
+                    }
+                else:
+                    yield {
+                        "_id": item["_id"],
+                        "_source": item["_source"],
+                        "_type": item["_type"],
+                        "_index": item["_index"],
+                    }
+        except Exception as e:
+            error_msg = f"Function generator error. Error:{e}\n{traceback.format_exc()}"
