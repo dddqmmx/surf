@@ -30,12 +30,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         pass
 
     async def receive(self, text_data=None, bytes_data=None):
-        receive_json = json.loads(text_data)
-        command = receive_json['command']
-        if 'get_message' == command:
-            pass
-        elif 'send_message' == command:
-            pass
+        text_data = json.loads(text_data)
+        if text_data.get('command', None):
+            await self.func_dict.get(text_data['command'])(text_data)
 
     async def get_message(self, text_data):
         respond_json = {
