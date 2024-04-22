@@ -22,6 +22,9 @@ body = {
             "chat_id": {
                 "type": "keyword"
             },
+            "channel_id": {
+                "type": "keyword"
+            },
             "type": {
                 "type": "text",
                 "fields": {
@@ -38,7 +41,7 @@ body = {
             },
             "chat_time": {
                 "type": "date",
-                "format": "yyyy-MM-dd'T'HH:mm:ss'Z'"
+                "format": "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
             }
         }
     },

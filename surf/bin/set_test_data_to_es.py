@@ -7,6 +7,7 @@ Last Edit Time  :
 """
 import copy
 import datetime
+import time
 import uuid
 
 from elasticsearch import Elasticsearch, helpers
@@ -30,35 +31,43 @@ d1["_source"]["chat_id"] = d1["_id"]
 d1["_source"]["type"] = "text"
 d1["_source"]["content"] = "Hello! How are you today"
 d1["_source"]["user_id"] = "e2cfa16b-c7a3-46f0-9995-22e2ae333e3e"
-d1["_source"]["chat_time"] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
+d1["_source"]["chat_time"] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+
+time.sleep(1)
 
 d2["_id"] = uuid.uuid4()
 d2["_source"]["chat_id"] = d2["_id"]
 d2["_source"]["type"] = "text"
 d2["_source"]["content"] = "ur a giant pussy"
 d2["_source"]["user_id"] = "02c9aba4-44a0-4ddf-8cf2-70c6e5e554d7"
-d2["_source"]["chat_time"] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
+d2["_source"]["chat_time"] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+
+time.sleep(1)
 
 d3["_id"] = uuid.uuid4()
 d3["_source"]["chat_id"] = d3["_id"]
 d3["_source"]["type"] = "img"
 d3["_source"]["content"] = "idk how stage this fucking image,maybe url or data?	"
 d3["_source"]["user_id"] = "e2cfa16b-c7a3-46f0-9995-22e2ae333e3e"
-d3["_source"]["chat_time"] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
+d3["_source"]["chat_time"] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+
+time.sleep(1)
 
 d4["_id"] = uuid.uuid4()
 d4["_source"]["chat_id"] = d4["_id"]
 d4["_source"]["type"] = "text"
 d4["_source"]["content"] = "The only pussy I know is your daughter's"
 d4["_source"]["user_id"] = "02c9aba4-44a0-4ddf-8cf2-70c6e5e554d7"
-d4["_source"]["chat_time"] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
+d4["_source"]["chat_time"] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+
+time.sleep(1)
 
 d5["_id"] = uuid.uuid4()
 d5["_source"]["chat_id"] = d5["_id"]
 d5["_source"]["type"] = "text"
 d5["_source"]["content"] = "if u touch her ill fucking end u	"
 d5["_source"]["user_id"] = "e2cfa16b-c7a3-46f0-9995-22e2ae333e3e"
-d5["_source"]["chat_time"] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
+d5["_source"]["chat_time"] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
 
 new_es_data.append(d1)
 new_es_data.append(d2)
@@ -67,6 +76,7 @@ new_es_data.append(d4)
 new_es_data.append(d5)
 for data in new_es_data:
     data["_index"] = "chat_message"
+    data["_source"]["channel_id"] = "aa6cd21b-7080-4e65-9059-8a6a8c303cbb"
 
 count = helpers.bulk(
                     es,
