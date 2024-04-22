@@ -10,7 +10,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TABLE IF EXISTS t_message_metadata;
+DROP TABLE IF EXISTS t_channel_chats;
 DROP TABLE IF EXISTS t_channel_members;
 DROP TABLE IF EXISTS t_channels;
 DROP TABLE IF EXISTS t_channel_groups;
@@ -112,15 +112,13 @@ CREATE TABLE t_channel_members (
     FOREIGN KEY (c_user_id) REFERENCES t_users(c_user_id) ON DELETE CASCADE
 );
 
-CREATE TABLE t_message_metadata (
-    c_message_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE t_channel_chats (
+    c_chat_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
     c_channel_id VARCHAR(36) NOT NULL,
-    c_user_id VARCHAR(36) NOT NULL,
-    c_message_type VARCHAR(20) NOT NULL,
-    c_timestamp BIGINT NOT NULL,
-    FOREIGN KEY (c_channel_id) REFERENCES t_channels(c_channel_id) ON DELETE CASCADE,
-    FOREIGN KEY (c_user_id) REFERENCES t_users(c_user_id) ON DELETE CASCADE
+    c_status INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY (c_channel_id) REFERENCES t_channels(c_channel_id) ON DELETE CASCADE
 );
+COMMENT ON column t_channel_chats.c_status is '-1->撤回 0->未撤回';
 
 -- 为用户ID和好友ID创建索引以优化查找性能
 CREATE INDEX idx_user_friends_user_id ON t_user_friends (c_user_id);
@@ -141,13 +139,12 @@ CREATE INDEX idx_channel_group_id ON t_channel_groups (c_group_id);
 CREATE INDEX idx_channel_group_id_on_channels ON t_channels (c_group_id);
 -- 为频道ID创建索引
 CREATE INDEX idx_channel_id ON t_channels (c_channel_id);
-CREATE INDEX idx_channel_id_on_messages ON t_message_metadata (c_channel_id);
 
 
 CREATE INDEX idx_audit_logs_timestamp ON t_audit_logs (c_timestamp);
 
-CREATE INDEX idx_message_type ON t_message_metadata (c_message_type);
-CREATE INDEX idx_message_user_id ON t_message_metadata (c_user_id);
+CREATE INDEX idx_message_type ON t_channel_chats (c_chat_id);
+CREATE INDEX idx_channel_id_on_messages ON t_channel_chats (c_channel_id);
 
 
 CREATE OR REPLACE FUNCTION check_permissions_exist()
