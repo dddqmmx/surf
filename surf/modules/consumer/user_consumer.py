@@ -21,14 +21,13 @@ class UserConsumer(BaseConsumer):
         pass
 
     async def receive(self, text_data=None, bytes_data=None):
-        receive_json = json.loads(text_data)
-        command = receive_json['command']
-        session_id = receive_json['session_id']
+        text_data = json.loads(text_data)
+        command = text_data['command']
         if command in self.func_dict.keys():
-            await self.func_dict.get(command)(str(session_id))
+            await self.func_dict.get(command)(text_data)
 
-    async def login(self, session_id: str):
-        respond_json = self.user_service.login(session_id)
+    async def login(self, text_data):
+        respond_json = self.user_service.login(text_data['session_id'])
         if respond_json is not False:
             await self.send(json.dumps(respond_json))
         else:
@@ -36,6 +35,10 @@ class UserConsumer(BaseConsumer):
 
     async def get_user_data(self, session_id: str):
         respond_json = self.user_service.get_user_data(session_id)
+    async def get_user_data(self, text_data):
+        respond_json = self.user_service.get_user_data(text_data['session_id'])
+    async def search_user(self, text_data):
+        respond_json = self.user_service.search_user(text_data['user_id_list'])
         if respond_json is not False:
             await self.send(json.dumps(respond_json))
         else:
