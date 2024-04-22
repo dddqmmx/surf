@@ -11,7 +11,8 @@ class UserConsumer(BaseConsumer):
         self.user_service = UserService()
         self.func_dict = {
             'login': self.login,
-            'get_user_data': self.get_user_data
+            'get_user_data': self.get_user_data,
+            'search_user': self.search_user
         }
 
     async def connect(self):
@@ -33,10 +34,13 @@ class UserConsumer(BaseConsumer):
         else:
             print("登录失败")
 
-    async def get_user_data(self, session_id: str):
-        respond_json = self.user_service.get_user_data(session_id)
     async def get_user_data(self, text_data):
         respond_json = self.user_service.get_user_data(text_data['session_id'])
+        if respond_json is not False:
+            await self.send(json.dumps(respond_json))
+        else:
+            print("获取失败")
+
     async def search_user(self, text_data):
         respond_json = self.user_service.search_user(text_data['user_id_list'])
         if respond_json is not False:
