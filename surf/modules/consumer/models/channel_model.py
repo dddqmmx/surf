@@ -32,3 +32,19 @@ class ChannelModel(BaseModel):
             print(f"""{e}\n{traceback.format_exc()}""")
         finally:
             return res
+
+    def get_channel_by_group_id(self, group_id):
+        res = []
+        try:
+            sql = """
+            SELECT 
+                c_channel_id as id, 
+                c_name as name, 
+                c_type as type,
+                c_description as description
+            FROM t_channels WHERE c_group_id = %s"""
+            res.extend(self._pg.query(sql, [group_id]))
+        except Exception as e:
+            print(f"""{e}\n{traceback.format_exc()}""")
+        finally:
+            return res
