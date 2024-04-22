@@ -8,6 +8,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from surf.appsGlobal import CHAT_TEMP
 from surf.modules.util import BaseModel, Session
 from surf.modules.util import Ec
+
 connectUsers = []
 
 
@@ -37,7 +38,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def get_message(self, text_data):
         respond_json = {
             'command': "get_message_reply'",
-            'type': 1,
+            'type': 0,
             'messages': []
         }
         channel_id = text_data.get('channel_id', None)
@@ -59,8 +60,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "track_scores": True
             }
             chat_list = self.ec.search('chat_message', search_body)['hits']['hits']
-            for chat in chat_list:
-                respond_json['messages'].append(chat['_source'])
+            if chat_list:
+                for chat in chat_list:
+                    respond_json['messages'].append(chat['_source'])
+                respond_json['type'] = text_data['message']['type']
+
         await self.send(text_data=json.dumps(respond_json))
 
     async def send_message(self, text_data):
@@ -81,3 +85,24 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             'message': text_data['message']['content']
                         })
                     )
+
+
+if __name__ == "__main__":
+    search_body = {
+        "query": {
+            "match": {
+                "channel_id": 'aa6cd21b-7080-4e65-9059-8a6a8c303cbb'
+            }
+        },
+        "sort": [
+            {
+                "chat_time": {
+                    "order": "asc"
+                }
+            }
+        ],
+        "size": 20,
+        "track_scores": True
+    }
+    chat_list = Ec().search('chat_message', search_body)['hits']['hits']
+    print(chat_list)
