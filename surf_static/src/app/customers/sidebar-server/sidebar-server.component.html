@@ -1,11 +1,21 @@
 <div class="channel-info-container">
-  <h2>{{ channelInfo.server_nane }}</h2>
-  <div *ngFor="let channelClass of channelInfo.channel_classes" class="channel-class">
-    <h3 class="channel-class-title">{{ channelClass.channel_class_name }}</h3>
-    <ul class="channel-list">
-      <li *ngFor="let channel of channelClass.channels" class="channel">
-        {{ channel.channel_name }} - {{ channel.channel_type }}
-      </li>
-    </ul>
-  </div>
+    <div style="    padding: 20px;border-bottom: #2b2b2b solid 2px">
+        <h2>{{ channelInfo.server_nane }}</h2>
+        <div class="menu-container">
+            <div class="menu-item">踢出频道主</div>
+            <div class="menu-item">邀请他人</div>
+            <div class="menu-item">编辑服务资料</div>
+        <div class="menu-item">离开服务器</div>
+        </div>
+    </div>
+
+
+    <div style="    padding: 20px;" *ngFor="let channelClass of channelInfo.channel_classes" class="channel-class">
+        <h3 class="channel-class-title">{{ channelClass.channel_class_name }}</h3>
+        <ul class="channel-list">
+            <li *ngFor="let channel of channelClass.channels" class="channel">
+                {{ channel.channel_name }} - {{ channel.channel_type }}
+            </li>
+        </ul>
+    </div>
 </div>
