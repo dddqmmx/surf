@@ -10,7 +10,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TABLE IF EXISTS t_message_metadata;
+DROP TABLE IF EXISTS t_channel_chats;
 DROP TABLE IF EXISTS t_channel_members;
 DROP TABLE IF EXISTS t_channels;
 DROP TABLE IF EXISTS t_channel_groups;
@@ -112,15 +112,13 @@ CREATE TABLE t_channel_members (
     FOREIGN KEY (c_user_id) REFERENCES t_users(c_user_id) ON DELETE CASCADE
 );
 
-CREATE TABLE t_message_metadata (
-    c_message_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE t_channel_chats (
+    c_chat_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
     c_channel_id VARCHAR(36) NOT NULL,
-    c_user_id VARCHAR(36) NOT NULL,
-    c_message_type VARCHAR(20) NOT NULL,
-    c_timestamp BIGINT NOT NULL,
-    FOREIGN KEY (c_channel_id) REFERENCES t_channels(c_channel_id) ON DELETE CASCADE,
-    FOREIGN KEY (c_user_id) REFERENCES t_users(c_user_id) ON DELETE CASCADE
+    c_status INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY (c_channel_id) REFERENCES t_channels(c_channel_id) ON DELETE CASCADE
 );
+COMMENT ON column t_channel_chats.c_status is '-1->撤回 0->未撤回';
 
 -- 为用户ID和好友ID创建索引以优化查找性能
 CREATE INDEX idx_user_friends_user_id ON t_user_friends (c_user_id);
@@ -141,13 +139,12 @@ CREATE INDEX idx_channel_group_id ON t_channel_groups (c_group_id);
 CREATE INDEX idx_channel_group_id_on_channels ON t_channels (c_group_id);
 -- 为频道ID创建索引
 CREATE INDEX idx_channel_id ON t_channels (c_channel_id);
-CREATE INDEX idx_channel_id_on_messages ON t_message_metadata (c_channel_id);
 
 
 CREATE INDEX idx_audit_logs_timestamp ON t_audit_logs (c_timestamp);
 
-CREATE INDEX idx_message_type ON t_message_metadata (c_message_type);
-CREATE INDEX idx_message_user_id ON t_message_metadata (c_user_id);
+CREATE INDEX idx_message_type ON t_channel_chats (c_chat_id);
+CREATE INDEX idx_channel_id_on_messages ON t_channel_chats (c_channel_id);
 
 
 CREATE OR REPLACE FUNCTION check_permissions_exist()
@@ -189,10 +186,3 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER trigger_check_permissions
 BEFORE INSERT OR UPDATE ON t_roles
 FOR EACH ROW EXECUTE FUNCTION check_permissions_exist();
-
-
-INSERT INTO t_users(c_user_id, c_nickname, c_public_key, c_user_info) VALUES ('e2cfa16b-c7a3-46f0-9995-22e2ae333e3e','80e6701cacfccc7e5c0b1767a466b993','LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQ0lqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FnOEFNSUlDQ2dLQ0FnRUF1YXNhRHcxVnpmeTJKU3BnVTMrRApEeTB0QzVadXFNSjhOanpnQk85UEtBcVU4QXdiem1WdEY5M0tieU8xd0xSTGJySXkxR0tJVlBkd0ZwOVVuNlZ2ClJNeHIxQ0hmRHY2WFFpYUpmbjJLZ1FaQ1lDcmo4REorcG84N2FneVF3R2s2ZEpDc2ZNOHoxenNqZ3dQQkxyTHMKcHo4aWZGcGNJUkkvWDF1a3RUS1JzaHhWVkh0OGtYYjVrRDl6SUM1ekRRcVBMeVc1TnFoUFZEbU1UdnFvdG05SwpicllqSnltbi9xaTJuVGplcDNaKzFxbHp5NmdPRXF4S3pralZwd1lyMlNsbWFEQU5iT2RKanJuQVdsNHFVNXN3CnorMzRWTklkaHJTSnhXRjBRR2MzaU82UENZS29mYWVsUWJYZjI3UTF5Uk1TdTYxL0hqdmhWUWNvTnYxeTFQT2cKSllkb2xiREwwYW9pWFNXOWZOK2hHd3RmZjczdjIwemV1N3RGWWowbTViczFFd3JvK2RjUjZsQmFUUHBRZnZDLwpydWVKaHpNZzAvZ3hvTFFBakI3eTlNVnVQYTNEUFVpSVFpdktHeGtUN3ZKdlN5WGdCb29KOHZiNE16dElIb1BGCngxb3RmQ05PajhVdGlwdG4rOFFTUXZ0UXJFdklZdVpaOERnSUd1NmtRVzFEMzZhRG1iVFdra00vTUw3UmRGN20KMVpOb3JBMzFnT3JQWnByTlRQUzlxRWtTY2x4dWxoZ3VHd2ZYUEcwTlk0NVZxNlhoUW1MR0NGMFVaWHhrRXllagpXdStKVjE0ZTJRNUlzTTdtaFpOQlp5SjRxSjZ1MFQxZ0RUMnZWWDN1a1o2dmtnNlZrWDdxTFFNRDk1Z0cwZjdpCnBKMXRQWTVzMG1oTmRUSUpvODBzTk5zQ0F3RUFBUT09Ci0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo=','{"email": "woshishabi@gmail.com", "phone": "1145141919810"}')
-
-INSERT INTO t_permissions (c_permission_id, c_description) VALUES (1, 'Permission 1');
-INSERT INTO t_permissions (c_permission_id, c_description) VALUES (2, 'Permission 2');
-INSERT INTO t_permissions (c_permission_id, c_description) VALUES (3, 'Permission 3');

@@ -245,8 +245,9 @@ class BaseDBPG(object):
         for k, v in filters.items():
             if k not in clumns:
                 del_keys.append(k)
-                del filters[k]
         if len(del_keys) > 0:
+            for k in del_keys:
+                del filters[k]
             print(del_keys)
         return filters
 

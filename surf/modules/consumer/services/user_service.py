@@ -6,6 +6,7 @@ File Name       : user_service
 Project Name    : surf-extreme
 Last Edit Time  : 
 """
+import json
 import traceback
 
 from surf.modules.util import Session
@@ -51,7 +52,7 @@ class UserService(object):
             session = Session.get_session_by_id(session_id)
             user_id = session.get("user_id")
             if session:
-                res = self.__userModel.get_userdata_by_userid(user_id)
+                res = self.__userModel.get_userdata_by_userid([user_id])
                 if len(res) > 0:
                     user_dict = {
                         "user_nickname": res[0]["nickname"],
@@ -72,3 +73,21 @@ class UserService(object):
         except Exception as e:
             print(f"""{e}\n{traceback.format_exc()}""")
             return False
+
+    def search_user(self, user_id_list):
+        respond_json = {
+            'command': "search_result",
+            'message': [],
+            'status': False
+        }
+        try:
+            if isinstance(user_id_list, list):
+                res = self.__userModel.get_userdata_by_userid(user_id_list)
+                if len(res) > 0:
+                    for item in res:
+                        respond_json['message'].append({"user_nickname": item["nickname"], "user_info": item["info"]})
+                        respond_json['status'] = True
+        except Exception as e:
+            print(f"""{e}\n{traceback.format_exc()}""")
+        finally:
+            return json.dumps(respond_json)
