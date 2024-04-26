@@ -76,7 +76,7 @@ class UserService(object):
 
     def search_user(self, user_id_list):
         respond_json = {
-            'command': "search_result",
+            'command': "search_user_result",
             'message': [],
             'status': False
         }
