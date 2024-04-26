@@ -47,32 +47,34 @@ class UserService(object):
             print(f"""{e}\n{traceback.format_exc()}""")
             return False
 
-    def get_user_data(self, session_id):
+    def get_user_data(self, text_data):
+        respond_json = {
+            'command': f"{text_data['command']}_result",
+            'message': {}
+        }
         try:
-            session = Session.get_session_by_id(session_id)
-            user_id = session.get("user_id")
+            session = Session.get_session_by_id(text_data['session_id'])
             if session:
+                user_id = session.get("user_id")
                 res = self.__userModel.get_userdata_by_userid([user_id])
                 if len(res) > 0:
                     user_dict = {
                         "user_nickname": res[0]["nickname"],
-                        "user_info": res[0]["info"]
+                        "user_info": res[0]["info"],
+                        'servers': []
                     }
-                    respond_json = {
-                        'command': "user_data",
-                        'message': [
-                            {
-                                "user": user_dict,
-                                "servers": []
-                            }
-                        ]
-                    }
-                    return respond_json
+                    respond_json['message']['user'] = user_dict
+                    servers = ServerService().get_servers_by_user(text_data)
+                    servers = json.loads(servers)
+                    if servers['status']:
+                        respond_json['message']['user']['servers'] = servers['message']
                 else:
                     return False
         except Exception as e:
             print(f"""{e}\n{traceback.format_exc()}""")
             return False
+        finally:
+            return json.dumps(respond_json)
 
     def search_user(self, user_id_list):
         respond_json = {
