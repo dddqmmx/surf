@@ -35,7 +35,7 @@ class UserModel(BaseModel):
                 else:
                     return []
         except Exception as e:
-            print(f"""get user data by userid fails, userid: {user_id}\n{e}\n{traceback.format_exc()}""")
+            print(f"""get user data by userid fails, users: {user_id_list}\n{e}\n{traceback.format_exc()}""")
         finally:
             return res
 
