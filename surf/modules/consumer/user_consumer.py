@@ -12,7 +12,8 @@ class UserConsumer(BaseConsumer):
         self.func_dict = {
             'login': self.login,
             'get_user_data': self.get_user_data,
-            'search_user': self.search_user
+            'search_user': self.search_user,
+            'get_friends': self.get_friends
         }
 
     async def connect(self):

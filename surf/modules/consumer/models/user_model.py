@@ -41,3 +41,13 @@ class UserModel(BaseModel):
 
     def save_user(self, filters: dict, primary="c_user_id") -> str or bool:
         self._pg.save("t_users", filters, primary, return_id=True, return_id_clumn="c_user_id")
+
+    def get_friends_by_user_id(self, user_id):
+        res = []
+        try:
+            sql = """SELECT c_friend_id as id FROM t_user_friends WHERE c_user_id = %s"""
+            res.extend(self._pg.query(sql, [user_id]))
+        except Exception as e:
+            print(f"""get user friends by userid fails, user: {user_id}\n{e}\n{traceback.format_exc()}""")
+        finally:
+            return res

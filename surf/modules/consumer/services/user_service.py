@@ -11,6 +11,7 @@ import traceback
 
 from surf.modules.util import Session
 from surf.modules.consumer.models import UserModel
+from .server_service import ServerService
 
 
 class UserService(object):
@@ -91,5 +92,31 @@ class UserService(object):
                         respond_json['status'] = True
         except Exception as e:
             print(f"""{e}\n{traceback.format_exc()}""")
+        finally:
+            return json.dumps(respond_json)
+
+    def get_friends(self, text_data):
+        respond_json = {
+            'command': f"{text_data['command']}_result",
+            'message': [],
+            'status': False
+        }
+        try:
+            session = Session.get_session_by_id(text_data['session_id'])
+            if session:
+                user_id = session.get("user_id")
+                friend_list = self.__userModel.get_friends_by_user_id(user_id)
+                if len(friend_list) > 0:
+                    user_list = self.__userModel.get_userdata_by_userid([item['id'] for item in friend_list])
+                    if len(user_list) > 0:
+                        respond_json['message'] = user_list
+                        respond_json['status'] = True
+                    else:
+                        return False
+                else:
+                    return False
+        except Exception as e:
+            print(f"""{e}\n{traceback.format_exc()}""")
+            return False
         finally:
             return json.dumps(respond_json)
