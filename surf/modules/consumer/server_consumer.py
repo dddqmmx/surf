@@ -19,7 +19,7 @@ class ServerConsumer(BaseConsumer):
             "create_server": self.create_server,
             "create_channel_group": self.create_channel_group,
             "create_channel": self.create_channel,
-            "search_servers_by_user": self.search_servers_by_user
+            "get_server_details": self.get_server_details
         }
 
     async def connect(self):
@@ -49,7 +49,7 @@ class ServerConsumer(BaseConsumer):
             respond_json = self.server_service.create_channel(text_data)
             await self.send(respond_json)
 
-    async def search_servers_by_user(self, text_data):
+    async def get_server_details(self, text_data):
         if text_data:
-            respond_json = self.server_service.search_servers_by_user(text_data)
+            respond_json = self.server_service.get_server_details(text_data)
             await self.send(respond_json)
