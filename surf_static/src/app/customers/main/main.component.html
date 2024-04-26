@@ -6,8 +6,10 @@
             </div>
             <div style="margin-top: 10px;margin-bottom: 10px;height: 1px;width: 48px;background: white"></div>
             <div *ngFor="let serverInfo of servers" class="avatar-container" style="margin-top: 10px;margin-bottom: 10px;">
+              <div class="avatar-wrapper">
                 <img class="avatar" src="assets/mike1.jpg" height="48" width="48">
                 <p class="name">{{ serverInfo.server_name }}</p>
+              </div>
             </div>
             <div>
                 <img class="avatar" (click)="toggleChatPopup()" style="border-radius: 50%;background: #36393f" src="assets/add_FILL0_wght400_GRAD0_opsz24.svg" height="48" width="48">
@@ -27,19 +29,46 @@
 </div>
 
 <!-- 聊天弹窗 -->
-<div *ngIf="chatPopupVisible" id="chatPopup" class="chat-popup">
+<div *ngIf="chatPopupVisible" id="chatPopup" class="creat-server-popup">
   <button class="close-btn" (click)="toggleChatPopup()">X</button>
-  <div class="chat-header">
+  <div class="creat-server-header">
     <h2>创建服务器</h2>
   </div>
   <div class="preview-container" id="previewContainer">
-      <input type="file" style="display: none" accept="image/*" class="chat-input" id="fileInput" (change)="onFileSelected($event)">
+      <input type="file" style="display: none" accept="image/*" class="creat-server-input" id="fileInput" (change)="onFileSelected($event)">
       <div class="drag-drop-area" id="dragDropArea" (click)="openFileInput()">拖拽或点击上传</div>
-      <img id="preview" class="preview-image" src="favicon.ico" alt="预览图像">
+      <img *ngIf="previewImageUrl" [src]="previewImageUrl" id="preview" class="preview-image" alt="预览图像">
   </div>
-  <input type="text" class="chat-input" placeholder="服务器名称">
-  <input type="text" class="chat-input" placeholder="注释">
-  <button type="button" (click)="createServer()" class="chat-send-btn">创建</button>
+  <input type="text" class="creat-server-input" placeholder="服务器名称" [(ngModel)]="serverName">
+  <input type="text" class="creat-server-input" placeholder="注释" [(ngModel)]="serverDescription">
+  <button type="button" (click)="createServer()" class="creat-server-send-btn">创建</button>
 </div>
 
+<div *ngIf="selectUserPopupVisible" id="selectUserPopup" class="creat-server-popup">
+  <button class="close-btn" (click)="toggleChatPopup()">X</button>
+  <div class="chat-header">
+    <h2 style="white-space: nowrap;">邀请朋友加入[servername]</h2>
+  </div>
+  <div style="margin-top: 20px;">
+    <input type="text" class="search-input" placeholder="通过ID搜索">
+    <button class="search-btn">搜索</button>
+  </div>
+  <div class="user-list">
+    <div class="user-item">
+      <img src="assets/b_ded967904aa4a52c837ba3bb3139ca99.png" alt="大空スバル" height="48" width="48">
+      <span>大空スバル</span>
+      <button class="invite-btn">邀请</button>
+    </div>
+    <div class="user-item">
+      <img src="assets/img.png" alt="桐生一馬" height="48" width="48">
+      <span>桐生一馬</span>
+      <button class="invite-btn">邀请</button>
+    </div>
+    <div class="user-item">
+      <img src="assets/q823E-P8_400x400.jpg" alt="小島秀夫" height="48" width="48">
+      <span>小島秀夫</span>
+      <button class="invite-btn">邀请</button>
+    </div>
+  </div>
+</div>
 

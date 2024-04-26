@@ -13,7 +13,7 @@ import {NgForOf} from "@angular/common";
 export class SidebarServerComponent {
     channelInfo =
         {
-            "server_nane":"桐生可可粉丝群",
+            "server_nane":"桐生可可粉丝频道",
             "server_icon":"",
             "channel_classes":[
                 {
