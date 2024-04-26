@@ -40,7 +40,7 @@ class UserService(object):
                         'command': 'to_url',
                         'url': 'main'
                     }
-                    return respond_json
+                    return json.dumps(respond_json)
                 else:
                     return False
         except Exception as e:
