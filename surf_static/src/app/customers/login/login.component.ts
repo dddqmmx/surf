@@ -117,7 +117,7 @@ export class LoginComponent {
                 if (command == "to_url"){
                     const url = json.url;
                     if (url == 'main'){
-                        self.router.navigate(['main']);
+                        self.router.navigate(['main/chat']);
                         self.socket?.close();
                     }
                 }

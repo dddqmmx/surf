@@ -1,18 +1,31 @@
-import { Component } from '@angular/core';
-import {NgForOf} from "@angular/common";
+import {Component, EventEmitter, Output, ViewChild} from '@angular/core';
+import {NgForOf, NgIf} from "@angular/common";
+import {MainComponent} from "../main/main.component";
 
 @Component({
   selector: 'app-sidebar-server',
   standalone: true,
     imports: [
-        NgForOf
+        NgForOf,
+        NgIf
     ],
   templateUrl: './sidebar-server.component.html',
   styleUrl: './sidebar-server.component.css'
 })
 export class SidebarServerComponent {
-    channelInfo =
-        {
+
+
+    @Output() selectUserPopup = new EventEmitter();
+
+    toggleSelectUserPopup() {
+        this.selectUserPopup.emit();
+    }
+
+    menuVisible = false;
+    toggleMenu(){
+        this.menuVisible = !this.menuVisible;
+    }
+    channelInfo = {
             "server_nane":"桐生可可粉丝频道",
             "server_icon":"",
             "channel_classes":[
@@ -24,7 +37,7 @@ export class SidebarServerComponent {
                             "channel_type":"text"
                         },
                         {
-                            "channel_name":"对骂",
+                            "channel_name":"文字",
                             "channel_type":"text"
                         }
                     ]
@@ -33,7 +46,7 @@ export class SidebarServerComponent {
                     "channel_class_name":"语音聊天",
                     "channels":[
                         {
-                            "channel_name":"语音对骂",
+                            "channel_name":"语音",
                             "channel_type":"voice"
                         }
                     ]

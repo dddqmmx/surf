@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, input, OnInit} from '@angular/core';
 import {NgForOf, NgIf} from "@angular/common";
 import {CryptoService} from "../../services/crypto/crypto.service";
 import {LocalDataService} from "../../services/local_data/local-data.service";
@@ -23,36 +23,21 @@ import {FormsModule} from "@angular/forms";
 })
 export class MainComponent implements OnInit{
 
-    chatPopupVisible = false;
-    selectUserPopupVisible = true;
+    creatServerPopupVisible = false;
+    selectUserPopupVisible = false;
 
-    toggleChatPopup() {
-      this.chatPopupVisible = !this.chatPopupVisible;
+    toggleCreatServerPopup() {
+      this.creatServerPopupVisible = !this.creatServerPopupVisible;
+    }
+    toggleSelectUserPopup() {
+      this.selectUserPopupVisible = !this.selectUserPopupVisible;
+
     }
     constructor(private cryptoService: CryptoService,private localDataService:LocalDataService,private router: Router) {
             this.cryptoService = cryptoService;
             this.localDataService = localDataService;
     }
-    servers=[
-        {"server_name":"Hololive"},
-        {"server_name":"如龙频道"},
-    ];
-    data = {
-        objects: [
-            {
-                user: {
-                    user_nickname: "兎田ぺこら",
-                    user_info: {"email": "woshishabi@gmail.com", "phone": "1145141919810"}
-                },
-            },
-            {
-                user: {
-                    user_nickname: "白上フブキ",
-                    user_info: {"email": "woshishabi@gmail.com", "phone": "1145141919810"}
-                },
-            }
-        ]
-    };
+    servers: any[]=[];
     getUserData(){
         const self = this;
         const socket = new WebSocket('ws://'+this.localDataService.serverAddress+'/ws/user/');
@@ -61,7 +46,50 @@ export class MainComponent implements OnInit{
                 'command': 'get_user_data',
                 'session_id': self.cryptoService.session,
             }
-            socket.send(JSON.stringify(requestJson));
+            this.send(JSON.stringify(requestJson));
+        }
+        socket.onclose = function (e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+        socket.onmessage = function (e: { data: any; }) {
+            const json = JSON.parse(e.data)
+            const servers = json.message.user.servers;
+            for (const server of servers){
+                self.servers.push(server)
+            }
+        };
+    }
+    getFriends(){
+        const self = this;
+        const socket = new WebSocket('ws://'+this.localDataService.serverAddress+'/ws/user/');
+        socket.onopen = function () {
+            const requestJson = {
+                'command': 'get_friends',
+                'session_id': self.cryptoService.session,
+            }
+            this.send(JSON.stringify(requestJson));
+        }
+        socket.onclose = function (e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+        socket.onmessage = function (e: { data: any; }) {
+            const json = JSON.parse(e.data)
+            console.log("dddd"+json)
+        };
+    }
+
+    inputUserId = ""
+
+    invitationList:any = []
+    searchUser(){
+        const self = this;
+        const socket = new WebSocket('ws://'+this.localDataService.serverAddress+'/ws/user/');
+        socket.onopen = function () {
+            const requestJson = {
+                'command': 'search_user',
+                'user_id_list':[self.inputUserId]
+            }
+            this.send(JSON.stringify(requestJson));
         }
         socket.onclose = function (e) {
             console.error('Chat socket closed unexpectedly');
@@ -69,11 +97,17 @@ export class MainComponent implements OnInit{
         socket.onmessage = function (e: { data: any; }) {
             const json = JSON.parse(e.data)
             console.log(json)
+            self.invitationList.slice()
+            for (const userInfo of json.message) {
+                self.invitationList.push(userInfo)
+            }
+
         };
     }
 
     ngOnInit(): void {
         this.getUserData();
+        // this.getFriends();
     }
     previewImageUrl: string = ''; // 存储预览图像的URL
     // 打开文件选择对话框

@@ -37,13 +37,6 @@ class Session:
         redis_client.expire(session_id, 3600)
         return redis_client.exists(session_id)
 
-    # @classmethod
-    # def get_session_by_id(cls, session_id):
-    #     if cls.is_session_exist(session_id):
-    #         return cls.sessions.get(session_id)
-    #     else:
-    #         return None
-
     def is_session_active(self):
         redis_client.expire(self.session_id, 3600)
         return redis_client.exists(self.session_id)
