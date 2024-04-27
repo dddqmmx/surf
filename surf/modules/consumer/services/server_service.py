@@ -27,7 +27,7 @@ class ServerService(object):
                 is_private: true
         """
         respond_json = {
-            "command": "create_result",
+            "command": f"{text_data['command']}_result",
             "message": False
         }
         error_flag = False
@@ -116,7 +116,7 @@ class ServerService(object):
 
     def create_channel_group(self, text_data):
         respond_json = {
-            "command": "create_result",
+            "command": f"{text_data['command']}_result",
             "message": False
         }
         try:
@@ -139,7 +139,7 @@ class ServerService(object):
 
     def create_channel(self, text_data):
         respond_json = {
-            "command": "create_result",
+            "command": f"{text_data['command']}_result",
             "message": False
         }
         try:
@@ -162,7 +162,7 @@ class ServerService(object):
 
     def add_server_member(self, text_data):
         respond_json = {
-            "command": "add_result",
+            "command": f"{text_data['command']}_result",
             "message": False
         }
         try:
@@ -179,9 +179,31 @@ class ServerService(object):
         finally:
             return json.dumps(respond_json)
 
-    def search_servers_by_user(self, text_data):
+    def get_server_details(self, text_data):
         respond_json = {
-            'command': 'search_result',
+            'command': f'{text_data["command"]}_result',
+            'message': [],
+            'status': False
+        }
+        try:
+            server_dict = self.__serverModel.get_server_details(text_data['server_id'])[0]
+            server_dict['channel_groups'] = []
+            channel_group_list = self.__channelModel.get_channel_group_by_server_id(text_data['server_id'])
+            if len(channel_group_list) > 0:
+                for channel_group in channel_group_list:
+                    channel_group_dict = {k: v for k, v in channel_group.items()}
+                    channel_group_dict['channels'] = self.__channelModel.get_channel_by_group_id(channel_group_dict['id'])
+                    server_dict['channel_groups'].append(channel_group_dict)
+            respond_json['message'].append(server_dict)
+            respond_json['status'] = True
+        except Exception as e:
+            print(f"""{e}\n{traceback.format_exc()}""")
+        finally:
+            return json.dumps(respond_json)
+
+    def get_servers_by_user(self, text_data):
+        respond_json = {
+            'command': f'{text_data["command"]}_result',
             'message': [],
             'status': False
         }
@@ -193,13 +215,6 @@ class ServerService(object):
                 server_list = self.__serverModel.get_servers_by_user_id(user_id)
                 for server in server_list:
                     server_dict = self.__serverModel.get_server_details(server['id'])[0]
-                    server_dict['channel_groups'] = []
-                    channel_group_list = self.__channelModel.get_channel_group_by_server_id(server['id'])
-                    if len(channel_group_list) > 0:
-                        for channel_group in channel_group_list:
-                            channel_group_dict = {k: v for k, v in channel_group.items()}
-                            channel_group_dict['channels'] = self.__channelModel.get_channel_by_group_id(channel_group_dict['id'])
-                            server_dict['channel_groups'].append(channel_group_dict)
                     respond_json['message'].append(server_dict)
                 respond_json['status'] = True
             else:

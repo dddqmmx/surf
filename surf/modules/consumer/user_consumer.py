@@ -1,4 +1,4 @@
-import json
+import orjson as json
 
 from surf.modules.consumer.services import UserService
 from surf.modules.util import BaseConsumer
@@ -12,7 +12,8 @@ class UserConsumer(BaseConsumer):
         self.func_dict = {
             'login': self.login,
             'get_user_data': self.get_user_data,
-            'search_user': self.search_user
+            'search_user': self.search_user,
+            'get_friends': self.get_friends
         }
 
     async def connect(self):
@@ -30,20 +31,28 @@ class UserConsumer(BaseConsumer):
     async def login(self, text_data):
         respond_json = self.user_service.login(text_data['session_id'])
         if respond_json is not False:
-            await self.send(json.dumps(respond_json))
+            await self.send(respond_json)
         else:
             print("登录失败")
 
     async def get_user_data(self, text_data):
-        respond_json = self.user_service.get_user_data(text_data['session_id'])
+        respond_json = self.user_service.get_user_data(text_data)
         if respond_json is not False:
-            await self.send(json.dumps(respond_json))
+            await self.send(respond_json)
         else:
             print("获取失败")
 
     async def search_user(self, text_data):
         respond_json = self.user_service.search_user(text_data['user_id_list'])
         if respond_json is not False:
-            await self.send(json.dumps(respond_json))
+            await self.send(respond_json)
+        else:
+            print("获取失败")
+
+    async def get_friends(self, text_data):
+        respond_json = self.user_service.get_friends(text_data)
+        if respond_json is not False:
+            await self.send(respond_json)
+            print('get_friends done')
         else:
             print("获取失败")

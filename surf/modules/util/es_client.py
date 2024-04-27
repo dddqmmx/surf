@@ -1,6 +1,6 @@
 import traceback
 
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, helpers
 
 
 class ESClient:
@@ -72,7 +72,7 @@ class ESClient:
 
     def bulk(self, actions):
         self.__ensure_connection()
-        return self.es_conn.bulk(actions)
+        return helpers.bulk(self.es_conn, actions)
 
     def count(self, index, doc_type, body=None):
         self.__ensure_connection()

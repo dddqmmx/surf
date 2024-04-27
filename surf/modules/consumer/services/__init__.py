@@ -8,3 +8,4 @@ Last Edit Time  :
 """
 from .user_service import UserService
 from .server_service import ServerService
+from .chat_service import ChatService
