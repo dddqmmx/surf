@@ -8,6 +8,7 @@ Last Edit Time  :
 """
 import traceback
 
+from surf.appsGlobal import logger
 from surf.modules.util import BaseModel
 
 
@@ -21,7 +22,7 @@ class UserModel(BaseModel):
             sql = "SELECT c_user_id as id FROM public.t_users WHERE c_public_key = %s"
             res = self._pg.query(sql, [public_key])
         except Exception as e:
-            print(f"""get userid by user's public_key fails, key:{public_key}\n{e}\n{traceback.format_exc()}""")
+            logger.error(f"""get userid by user's public_key fails, key:{public_key}\n{e}\n{traceback.format_exc()}""")
         finally:
             return res
 
@@ -35,7 +36,7 @@ class UserModel(BaseModel):
                 else:
                     return []
         except Exception as e:
-            print(f"""get user data by userid fails, users: {user_id_list}\n{e}\n{traceback.format_exc()}""")
+            logger.error(f"""get user data by userid fails, users: {user_id_list}\n{e}\n{traceback.format_exc()}""")
         finally:
             return res
 
@@ -48,6 +49,6 @@ class UserModel(BaseModel):
             sql = """SELECT c_friend_id as id FROM t_user_friends WHERE c_user_id = %s"""
             res.extend(self._pg.query(sql, [user_id]))
         except Exception as e:
-            print(f"""get user friends by userid fails, user: {user_id}\n{e}\n{traceback.format_exc()}""")
+            logger.error(f"""get user friends by userid fails, user: {user_id}\n{e}\n{traceback.format_exc()}""")
         finally:
             return res

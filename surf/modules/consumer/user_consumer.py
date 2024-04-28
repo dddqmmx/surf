@@ -43,7 +43,7 @@ class UserConsumer(BaseConsumer):
             print("获取失败")
 
     async def search_user(self, text_data):
-        respond_json = self.user_service.search_user(text_data['user_id_list'])
+        respond_json = self.user_service.search_user(text_data)
         if respond_json is not False:
             await self.send(respond_json)
         else:

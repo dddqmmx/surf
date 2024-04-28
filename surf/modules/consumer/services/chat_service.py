@@ -8,12 +8,13 @@ Last Edit Time  :
 """
 import copy
 import datetime
-import json
 import traceback
 import uuid
 
-from surf.appsGlobal import CHAT_TEMP
+from surf.appsGlobal import CHAT_TEMP, get_logger, setResult, errorResult
 from surf.modules.util import Ec, Session
+
+logger = get_logger('chat_service')
 
 
 class ChatService(object):
@@ -22,11 +23,6 @@ class ChatService(object):
         pass
 
     def get_message(self, text_data):
-        respond_json = {
-            'command': f"{text_data['command']}_result",
-            'type': 0,
-            'messages': []
-        }
         try:
             channel_id = text_data.get('channel_id', None)
             if channel_id:
@@ -48,18 +44,14 @@ class ChatService(object):
                 }
                 chat_list = self.ec.search('chat_message', search_body)['hits']['hits']
                 if chat_list:
-                    respond_json['messages'] = [chat['_source'] for chat in chat_list]
-                    respond_json['type'] = text_data['type']
+                    messages = [chat['_source'] for chat in chat_list]
+                    type = text_data['type']
+                    return setResult(command=f"{text_data['command']}_result", data=messages, extra_col=[{"type": type}])
         except Exception as e:
-            print(f"""{e}\n{traceback.format_exc()}""")
-        finally:
-            return json.dumps(respond_json)
+            logger.error(f"""获取消息失败\n{e}\n{traceback.format_exc()}""")
+        return errorResult(f"{text_data['command']}_result", '获取消息失败')
 
     def send_message(self, text_data):
-        respond_json = {
-            'command': 'send_message_result',
-            'message': False
-        }
         try:
             if text_data.get('session_id', None) and text_data.get('message', None):
                 session = Session.get_session_by_id(text_data["session_id"])
@@ -72,11 +64,6 @@ class ChatService(object):
                 filters['_source']['chat_time'] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
                 count = self.ec.bulk(self.ec.generator([filters], 'create'))
                 if count[0] == 1:
-                    respond_json = {
-                                'command': 'new_message',
-                                'message': filters['_source']
-                            }
+                    return setResult('new_message', filters['_source'])
         except Exception as e:
-            print(f"""{e}\n{traceback.format_exc()}""")
-        finally:
-            return json.dumps(respond_json)
+            logger(f"""发送消息失败\n{e}\n{traceback.format_exc()}""")

@@ -10,6 +10,7 @@ import traceback
 
 from surf.modules.consumer.models import ServerModel, ChannelModel, RoleModel
 from surf.modules.util import Session
+from surf.appsGlobal import logger, setResult, errorResult
 
 
 class ServerService(object):
@@ -26,10 +27,6 @@ class ServerService(object):
                 owner_id: "",
                 is_private: true
         """
-        respond_json = {
-            "command": f"{text_data['command']}_result",
-            "message": False
-        }
         error_flag = False
         server_id = None
         try:
@@ -82,109 +79,91 @@ class ServerService(object):
                                         ]
                                         res = self.__channelModel.save_channel(filters)
                                         if res is not False and len(res) == 2:
-                                            respond_json["message"] = True
+                                            return setResult(f"{text_data['command']}_result", True)
                                         else:
                                             error_flag = True
-                                            print("create channel failed")
-                                    print("成功")
+                                            logger.error('频道创建失败')
+                                    logger.info("服务器创建成功")
                                 else:
-                                    print("add creator to server failed")
+                                    logger.error("添加服务器创始者失败")
                                     error_flag = True
                             else:
-                                print("add server role failed")
+                                logger.error("服务器初始角色添加失败")
                                 error_flag = True
                         else:
-                            print("server create failed")
+                            logger.error("服务器创建失败")
                             error_flag = True
                     else:
-                        print("type error")
+                        logger.error("类型错误")
                         error_flag = True
                 else:
-                    print("未获取到server参数")
+                    logger.error("未获取到server参数")
                     error_flag = True
             else:
-                print("text_data参数错误")
+                logger.error("text_data参数错误")
                 error_flag = True
         except Exception as e:
             error_flag = True
-            print(f"create server error：{e}\n{traceback.format_exc()}")
-        finally:
-            if error_flag and server_id:
-                self.__serverModel.delete_server_by_id({"c_server_id": server_id})
-                print('delete error server done')
-            return json.dumps(respond_json)
+            logger.error(f"create server error：{e}\n{traceback.format_exc()}")
+        if error_flag and server_id:
+            self.__serverModel.delete_server_by_id({"c_server_id": server_id})
+            print('delete error server done')
+        return errorResult(f"{text_data['command']}_result", '服务器创建失败')
 
     def create_channel_group(self, text_data):
-        respond_json = {
-            "command": f"{text_data['command']}_result",
-            "message": False
-        }
         try:
             if text_data:
                 filters = text_data.get("channel_group", None)
                 if filters:
                     group_id = self.__channelModel.save_channel_group({f"c_{k}": v for k, v in filters.items()})
                     if group_id is not False:
-                        respond_json["message"] = True
+                        logger.info(f"创建频道组成功：{group_id}")
+                        return setResult(f"{text_data['command']}_result", True)
                     else:
-                        print("create failed")
+                        logger.error("创建频道组失败")
                 else:
-                    print("params channel_group error")
+                    logger.error("filters error")
             else:
-                print("text_data is empty")
+                logger.error("text_data is None type")
         except Exception as e:
-            print(f"create channel group error\n{e}\n{traceback.format_exc()}")
-        finally:
-            return json.dumps(respond_json)
+            logger.error(f"create channel group error\n{e}\n{traceback.format_exc()}")
+        return errorResult(f"{text_data['command']}_result", '创建频道组失败')
 
     def create_channel(self, text_data):
-        respond_json = {
-            "command": f"{text_data['command']}_result",
-            "message": False
-        }
         try:
             if text_data:
                 filters = text_data.get("channel", None)
                 if filters:
                     group_id = self.__channelModel.save_channel({f"c_{k}": v for k, v in filters.items()})
                     if group_id is not False:
-                        respond_json["message"] = True
+                        return setResult(f"{text_data['command']}_result", True)
                     else:
-                        print("create failed")
+                        logger.error("create failed")
                 else:
-                    print("params channel_group error")
+                    logger.error("params channel_group error")
             else:
-                print("text_data is empty")
+                logger.error("text_data is empty")
         except Exception as e:
-            print(f"create channel group error\n{e}\n{traceback.format_exc()}")
-        finally:
-            return json.dumps(respond_json)
+            logger.error(f"create channel group error\n{e}\n{traceback.format_exc()}")
+        return errorResult(f"{text_data['command']}_result", '创建频道失败')
 
     def add_server_member(self, text_data):
-        respond_json = {
-            "command": f"{text_data['command']}_result",
-            "message": False
-        }
         try:
             if text_data:
                 filters = text_data.get("server_member", None)
                 if filters:
                     filters['role_id'] = self.__roleModel.get_server_role_by_name(filters)
-                    respond_json["message"] = self.__serverModel.save_server_user(
+                    res = self.__serverModel.save_server_user(
                         {f"c_{k}": v for k, v in filters.items()})
+                    if len(res) > 0:
+                        return setResult(f"{text_data['command']}_result", True)
                 else:
-                    print("filters is None")
+                    logger.error("filters is None")
         except Exception as e:
-            print(f"""{e}\n{traceback.format_exc()}""")
-        finally:
-            return json.dumps(respond_json)
+            logger.error(f"""{e}\n{traceback.format_exc()}""")
+        return errorResult(f"{text_data['command']}_result", '添加失败')
 
     def get_server_details(self, text_data):
-        respond_json = {
-            'command': f'{text_data["command"]}_result',
-            'message': [],
-            'status': False
-        }
         try:
             server_dict = self.__serverModel.get_server_details(text_data['server_id'])[0]
             server_dict['channel_groups'] = []
@@ -194,32 +173,26 @@ class ServerService(object):
                     channel_group_dict = {k: v for k, v in channel_group.items()}
                     channel_group_dict['channels'] = self.__channelModel.get_channel_by_group_id(channel_group_dict['id'])
                     server_dict['channel_groups'].append(channel_group_dict)
-            respond_json['message'].append(server_dict)
-            respond_json['status'] = True
+                return setResult(f"{text_data['command']}_result", list(server_dict))
+            return setResult(f"{text_data['command']}_result", False)
         except Exception as e:
             print(f"""{e}\n{traceback.format_exc()}""")
-        finally:
-            return json.dumps(respond_json)
+        return errorResult(f"{text_data['command']}_result", '查询错误')
 
     def get_servers_by_user(self, text_data):
-        respond_json = {
-            'command': f'{text_data["command"]}_result',
-            'message': [],
-            'status': False
-        }
         try:
             session_id = text_data.get('session_id', None)
             if session_id:
                 session = Session.get_session_by_id(session_id)
                 user_id = session.get('user_id')
                 server_list = self.__serverModel.get_servers_by_user_id(user_id)
+                data = []
                 for server in server_list:
                     server_dict = self.__serverModel.get_server_details(server['id'])[0]
-                    respond_json['message'].append(server_dict)
-                respond_json['status'] = True
+                    data.append(server_dict)
+                return setResult(f"{text_data['command']}_result", data)
             else:
-                print('session_id not get')
+                logger.error('session_id not get')
         except Exception as e:
             print(f"""{e}\n{traceback.format_exc()}""")
-        finally:
-            return json.dumps(respond_json)
+        return errorResult(f"{text_data['command']}_result", 'session_id not get')

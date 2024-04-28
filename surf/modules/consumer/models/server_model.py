@@ -7,6 +7,7 @@ Last Edit Time  :
 """
 import traceback
 
+from surf.appsGlobal import logger
 from surf.modules.util import BaseModel
 
 
@@ -32,7 +33,7 @@ class ServerModel(BaseModel):
             sql = """SELECT c_server_id as id FROM t_server_members WHERE c_user_id = %s"""
             res.extend(self._pg.query(sql, [user_id]))
         except Exception as e:
-            print(f"""{e}\n{traceback.format_exc()}""")
+            logger.error(f"""{e}\n{traceback.format_exc()}""")
         finally:
             return res
 
@@ -49,7 +50,6 @@ class ServerModel(BaseModel):
             WHERE c_server_id = %s AND c_is_active = true"""
             res.extend(self._pg.query(sql, [server_id]))
         except Exception as e:
-            print(f"""{e}\n{traceback.format_exc()}""")
+            logger.error(f"""{e}\n{traceback.format_exc()}""")
         finally:
             return res
-        pass

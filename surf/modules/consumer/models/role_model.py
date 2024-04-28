@@ -8,6 +8,7 @@ Last Edit Time  :
 """
 import traceback
 
+from surf.appsGlobal import logger
 from surf.modules.util import BaseModel
 
 
@@ -21,7 +22,7 @@ class RoleModel(BaseModel):
             sql = """SELECT c_permission_id as id FROM public.t_permissions"""
             result = self._pg.query(sql)
         except Exception as e:
-            print(f"获取所有权限失败：{e}\n{traceback.format_exc()}")
+            logger.error(f"获取所有权限失败：{e}\n{traceback.format_exc()}")
         return result
 
     def create_role(self, filters):
@@ -33,6 +34,6 @@ class RoleModel(BaseModel):
             sql = """SELECT c_role_id as id FROM public.t_roles WHERE c_server_id = %s AND c_name = %s"""
             result = self._pg.query(sql, [filters['server_id'], filters['name']])
         except Exception as e:
-            print(f"failed to get server's role by id:{e}\n{traceback.format_exc()}")
+            logger.error(f"failed to get server's role by id:{e}\n{traceback.format_exc()}")
         finally:
             return result

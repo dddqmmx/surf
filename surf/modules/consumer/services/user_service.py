@@ -12,6 +12,7 @@ import traceback
 from surf.modules.util import Session
 from surf.modules.consumer.models import UserModel
 from .server_service import ServerService
+from surf.appsGlobal import logger, setResult, errorResult
 
 
 class UserService(object):
@@ -26,33 +27,21 @@ class UserService(object):
                 public_key = session.get('client_public_key')
                 res = self.__userModel.get_userid_by_public_key(public_key)
                 if len(res) > 0:
-                    print(1)
                     user_id = res[0]['id']
                 else:
-                    print(2)
                     filters = {
                         "c_public_key": public_key
                     }
                     user_id = self.__userModel.save_user(filters)
-                print(user_id)
                 if user_id is not False:
+                    logger.info(f"user {user_id} has login")
                     session.set('user_id', user_id)
-                    respond_json = {
-                        'command': 'to_url',
-                        'url': 'main'
-                    }
-                    return json.dumps(respond_json)
-                else:
-                    return False
+                    return setResult('to_url', 'main')
         except Exception as e:
-            print(f"""{e}\n{traceback.format_exc()}""")
-            return False
+            logger.error(f"""{e}\n{traceback.format_exc()}""")
+        return errorResult('to_url', False)
 
     def get_user_data(self, text_data):
-        respond_json = {
-            'command': f"{text_data['command']}_result",
-            'message': {}
-        }
         try:
             session = Session.get_session_by_id(text_data['session_id'])
             if session:
@@ -64,43 +53,33 @@ class UserService(object):
                         "user_info": res[0]["info"],
                         'servers': []
                     }
-                    respond_json['message']['user'] = user_dict
                     servers = ServerService().get_servers_by_user(text_data)
                     servers = json.loads(servers)
                     if servers['status']:
-                        respond_json['message']['user']['servers'] = servers['message']
-                else:
-                    return False
+                        user_dict['servers'] = servers['message']
+                        return setResult(f"{text_data['command']}_result", {'user': user_dict})
+                    else:
+                        logger.error('获取用户所在服务器错误')
         except Exception as e:
-            print(f"""{e}\n{traceback.format_exc()}""")
-            return False
-        finally:
-            return json.dumps(respond_json)
+            logger.error(f"""{e}\n{traceback.format_exc()}""")
+        return errorResult(f"{text_data['command']}_result", '获取用户数据错误')
 
-    def search_user(self, user_id_list):
-        respond_json = {
-            'command': "search_user_result",
-            'message': [],
-            'status': False
-        }
+    def search_user(self, text_data):
+        user_id_list = text_data['user_id_list']
+        data = False
         try:
             if isinstance(user_id_list, list):
                 res = self.__userModel.get_userdata_by_userid(user_id_list)
                 if len(res) > 0:
+                    data = []
                     for item in res:
-                        respond_json['message'].append({"user_nickname": item["nickname"], "user_info": item["info"]})
-                        respond_json['status'] = True
+                        data.append({"user_nickname": item["nickname"], "user_info": item["info"]})
+                return setResult(f"{text_data['command']}_result", data)
         except Exception as e:
-            print(f"""{e}\n{traceback.format_exc()}""")
-        finally:
-            return json.dumps(respond_json)
+            logger.error(f"""{e}\n{traceback.format_exc()}""")
+        return errorResult(f"{text_data['command']}_result", '搜索失败')
 
     def get_friends(self, text_data):
-        respond_json = {
-            'command': f"{text_data['command']}_result",
-            'message': [],
-            'status': False
-        }
         try:
             session = Session.get_session_by_id(text_data['session_id'])
             if session:
@@ -109,14 +88,12 @@ class UserService(object):
                 if len(friend_list) > 0:
                     user_list = self.__userModel.get_userdata_by_userid([item['id'] for item in friend_list])
                     if len(user_list) > 0:
-                        respond_json['message'] = user_list
-                        respond_json['status'] = True
+                        return setResult(f"{text_data['command']}_result", user_list)
                     else:
-                        return False
+                        logger.error(f"获取好友信息错误，好友列表:{str(friend_list)}")
                 else:
-                    return False
+                    return setResult(f"{text_data['command']}_result", False)
+            logger.error('session不存在或已过期')
         except Exception as e:
-            print(f"""{e}\n{traceback.format_exc()}""")
-            return False
-        finally:
-            return json.dumps(respond_json)
+            logger.error(f"""{e}\n{traceback.format_exc()}""")
+        return errorResult(f"{text_data['command']}_result", '获取失败')
