@@ -23,6 +23,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
+        connectUsers.remove(self)
         pass
 
     async def receive(self, text_data=None, bytes_data=None):
