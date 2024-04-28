@@ -30,29 +30,16 @@ class UserConsumer(BaseConsumer):
 
     async def login(self, text_data):
         respond_json = self.user_service.login(text_data['session_id'])
-        if respond_json is not False:
-            await self.send(respond_json)
-        else:
-            print("登录失败")
+        await self.send(respond_json)
 
     async def get_user_data(self, text_data):
         respond_json = self.user_service.get_user_data(text_data)
-        if respond_json is not False:
-            await self.send(respond_json)
-        else:
-            print("获取失败")
+        await self.send(respond_json)
 
     async def search_user(self, text_data):
         respond_json = self.user_service.search_user(text_data)
-        if respond_json is not False:
-            await self.send(respond_json)
-        else:
-            print("获取失败")
+        await self.send(respond_json)
 
     async def get_friends(self, text_data):
         respond_json = self.user_service.get_friends(text_data)
-        if respond_json is not False:
-            await self.send(respond_json)
-            print('get_friends done')
-        else:
-            print("获取失败")
+        await self.send(respond_json)

@@ -35,21 +35,21 @@ class ServerConsumer(BaseConsumer):
         pass
 
     async def create_server(self, text_data):
-        if text_data:
-            respond_json = self.server_service.create_server(text_data)
-            await self.send(respond_json)
+        respond_json = self.server_service.create_server(text_data)
+        await self.send(respond_json)
 
     async def create_channel_group(self, text_data):
-        if text_data:
-            respond_json = self.server_service.create_channel_group(text_data)
-            await self.send(respond_json)
+        respond_json = self.server_service.create_channel_group(text_data)
+        await self.send(respond_json)
 
     async def create_channel(self, text_data):
-        if text_data:
-            respond_json = self.server_service.create_channel(text_data)
-            await self.send(respond_json)
+        respond_json = self.server_service.create_channel(text_data)
+        await self.send(respond_json)
 
     async def get_server_details(self, text_data):
-        if text_data:
-            respond_json = self.server_service.get_server_details(text_data)
-            await self.send(respond_json)
+        respond_json = self.server_service.get_server_details(text_data)
+        await self.send(respond_json)
+
+    async def add_server_member(self, text_data):
+        respond_json = self.server_service.add_server_member(text_data)
+        await self.send(respond_json)
