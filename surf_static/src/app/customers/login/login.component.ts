@@ -115,7 +115,7 @@ export class LoginComponent {
                     self.cryptoService.setSession(session_id);
                     const address = data.address;
                     if (address == 'main'){
-                        // self.router.navigate(['main/chat']);
+                        self.router.navigate(['main/chat']);
                         self.socket?.close();
                     }
                 }
