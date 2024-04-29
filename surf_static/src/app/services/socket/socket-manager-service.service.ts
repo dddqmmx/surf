@@ -16,7 +16,7 @@ export class SocketManagerServiceService {
     }
 
     public disconnect(endpoint: string){
-        if (!this.sockets.has(endpoint)){
+        if (this.sockets.has(endpoint)){
             this.sockets.get(endpoint)?.close();
             this.sockets.delete(endpoint)
         }
