@@ -55,7 +55,7 @@ class UserService(object):
                     servers = ServerService().get_servers_by_user(text_data)
                     servers = json.loads(servers)
                     if servers['status']:
-                        user_dict['servers'] = servers['message']
+                        user_dict['servers'] = servers['messages']
                         return setResult(f"{text_data['command']}_result", {'user': user_dict})
                     else:
                         logger.error('获取用户所在服务器错误')
