@@ -6,7 +6,8 @@ import {Router, RouterOutlet} from "@angular/router";
 import {ChatComponent} from "../chat/chat.component";
 import {SidebarServerComponent} from "../sidebar-server/sidebar-server.component";
 import {FormsModule} from "@angular/forms";
-
+import {SocketManagerService} from '../../services/socket/socket-manager.service'
+import {Subscription} from "rxjs";
 @Component({
   selector: 'app-main',
   standalone: true,
@@ -30,6 +31,7 @@ export class MainComponent implements OnInit{
     invitationList:any = []
     serverName = ""
     serverDescription = ""
+    messageSubscription : any;
 
 
     toggleCreatServerPopup() {
@@ -39,15 +41,28 @@ export class MainComponent implements OnInit{
       this.selectUserPopupVisible = !this.selectUserPopupVisible;
 
     }
-    constructor(private cryptoService: CryptoService,private localDataService:LocalDataService,private router: Router) {
+    constructor(private cryptoService: CryptoService,
+                private localDataService:LocalDataService,
+                private socketMangerService: SocketManagerService,
+                private router: Router) {
             this.cryptoService = cryptoService;
             this.localDataService = localDataService;
     }
 
 
     ngOnInit(): void {
+        this.messageSubscription = this.socketMangerService.connect('ws://' + this.localDataService.serverAddress + '/ws/user/')
+            .subscribe(
+                message =>{
+                    console.log(message)
+                }
+            )
         this.getUserData();
         // this.getFriends();
+    }
+
+    ngOnDestroy(){
+        this.messageSubscription.unsubscribe()
     }
     previewImageUrl: string = ''; // 存储预览图像的URL
     // 打开文件选择对话框
