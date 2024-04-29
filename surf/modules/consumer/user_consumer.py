@@ -29,7 +29,7 @@ class UserConsumer(BaseConsumer):
             await self.func_dict.get(command)(text_data)
 
     async def login(self, text_data):
-        respond_json = self.user_service.login(text_data['session_id'])
+        respond_json = self.user_service.login(text_data['public_key'])
         await self.send(respond_json)
 
     async def get_user_data(self, text_data):

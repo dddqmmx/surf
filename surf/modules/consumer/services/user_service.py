@@ -20,23 +20,22 @@ class UserService(object):
         self.__userModel = UserModel()
         pass
 
-    def login(self, session_id):
+    def login(self, public_key):
         try:
-            session = Session.get_session_by_id(session_id)
-            if session:
-                public_key = session.get('client_public_key')
-                res = self.__userModel.get_userid_by_public_key(public_key)
-                if len(res) > 0:
-                    user_id = res[0]['id']
-                else:
-                    filters = {
-                        "c_public_key": public_key
-                    }
-                    user_id = self.__userModel.save_user(filters)
-                if user_id is not False:
-                    logger.info(f"user {user_id} has login")
-                    session.set('user_id', user_id)
-                    return setResult('to_url', 'main')
+            session = Session.create_session()
+            session.set('client_public_key', public_key)
+            res = self.__userModel.get_userid_by_public_key(public_key)
+            if len(res) > 0:
+                user_id = res[0]['id']
+            else:
+                filters = {
+                    "c_public_key": public_key
+                }
+                user_id = self.__userModel.save_user(filters)
+            if user_id is not False:
+                logger.info(f"user {user_id} has login")
+                session.set('user_id', user_id)
+                return setResult('to_url', {'address': 'main', 'session_id': session.session_id})
         except Exception as e:
             logger.error(f"""{e}\n{traceback.format_exc()}""")
         return errorResult('to_url', False)

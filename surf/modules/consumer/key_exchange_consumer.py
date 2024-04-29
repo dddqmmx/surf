@@ -28,11 +28,8 @@ class KeyExchangeConsumer(AsyncWebsocketConsumer):
                 encoding=serialization.Encoding.PEM,
                 format=serialization.PublicFormat.SubjectPublicKeyInfo
             )
-            session = Session.create_session()
-            session.set('client_public_key', receive_json['public_key'])
             init_json = {
                 'command': 'key_exchange',
                 'public_key': serialized_public_key.decode('utf-8'),
-                'session_id': session.session_id
             }
             await self.send(text_data=json.dumps(init_json))
