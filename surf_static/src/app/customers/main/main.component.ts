@@ -25,6 +25,12 @@ export class MainComponent implements OnInit{
 
     creatServerPopupVisible = false;
     selectUserPopupVisible = false;
+    servers: any[]=[];
+    inputUserId = ""
+    invitationList:any = []
+    serverName = ""
+    serverDescription = ""
+
 
     toggleCreatServerPopup() {
       this.creatServerPopupVisible = !this.creatServerPopupVisible;
@@ -37,73 +43,7 @@ export class MainComponent implements OnInit{
             this.cryptoService = cryptoService;
             this.localDataService = localDataService;
     }
-    servers: any[]=[];
-    getUserData(){
-        const self = this;
-        const socket = new WebSocket('ws://'+this.localDataService.serverAddress+'/ws/user/');
-        socket.onopen = function () {
-            const requestJson = {
-                'command': 'get_user_data',
-                'session_id': self.cryptoService.session,
-            }
-            this.send(JSON.stringify(requestJson));
-        }
-        socket.onclose = function (e) {
-            console.error('Chat socket closed unexpectedly');
-        };
-        socket.onmessage = function (e: { data: any; }) {
-            const json = JSON.parse(e.data)
-            const servers = json.message.user.servers;
-            for (const server of servers){
-                self.servers.push(server)
-            }
-        };
-    }
-    getFriends(){
-        const self = this;
-        const socket = new WebSocket('ws://'+this.localDataService.serverAddress+'/ws/user/');
-        socket.onopen = function () {
-            const requestJson = {
-                'command': 'get_friends',
-                'session_id': self.cryptoService.session,
-            }
-            this.send(JSON.stringify(requestJson));
-        }
-        socket.onclose = function (e) {
-            console.error('Chat socket closed unexpectedly');
-        };
-        socket.onmessage = function (e: { data: any; }) {
-            const json = JSON.parse(e.data)
-            console.log("dddd"+json)
-        };
-    }
 
-    inputUserId = ""
-
-    invitationList:any = []
-    searchUser(){
-        const self = this;
-        const socket = new WebSocket('ws://'+this.localDataService.serverAddress+'/ws/user/');
-        socket.onopen = function () {
-            const requestJson = {
-                'command': 'search_user',
-                'user_id_list':[self.inputUserId]
-            }
-            this.send(JSON.stringify(requestJson));
-        }
-        socket.onclose = function (e) {
-            console.error('Chat socket closed unexpectedly');
-        };
-        socket.onmessage = function (e: { data: any; }) {
-            const json = JSON.parse(e.data)
-            console.log(json)
-            self.invitationList.slice()
-            for (const userInfo of json.message) {
-                self.invitationList.push(userInfo)
-            }
-
-        };
-    }
 
     ngOnInit(): void {
         this.getUserData();
@@ -119,8 +59,7 @@ export class MainComponent implements OnInit{
       const file: File = event.target.files[0]; // 获取选择的文件
       this.previewImage(file); // 调用预览图像方法
     }
-    serverName = ""
-    serverDescription = ""
+
 
     // 预览图像
     previewImage(file: File) {
@@ -131,24 +70,81 @@ export class MainComponent implements OnInit{
         reader.readAsDataURL(file); // 读取文件
     }
 
-    createServer() {
-        const socket = new WebSocket('ws://'+this.localDataService.serverAddress+'/ws/server/');
-        const requestJson = {
-            'command': 'create_server',
-            'server':{
-                'description': this.serverDescription,
-                'name': this.serverName,
-                'session_id': this.cryptoService.session,
-                'is_private': true
-            }
+    // Function to handle WebSocket connections and messages
+    connectWebSocket(url:any, requestJson:any, messageHandler:any) {
+    const socket = new WebSocket(url);
+    socket.onopen = function () {
+        socket.send(JSON.stringify(requestJson));
+    };
+    socket.onclose = function (e) {
+        console.error('WebSocket closed unexpectedly');
+    };
+    socket.onmessage = function (e) {
+        const json = JSON.parse(e.data);
+        messageHandler(json);
+    };
+}
+
+// Reusing WebSocket connection for different functionalities
+searchUser() {
+    const requestJson = {
+        'command': 'search_user',
+        'user_id_list': [this.inputUserId]
+    };
+    this.connectWebSocket(
+        'ws://' + this.localDataService.serverAddress + '/ws/user/',
+        requestJson,
+        (json: { message: any; }) => {
+            this.invitationList.push(...json.message);
         }
-        socket.onopen = function (){
-            socket.send(JSON.stringify(requestJson));
+    );
+}
+
+getUserData() {
+    const requestJson = {
+        'command': 'get_user_data',
+        'session_id': this.cryptoService.session,
+    };
+    this.connectWebSocket(
+        'ws://' + this.localDataService.serverAddress + '/ws/user/',
+        requestJson,
+        (json: { message: { user: { servers: any; }; }; }) => {
+            this.servers.push(...json.message.user.servers);
         }
-        socket.onmessage = function (e: { data: any; }) {
-            const json = JSON.parse(e.data)
-            console.log(json)
-            socket.close();
-        };
-    }
+    );
+}
+
+getFriends() {
+    const requestJson = {
+        'command': 'get_friends',
+        'session_id': this.cryptoService.session,
+    };
+    this.connectWebSocket(
+        'ws://' + this.localDataService.serverAddress + '/ws/user/',
+        requestJson,
+        (json: any) => {
+            console.log("Friends:", json);
+        }
+    );
+}
+
+createServer() {
+    const requestJson = {
+        'command': 'create_server',
+        'server': {
+            'description': this.serverDescription,
+            'name': this.serverName,
+            'session_id': this.cryptoService.session,
+            'is_private': true
+        }
+    };
+    this.connectWebSocket(
+        'ws://' + this.localDataService.serverAddress + '/ws/server/',
+        requestJson,
+        (json: any) => {
+            console.log("Server created:", json);
+        }
+    );
+}
+
 }

@@ -63,7 +63,6 @@ export class LoginComponent {
             this.localDataService.serverAddress = serverAddress;
             const publicKey = userFile.public_key;
             const privateKey = atob(userFile.private_key);
-            console.log(privateKey)
             this.cryptoService.setClientPrivateKey(privateKey);
             const socket = new WebSocket('ws://'+serverAddress+'/ws/key_exchange/');
             const requestJson = {
@@ -78,11 +77,7 @@ export class LoginComponent {
                 const command =    json.command;
                 if (command == "key_exchange"){
                     const public_key = json.public_key;
-                    const session_id = json.session_id;
-                    console.log(public_key)
                     self.cryptoService.setServerPublicKey(public_key);
-                    console.log(session_id)
-                    self.cryptoService.setSession(session_id);
                 }
                 socket.close();
                 self.toLogin()
@@ -103,7 +98,7 @@ export class LoginComponent {
             this.socket.onopen = function () {
                 const requestJson = {
                     'command': 'login',
-                    'session_id': self.cryptoService.session,
+                    'public_key': userFile.public_key,
                 }
                 self.send(JSON.stringify(requestJson));
             }
@@ -114,10 +109,13 @@ export class LoginComponent {
                 const json = JSON.parse(e.data)
                 console.log(json)
                 const command = json.command;
+                const data = json.messages;
                 if (command == "to_url"){
-                    const url = json.url;
-                    if (url == 'main'){
-                        self.router.navigate(['main/chat']);
+                    const session_id = data.session_id;
+                    self.cryptoService.setSession(session_id);
+                    const address = data.address;
+                    if (address == 'main'){
+                        // self.router.navigate(['main/chat']);
                         self.socket?.close();
                     }
                 }
