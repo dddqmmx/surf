@@ -44,7 +44,7 @@ def get_logger(logfile=APPNAME):
     filehandle.setLevel(logging.DEBUG)
     consolehandle = logging.StreamHandler()
     consolehandle.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messages)s')
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     filehandle.setFormatter(formatter)
     consolehandle.setFormatter(formatter)
     logger.addHandler(filehandle)
