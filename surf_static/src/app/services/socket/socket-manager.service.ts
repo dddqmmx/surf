@@ -8,7 +8,7 @@ import {error} from "@angular/compiler-cli/src/transformers/util";
 export class SocketManagerService {
     // 这是主连接的 Socket
     private socket: any
-    // 存放广播消息监听事件
+    // 存放指定command的订阅
     messageSubjects: Map<string, Subject<MessageEvent>> = new Map();
 
     //初始化总链接
@@ -49,6 +49,7 @@ export class SocketManagerService {
         }
     }
 
+    //获取指定command的订阅
     public getMessageSubject(command: string): Subject<MessageEvent> {
         let messageSubject: Subject<MessageEvent>;
         if (this.messageSubjects.has(command)) {
