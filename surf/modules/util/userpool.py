@@ -26,7 +26,8 @@ class UserPool(object):
 
     def __init__(self):
         if not hasattr(self, '_initialized'):
-            self.__connected_user: dict[str, SurfUser] = {}
+            self.__connected_user: Dict[str, SurfUser] = {}
+            self.__broadcast_map: Dict[str, Dict[str, SurfUser]] = {}
             self.lock = asyncio.Lock()
             self._initialized = True
             con_log.info(f'UserPool initialized:{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
