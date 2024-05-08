@@ -70,4 +70,24 @@ export class CryptoService {
             return false;
         }
     }
+
+    generateKeyPair(){
+        let keyPair:any
+        window.crypto.subtle.generateKey({
+                name: "RSA-OAEP",
+                modulusLength: 4096, // 密钥大小
+                publicExponent: new Uint8Array([0x01, 0x00, 0x01]), // 公钥指数，等于65537
+                hash: {name: "SHA-256"}, // 使用SHA-256哈希算法
+            },
+            true, // 是否提取密钥
+            ["encrypt", "decrypt"] // 密钥用途
+        ).then(function(cryptoKeyPair) {
+            keyPair =  cryptoKeyPair
+        }).catch(function(err) {
+            console.error(err);
+        });
+        return keyPair
+    }
+
+
 }
