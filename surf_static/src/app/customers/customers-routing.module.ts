@@ -5,10 +5,11 @@ import { HelloComponent } from './hello/hello.component';
 import { ChatComponent } from './chat/chat.component';
 import { LoginComponent } from './login/login.component';
 import {MainComponent} from "./main/main.component";
+import {IntroduceComponent} from "./introduce/introduce.component";
 
 
 const routes: Routes = [
-    {path: '', pathMatch: 'full', redirectTo: 'login'},
+    {path: '', component:IntroduceComponent},
     {path:"hello",component:HelloComponent},
     {path:"chat",component:ChatComponent},
     {
