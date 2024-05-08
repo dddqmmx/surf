@@ -53,10 +53,8 @@ class UserPool(object):
             self.__connected_user[session_id] = user
             return True
 
-    def access_new_user(self, public_key, user_id, consumer, return_id=False) -> Union[bool, Tuple[bool, str]]:
-        session = Session.create_session()
-        session.set('client_public_key', public_key)
-        session.set('user_id', user_id)
+    def access_new_user(self, session, consumer, return_id=False) -> Union[bool, Tuple[bool, str]]:
+        user_id = session.get('user_id')
         surf_user = SurfUser(user_id, session.session_id, consumer)
         flag = self.connect_user_to_pool(session, surf_user)
         if return_id:
