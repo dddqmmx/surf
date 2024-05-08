@@ -79,7 +79,7 @@ class ServerService(object):
                                         ]
                                         res = self.__channelModel.save_channel(filters)
                                         if res is not False and len(res) == 2:
-                                            return setResult(f"{text_data['command']}_result", True)
+                                            return setResult(f"{text_data['command']}_result", True, 'server')
                                         else:
                                             error_flag = True
                                             logger.error('频道创建失败')
@@ -108,7 +108,7 @@ class ServerService(object):
         if error_flag and server_id:
             self.__serverModel.delete_server_by_id({"c_server_id": server_id})
             print('delete error server done')
-        return errorResult(f"{text_data['command']}_result", '服务器创建失败')
+        return errorResult(f"{text_data['command']}_result", '服务器创建失败', 'server')
 
     def create_channel_group(self, text_data):
         try:
@@ -118,7 +118,7 @@ class ServerService(object):
                     group_id = self.__channelModel.save_channel_group({f"c_{k}": v for k, v in filters.items()})
                     if group_id is not False:
                         logger.info(f"创建频道组成功：{group_id}")
-                        return setResult(f"{text_data['command']}_result", True)
+                        return setResult(f"{text_data['command']}_result", True, 'server')
                     else:
                         logger.error("创建频道组失败")
                 else:
@@ -127,7 +127,7 @@ class ServerService(object):
                 logger.error("text_data is None type")
         except Exception as e:
             logger.error(f"create channel group error\n{e}\n{traceback.format_exc()}")
-        return errorResult(f"{text_data['command']}_result", '创建频道组失败')
+        return errorResult(f"{text_data['command']}_result", '创建频道组失败', 'server')
 
     def create_channel(self, text_data):
         try:
@@ -136,7 +136,7 @@ class ServerService(object):
                 if filters:
                     group_id = self.__channelModel.save_channel({f"c_{k}": v for k, v in filters.items()})
                     if group_id is not False:
-                        return setResult(f"{text_data['command']}_result", True)
+                        return setResult(f"{text_data['command']}_result", True, 'server')
                     else:
                         logger.error("create failed")
                 else:
@@ -145,7 +145,7 @@ class ServerService(object):
                 logger.error("text_data is empty")
         except Exception as e:
             logger.error(f"create channel group error\n{e}\n{traceback.format_exc()}")
-        return errorResult(f"{text_data['command']}_result", '创建频道失败')
+        return errorResult(f"{text_data['command']}_result", '创建频道失败', 'server')
 
     def add_server_member(self, text_data):
         try:
@@ -156,12 +156,12 @@ class ServerService(object):
                     res = self.__serverModel.save_server_user(
                         {f"c_{k}": v for k, v in filters.items()})
                     if len(res) > 0:
-                        return setResult(f"{text_data['command']}_result", True)
+                        return setResult(f"{text_data['command']}_result", True, 'server')
                 else:
                     logger.error("filters is None")
         except Exception as e:
             logger.error(f"""{e}\n{traceback.format_exc()}""")
-        return errorResult(f"{text_data['command']}_result", '添加失败')
+        return errorResult(f"{text_data['command']}_result", '添加失败', 'server')
 
     def get_server_details(self, text_data):
         try:
@@ -173,11 +173,11 @@ class ServerService(object):
                     channel_group_dict = {k: v for k, v in channel_group.items()}
                     channel_group_dict['channels'] = self.__channelModel.get_channel_by_group_id(channel_group_dict['id'])
                     server_dict['channel_groups'].append(channel_group_dict)
-                return setResult(f"{text_data['command']}_result", list(server_dict))
-            return setResult(f"{text_data['command']}_result", False)
+                return setResult(f"{text_data['command']}_result", list(server_dict), 'server')
+            return setResult(f"{text_data['command']}_result", False, 'server')
         except Exception as e:
             print(f"""{e}\n{traceback.format_exc()}""")
-        return errorResult(f"{text_data['command']}_result", '查询错误')
+        return errorResult(f"{text_data['command']}_result", '查询错误', 'server')
 
     def get_servers_by_user(self, text_data):
         try:
@@ -190,9 +190,9 @@ class ServerService(object):
                 for server in server_list:
                     server_dict = self.__serverModel.get_server_details(server['id'])[0]
                     data.append(server_dict)
-                return setResult(f"{text_data['command']}_result", data)
+                return setResult(f"{text_data['command']}_result", data, 'server')
             else:
                 logger.error('session_id not get')
         except Exception as e:
             print(f"""{e}\n{traceback.format_exc()}""")
-        return errorResult(f"{text_data['command']}_result", 'session_id not get')
+        return errorResult(f"{text_data['command']}_result", 'session_id not get', 'server')

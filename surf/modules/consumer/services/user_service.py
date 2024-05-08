@@ -38,7 +38,7 @@ class UserService(object):
                 return setResult('to_url', {'address': 'main', 'session_id': session.session_id}), session
         except Exception as e:
             logger.error(f"""{e}\n{traceback.format_exc()}""")
-        return errorResult('to_url', False), None
+        return errorResult('to_url', False, 'user'), None
 
     def get_user_data(self, text_data):
         try:
@@ -56,12 +56,12 @@ class UserService(object):
                     servers = json.loads(servers)
                     if servers['status']:
                         user_dict['servers'] = servers['messages']
-                        return setResult(f"{text_data['command']}_result", {'user': user_dict})
+                        return setResult(f"{text_data['command']}_result", {'user': user_dict}, 'user')
                     else:
                         logger.error('获取用户所在服务器错误')
         except Exception as e:
             logger.error(f"""{e}\n{traceback.format_exc()}""")
-        return errorResult(f"{text_data['command']}_result", '获取用户数据错误')
+        return errorResult(f"{text_data['command']}_result", '获取用户数据错误', 'user')
 
     def search_user(self, text_data):
         user_id_list = text_data['user_id_list']
@@ -73,10 +73,10 @@ class UserService(object):
                     data = []
                     for item in res:
                         data.append({"user_nickname": item["nickname"], "user_info": item["info"]})
-                return setResult(f"{text_data['command']}_result", data)
+                return setResult(f"{text_data['command']}_result", data, 'user')
         except Exception as e:
             logger.error(f"""{e}\n{traceback.format_exc()}""")
-        return errorResult(f"{text_data['command']}_result", '搜索失败')
+        return errorResult(f"{text_data['command']}_result", '搜索失败', 'user')
 
     def get_friends(self, text_data):
         try:
@@ -87,12 +87,12 @@ class UserService(object):
                 if len(friend_list) > 0:
                     user_list = self.__userModel.get_userdata_by_userid([item['id'] for item in friend_list])
                     if len(user_list) > 0:
-                        return setResult(f"{text_data['command']}_result", user_list)
+                        return setResult(f"{text_data['command']}_result", user_list, 'user')
                     else:
                         logger.error(f"获取好友信息错误，好友列表:{str(friend_list)}")
                 else:
-                    return setResult(f"{text_data['command']}_result", False)
+                    return setResult(f"{text_data['command']}_result", False, 'user')
             logger.error('session不存在或已过期')
         except Exception as e:
             logger.error(f"""{e}\n{traceback.format_exc()}""")
-        return errorResult(f"{text_data['command']}_result", '获取失败')
+        return errorResult(f"{text_data['command']}_result", '获取失败', 'user')

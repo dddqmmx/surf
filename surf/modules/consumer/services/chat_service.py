@@ -46,10 +46,13 @@ class ChatService(object):
                 if chat_list:
                     messages = [chat['_source'] for chat in chat_list]
                     type = text_data['type']
-                    return setResult(command=f"{text_data['command']}_result", data=messages, extra_col=[{"type": type}])
+                    return setResult(command=f"{text_data['command']}_result",
+                                     data=messages,
+                                     extra_col=[{"type": type}],
+                                     path='chat')
         except Exception as e:
             logger.error(f"""获取消息失败\n{e}\n{traceback.format_exc()}""")
-        return errorResult(f"{text_data['command']}_result", '获取消息失败')
+        return errorResult(f"{text_data['command']}_result", '获取消息失败', 'chat')
 
     def send_message(self, text_data):
         try:
@@ -64,6 +67,6 @@ class ChatService(object):
                 filters['_source']['chat_time'] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
                 count = self.ec.bulk(self.ec.generator([filters], 'create'))
                 if count[0] == 1:
-                    return setResult('new_message', filters['_source'])
+                    return setResult('new_message', filters['_source'], 'chat')
         except Exception as e:
             logger(f"""发送消息失败\n{e}\n{traceback.format_exc()}""")

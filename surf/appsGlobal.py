@@ -52,7 +52,7 @@ def get_logger(logfile=APPNAME):
     return logger
 
 
-def setResult(command, data, extra_col=None, log=''):
+def setResult(command, data, path, extra_col=None, log=''):
     if not isinstance(extra_col, list):
         extra_col = []
     result = {
@@ -74,7 +74,7 @@ def setResult(command, data, extra_col=None, log=''):
     return json.dumps(result)
 
 
-def errorResult(command, error_msg, log=''):
+def errorResult(command, error_msg, path, log=''):
     result = {
         "command": str(command),
         "messages": False,
