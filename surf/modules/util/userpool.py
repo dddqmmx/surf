@@ -35,6 +35,9 @@ class UserPool(object):
     def get_users(self):
         return self.__connected_user.copy()
 
+    def get_broadcast_by_channel_id(self, channel_id):
+        return self.__broadcast_map.copy()[channel_id]
+
     def connect_user_to_pool(self, session, user) -> bool:
         session_id = session.session_id
         if self.__connected_user.get(session_id, None):
