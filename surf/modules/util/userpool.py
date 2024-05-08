@@ -7,9 +7,11 @@ Last Edit Time  :
 """
 import asyncio
 import datetime
-from typing import Union, Tuple
-from surf.appsGlobal import get_logger, setResult, errorResult
-from surf.modules.util import SurfUser, Session
+import json
+from typing import Union, Tuple, Dict
+from .session_util import Session
+from .surf_user import SurfUser
+from surf.appsGlobal import logger, get_logger, setResult, errorResult
 
 con_log = get_logger('connections')
 
@@ -56,3 +58,27 @@ class UserPool(object):
         if return_id:
             return flag, session.session_id
         return flag
+
+    def broadcast_to_all_user_in_channel(self, text_data):
+        channel_id = text_data['channel_id']
+        for k, user in self.get_broadcast_by_channel_id(channel_id).items():
+            user.broadcast(text_data)
+
+
+def session_check(func):
+    async def wrapper(*args, **kwargs):
+        flag = False
+        text_data = json.loads(kwargs['text_data'])
+        session_id = text_data.get('session_id', None)
+        if session_id:
+            for k, user in UserPool().get_users():
+                if user.check_user_id_by_session_id(session_id):
+                    flag = True
+                    break
+        if flag:
+            return func(*args, **kwargs)
+        else:
+            logger.error(f"发现无效session进行操作：{session_id}， 已拦截")
+            await args[0].send(errorResult(text_data['command'], '无效session'))
+
+    return wrapper
