@@ -5,9 +5,10 @@ Created Time    : 2024/4/29 16:16
 File Name       : surf_user.py
 Last Edit Time  : 
 """
+import traceback
 
 from channels.generic.websocket import AsyncWebsocketConsumer
-from session_util import Session
+from .session_util import Session
 from surf.appsGlobal import get_logger
 
 logger = get_logger('user')
@@ -34,3 +35,9 @@ class SurfUser(object):
 
     def check_cur_server(self, cur_server) -> bool:
         return self.__cur_server == cur_server
+
+    async def broadcast(self, text_data):
+        try:
+            await self.__ws.send(text_data)
+        except Exception as e:
+            logger.error(f"broadcast failed, userid:{self.__user_id}, ex:{e}\n{traceback.print_exc()}")
