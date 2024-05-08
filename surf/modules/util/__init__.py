@@ -10,3 +10,4 @@ from .es_client import ESClient as Ec
 from .base_model import BaseModel
 from .base_consumer import BaseConsumer
 from .userpool import UserPool
+from .surf_user import SurfUser
