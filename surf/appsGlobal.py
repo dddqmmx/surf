@@ -8,7 +8,7 @@ Last Edit Time  :
 import json
 import logging
 import os
-from logging.handlers import TimedRotatingFileHandler
+from mlogging import TimedRotatingFileHandler_MP
 
 
 def getPlatformPath():
@@ -38,7 +38,7 @@ def get_logger(logfile=APPNAME):
 
     if not os.path.exists(logroot):
         os.mkdir(logroot)
-    filehandle = TimedRotatingFileHandler(os.path.normpath(logroot + "/" + \
+    filehandle = TimedRotatingFileHandler_MP(os.path.normpath(logroot + "/" + \
                                                            logfile + ".log"), 'midnight')
     filehandle.suffix = "%Y-%m-%d"
     filehandle.setLevel(logging.DEBUG)
