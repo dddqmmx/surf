@@ -9,7 +9,7 @@ Last Edit Time  :
 import json
 import traceback
 
-from surf.modules.util import Session
+from surf.modules.util import Session, UserPool
 from surf.modules.consumer.models import UserModel
 from .server_service import ServerService
 from surf.appsGlobal import logger, setResult, errorResult
@@ -18,7 +18,7 @@ from surf.appsGlobal import logger, setResult, errorResult
 class UserService(object):
     def __init__(self):
         self.__userModel = UserModel()
-        pass
+        self.__userPool = UserPool()
 
     def login(self, public_key):
         try:
@@ -35,10 +35,10 @@ class UserService(object):
             if user_id is not False:
                 logger.info(f"user {user_id} has login")
                 session.set('user_id', user_id)
-                return setResult('to_url', {'address': 'main', 'session_id': session.session_id})
+                return setResult('to_url', {'address': 'main', 'session_id': session.session_id}), session
         except Exception as e:
             logger.error(f"""{e}\n{traceback.format_exc()}""")
-        return errorResult('to_url', False)
+        return errorResult('to_url', False), None
 
     def get_user_data(self, text_data):
         try:
