@@ -55,7 +55,7 @@ class UserPool(object):
 
     def access_new_user(self, session, consumer, return_id=False) -> Union[bool, Tuple[bool, str]]:
         user_id = session.get('user_id')
-        surf_user = SurfUser(user_id, session.session_id, consumer)
+        surf_user = SurfUser(user_id, consumer)
         flag = self.connect_user_to_pool(session, surf_user)
         if return_id:
             return flag, session.session_id
@@ -65,6 +65,9 @@ class UserPool(object):
         channel_id = text_data['channel_id']
         for k, user in self.get_broadcast_by_channel_id(channel_id).items():
             user.broadcast(text_data)
+
+    def detach_user_from_pool_by_session_id(self, session_id):
+        del self.__connected_user[session_id]
 
 
 def session_check(func):
