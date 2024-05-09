@@ -70,17 +70,18 @@ class UserPool(object):
 def session_check(func):
     async def wrapper(*args, **kwargs):
         flag = False
+        session_id = None
         text_data = json.loads(kwargs['text_data'])
-        session_id = text_data.get('session_id', None)
-        if session_id:
-            for k, user in UserPool().get_users():
-                if user.check_user_id_by_session_id(session_id):
-                    flag = True
-                    break
+        if text_data['command'] != 'login' and text_data != 'key_exchange':
+            session_id = text_data.get('session_id', None)
+            if session_id:
+                for k, user in UserPool().get_users():
+                    if user.check_user_id_by_session_id(session_id):
+                        flag = True
+                        break
         if flag:
             return func(*args, **kwargs)
         else:
             logger.error(f"发现无效session进行操作：{session_id}， 已拦截")
             await args[0].send(errorResult(text_data['command'], '无效session'))
-
     return wrapper
