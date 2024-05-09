@@ -8,7 +8,7 @@ Last Edit Time  :
 import json
 from typing import Callable, Dict
 
-from surf.appsGlobal import logger, errorResult
+from surf.appsGlobal import logger, errorResult, setResult
 from surf.modules.util import BaseConsumer, UserPool, session_check
 from surf.modules.consumer.services import ChatService, ServerService, UserService
 
@@ -20,6 +20,7 @@ class SurfConsumer(BaseConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.userPool = UserPool()
+        self.session_id = None
         self.service_dict = {
             "chat": ChatService(),
             "server": ServerService(),
@@ -55,7 +56,8 @@ class SurfConsumer(BaseConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
-        pass
+        if self.session_id:
+            self.userPool.detach_user_from_pool_by_session_id(self.session_id)
 
     @session_check
     async def receive(self, text_data=None, bytes_data=None):
@@ -72,11 +74,7 @@ class SurfConsumer(BaseConsumer):
             encoding=serialization.Encoding.PEM,
             format=serialization.PublicFormat.SubjectPublicKeyInfo
         )
-        init_json = {
-            'command': 'key_exchange',
-            'public_key': serialized_public_key.decode('utf-8'),
-        }
-        await self.send(text_data=json.dumps(init_json))
+        await self.send(setResult(text_data['command'], serialized_public_key.decode('utf-8'), text_data['path']))
 
     """-------------------------------user----------------------------"""
 
@@ -86,6 +84,7 @@ class SurfConsumer(BaseConsumer):
             if not self.userPool.access_new_user(session, self):
                 logger.error('user login failed, see more at connections.log')
                 await self.send(errorResult('login', '登录失败', 'user'))
+        self.session_id = session.session_id
         await self.send(respond_json)
 
     async def get_user_data(self, text_data):

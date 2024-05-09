@@ -68,6 +68,7 @@ class UserPool(object):
 
     def detach_user_from_pool_by_session_id(self, session_id):
         del self.__connected_user[session_id]
+        con_log.info(f'user:{session_id} has disconnect from surf')
 
 
 def session_check(func):
