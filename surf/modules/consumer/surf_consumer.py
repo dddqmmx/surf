@@ -85,7 +85,7 @@ class SurfConsumer(BaseConsumer):
         if session:
             if not self.userPool.access_new_user(session, self):
                 logger.error('user login failed, see more at connections.log')
-                await self.send(errorResult('login', '登录失败'))
+                await self.send(errorResult('login', '登录失败', 'user'))
         await self.send(respond_json)
 
     async def get_user_data(self, text_data):
