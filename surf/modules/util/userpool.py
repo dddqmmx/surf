@@ -79,7 +79,7 @@ def session_check(func):
             session_id = text_data.get('session_id', None)
             if session_id:
                 for k, user in UserPool().get_users():
-                    if user.check_user_id_by_session_id(session_id):
+                    if user.check_user_id_by_session_id(session_id) and session_id == args[0].session_id:
                         flag = True
                         break
         else:
