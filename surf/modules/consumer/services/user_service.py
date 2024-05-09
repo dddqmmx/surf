@@ -35,7 +35,7 @@ class UserService(object):
             if user_id is not False:
                 logger.info(f"user {user_id} has login")
                 session.set('user_id', user_id)
-                return setResult('to_url', {'address': 'main', 'session_id': session.session_id}), session
+                return setResult('to_url', {'address': 'main', 'session_id': session.session_id}, 'user'), session
         except Exception as e:
             logger.error(f"""{e}\n{traceback.format_exc()}""")
         return errorResult('to_url', False, 'user'), None

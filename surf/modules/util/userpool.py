@@ -79,9 +79,12 @@ def session_check(func):
                     if user.check_user_id_by_session_id(session_id):
                         flag = True
                         break
-        if flag:
-            return func(*args, **kwargs)
         else:
+            flag = True
+        if flag:
+            return await func(*args, **kwargs)
+        else:
+            logger.error(text_data)
             logger.error(f"发现无效session进行操作：{session_id}， 已拦截")
-            await args[0].send(errorResult(text_data['command'], '无效session'))
+            await args[0].send(errorResult(text_data['command'], '无效session', text_data['path']))
     return wrapper
