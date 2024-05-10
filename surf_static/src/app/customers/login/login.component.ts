@@ -57,35 +57,6 @@ export class LoginComponent {
         };
         reader.readAsText(file);
     }
-    init() {
-        const self = this;
-        if (this.isJSON(this.fileContent)) {
-            const userFile = JSON.parse(this.fileContent)
-            const serverAddress = userFile.server_address;
-            this.localDataService.serverAddress = serverAddress;
-            const publicKey = userFile.public_key;
-            const privateKey = atob(userFile.private_key);
-            this.cryptoService.setClientPrivateKey(privateKey);
-            const socket = new WebSocket('ws://'+serverAddress+'/ws/key_exchange/');
-            const requestJson = {
-                'command': 'key_exchange',
-                'public_key': publicKey
-            }
-            socket.onopen = function (){
-                socket.send(JSON.stringify(requestJson));
-            }
-            socket.onmessage = function (e: { data: any; }) {
-                const json = JSON.parse(e.data)
-                const command =    json.command;
-                if (command == "key_exchange"){
-                    const public_key = json.public_key;
-                    self.cryptoService.setServerPublicKey(public_key);
-                }
-                socket.close();
-                self.toLogin()
-            };
-        }
-    }
 
     login() {
         const self = this;
@@ -144,53 +115,6 @@ export class LoginComponent {
                 });
 
         }
-    }
-
-    toLogin(){
-        const self = this;
-        if (this.isJSON(this.fileContent)) {
-            const userFile = JSON.parse(this.fileContent)
-            const serverAddress = userFile.server_address;
-            this.socket = new WebSocket('ws://'+serverAddress+'/ws/user/');
-            this.socket.onopen = function () {
-                const requestJson = {
-                    'command': 'login',
-                    'public_key': userFile.public_key,
-                }
-                self.send(JSON.stringify(requestJson));
-            }
-            this.socket.onclose = function (e) {
-                console.error('Chat socket closed unexpectedly');
-            };
-            this.socket.onmessage = function (e: { data: any; }) {
-                const json = JSON.parse(e.data)
-                console.log(json)
-                const command = json.command;
-                const data = json.messages;
-                if (command == "to_url"){
-                    const session_id = data.session_id;
-                    self.cryptoService.setSession(session_id);
-                    const address = data.address;
-                    if (address == 'main'){
-                        self.router.navigate(['main/chat']);
-                        self.socket?.close();
-                    }
-                }
-            };
-        } else {
-            console.log('不是 JSON 文件');
-        }
-    }
-
-    send(message: string){
-            if (this.socket != null) {
-                this.socket.send(message);
-                // const encryptedData = this.cryptoService.encryptData((massage));
-                // console.log(encryptedData)
-                // if (typeof encryptedData === "string") {
-                //     this.socket.send(encryptedData);
-                // }
-            }
     }
 
     isJSON(str: any) {
