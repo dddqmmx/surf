@@ -57,6 +57,7 @@ def setResult(command, data, path, extra_col=None, log=''):
         extra_col = []
     result = {
         "command": str(command),
+        "path": path,
         "messages": []
     }
     if data:
@@ -64,10 +65,10 @@ def setResult(command, data, path, extra_col=None, log=''):
             result.update({k: v for k, v in col.items()})
         result['status'] = True
         result['messages'] = data
-        result['msg'] = u'执行成功！'
+        result['msg'] = '执行成功！'
     else:
         result['status'] = False
-        result['msg'] = u'执行失败！'
+        result['msg'] = '执行失败！'
     # 添加审计日志编辑内容
     if log != '':
         result['log'] = log
@@ -77,6 +78,7 @@ def setResult(command, data, path, extra_col=None, log=''):
 def errorResult(command, error_msg, path, log=''):
     result = {
         "command": str(command),
+        "path": path,
         "messages": False,
         "msg": str(error_msg)
     }

@@ -55,7 +55,7 @@ class UserPool(object):
 
     def access_new_user(self, session, consumer, return_id=False) -> Union[bool, Tuple[bool, str]]:
         user_id = session.get('user_id')
-        surf_user = SurfUser(user_id, session.session_id, consumer)
+        surf_user = SurfUser(user_id, consumer)
         flag = self.connect_user_to_pool(session, surf_user)
         if return_id:
             return flag, session.session_id
@@ -66,21 +66,29 @@ class UserPool(object):
         for k, user in self.get_broadcast_by_channel_id(channel_id).items():
             user.broadcast(text_data)
 
+    def detach_user_from_pool_by_session_id(self, session_id):
+        del self.__connected_user[session_id]
+        con_log.info(f'session_id:{session_id} has disconnect from surf')
+
 
 def session_check(func):
     async def wrapper(*args, **kwargs):
         flag = False
+        session_id = None
         text_data = json.loads(kwargs['text_data'])
-        session_id = text_data.get('session_id', None)
-        if session_id:
-            for k, user in UserPool().get_users():
-                if user.check_user_id_by_session_id(session_id):
-                    flag = True
-                    break
-        if flag:
-            return func(*args, **kwargs)
+        if text_data['command'] != 'login' and text_data != 'key_exchange':
+            session_id = text_data.get('session_id', None)
+            if session_id:
+                for k, user in UserPool().get_users():
+                    if user.check_user_id_by_session_id(session_id) and session_id == args[0].session_id:
+                        flag = True
+                        break
         else:
+            flag = True
+        if flag:
+            return await func(*args, **kwargs)
+        else:
+            logger.error(text_data)
             logger.error(f"发现无效session进行操作：{session_id}， 已拦截")
-            await args[0].send(errorResult(text_data['command'], '无效session'))
-
+            await args[0].send(errorResult(text_data['command'], '无效session', text_data['path']))
     return wrapper
