@@ -71,9 +71,20 @@ export class CryptoService {
         }
     }
 
-    generateKeyPair(){
-        let keyPair:any
-        window.crypto.subtle.generateKey({
+    async exportPublicKey(key: CryptoKey): Promise<string> {
+        const exported = await window.crypto.subtle.exportKey("spki", key);
+        let binary = '';
+        const bytes = new Uint8Array(exported);
+        const len = bytes.byteLength;
+        for (let i = 0; i < len; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return window.btoa(binary);
+    }
+
+    generateKeyPair(): Promise<CryptoKeyPair> {
+        return new Promise((resolve, reject) => {
+            window.crypto.subtle.generateKey({
                 name: "RSA-OAEP",
                 modulusLength: 4096, // 密钥大小
                 publicExponent: new Uint8Array([0x01, 0x00, 0x01]), // 公钥指数，等于65537
@@ -82,12 +93,13 @@ export class CryptoService {
             true, // 是否提取密钥
             ["encrypt", "decrypt"] // 密钥用途
         ).then(function(cryptoKeyPair) {
-            keyPair =  cryptoKeyPair
+            resolve(cryptoKeyPair);
         }).catch(function(err) {
             console.error(err);
+            reject(err);
         });
-        return keyPair
-    }
+    });
+}
 
 
 }
