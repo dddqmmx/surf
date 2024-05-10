@@ -106,12 +106,14 @@ export class LoginComponent {
                         // })
                         self.login()
                     } catch (err) {
+                        this.socketMassageService.disconnect()
                         console.error(err);
                     }
                 })
                 .catch((error) => {
                     // 发生错误时的处理
                     console.error('WebSocket连接出错:', error);
+                    this.socketMassageService.disconnect()
                 });
 
         }

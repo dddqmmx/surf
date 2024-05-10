@@ -81,6 +81,9 @@ export class SocketManagerService {
                     // 将 socket 设置为 null，这样下次调用 initializeMainConnection 时，会创建一个新的 WebSocket 连接
                     this.socket = null;
                 }
+                this.socket.onerror = ()=>{
+                    this.socket = null;
+                }
             } else {
                 // 如果 socket 已存在，则直接 resolve，表示 WebSocket 已经完全连接
                 resolve();
@@ -98,6 +101,8 @@ export class SocketManagerService {
             }
             this.pathMap.clear();
             this.socket.close();
+            // 将 socket 设置为 null，这样下次调用 initializeMainConnection 时，会创建一个新的 WebSocket 连接
+            this.socket = null;
         }
     }
 
