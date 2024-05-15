@@ -10,28 +10,48 @@ INSERT INTO public.t_permissions (c_permission_id, c_description) VALUES (3, 'Pe
 
 INSERT INTO public.t_servers (c_server_id, c_description, c_name, c_owner_id, c_create_time, c_icon_url, c_is_active, c_is_private) VALUES ('fdad3e5e-818d-4201-8b07-4734da71d9b7', '傻逼', 'hololive', 'e2cfa16b-c7a3-46f0-9995-22e2ae333e3e', 1713630327, null, true, true);
 INSERT INTO public.t_servers (c_server_id, c_description, c_name, c_owner_id, c_create_time, c_icon_url, c_is_active, c_is_private) VALUES ('b0e98cf2-c35f-4180-a61b-96fde10f48ff', '横山爱好者频道', '如龙频道', 'e2cfa16b-c7a3-46f0-9995-22e2ae333e3e', 1714063934, null, true, true);
+INSERT INTO public.t_servers (c_server_id, c_description, c_name, c_owner_id, c_create_time, c_icon_url, c_is_active, c_is_private) VALUES ('c666e4a2-bdc6-4bf5-a41d-5b0b3f01a73e', '123', '123', 'e2cfa16b-c7a3-46f0-9995-22e2ae333e3e', 1715508210, null, true, true);
+
 
 INSERT INTO public.t_roles (c_role_id, c_server_id, c_name, c_permissions) VALUES ('bdabb221-ebe9-478d-bb42-86578cb2e4c0', 'fdad3e5e-818d-4201-8b07-4734da71d9b7', '服务器拥有者', '[1, 2, 3]');
 INSERT INTO public.t_roles (c_role_id, c_server_id, c_name, c_permissions) VALUES ('720712a3-8eb0-421e-a269-776bac5c5dd2', 'fdad3e5e-818d-4201-8b07-4734da71d9b7', '普通成员', '[1]');
 INSERT INTO public.t_roles (c_role_id, c_server_id, c_name, c_permissions) VALUES ('dd531822-99bf-4bd7-aae9-14aa341d6514', 'b0e98cf2-c35f-4180-a61b-96fde10f48ff', '服务器拥有者', '[1, 2, 3]');
 INSERT INTO public.t_roles (c_role_id, c_server_id, c_name, c_permissions) VALUES ('8d24e43c-ad94-4344-8e35-167ee60935d5', 'b0e98cf2-c35f-4180-a61b-96fde10f48ff', '普通成员', '[1]');
+INSERT INTO public.t_roles (c_role_id, c_server_id, c_name, c_permissions) VALUES ('4c5f75e4-56ad-46d3-b355-cdafd3d1306f', 'c666e4a2-bdc6-4bf5-a41d-5b0b3f01a73e', '普通成员', '[1]');
+INSERT INTO public.t_roles (c_role_id, c_server_id, c_name, c_permissions) VALUES ('79708888-9a41-425a-ab6b-e91dd11c63c1', 'c666e4a2-bdc6-4bf5-a41d-5b0b3f01a73e', '服务器拥有者', '[1, 2, 3]');
 
 
 INSERT INTO public.t_server_members (c_id, c_server_id, c_user_id, c_roles) VALUES ('b8dc425a-f238-4bf6-85cc-e17c27833a63', 'fdad3e5e-818d-4201-8b07-4734da71d9b7', 'e2cfa16b-c7a3-46f0-9995-22e2ae333e3e', '["bdabb221-ebe9-478d-bb42-86578cb2e4c0"]');
 INSERT INTO public.t_server_members (c_id, c_server_id, c_user_id, c_roles) VALUES ('070e0b27-de71-4dd2-af69-a562d2b1825b', 'fdad3e5e-818d-4201-8b07-4734da71d9b7', '02c9aba4-44a0-4ddf-8cf2-70c6e5e554d7', '["720712a3-8eb0-421e-a269-776bac5c5dd2"]');
 INSERT INTO public.t_server_members (c_id, c_server_id, c_user_id, c_roles) VALUES ('cdc4676e-8266-4239-b538-7c2c2cf7999c', 'b0e98cf2-c35f-4180-a61b-96fde10f48ff', 'e2cfa16b-c7a3-46f0-9995-22e2ae333e3e', '["dd531822-99bf-4bd7-aae9-14aa341d6514"]');
+INSERT INTO public.t_server_members (c_id, c_server_id, c_user_id, c_roles) VALUES ('c30c62f5-25bf-418b-b914-e81043869765', 'c666e4a2-bdc6-4bf5-a41d-5b0b3f01a73e', 'e2cfa16b-c7a3-46f0-9995-22e2ae333e3e', '["6e48f76d-8713-4814-9007-ff3a959927f0"]');
 
 
 INSERT INTO public.t_channel_groups (c_group_id, c_server_id, c_group_name) VALUES ('97096b43-2de4-43ac-9024-ebb63ed3ec1e', 'fdad3e5e-818d-4201-8b07-4734da71d9b7', '文字频道分组');
 INSERT INTO public.t_channel_groups (c_group_id, c_server_id, c_group_name) VALUES ('680c0836-58c4-43fb-8fb8-23a2103ffcdd', 'fdad3e5e-818d-4201-8b07-4734da71d9b7', '语音频道分组');
 INSERT INTO public.t_channel_groups (c_group_id, c_server_id, c_group_name) VALUES ('f511c852-61ee-46d0-9c84-a49c8a9b2caf', 'b0e98cf2-c35f-4180-a61b-96fde10f48ff', '文字频道分组');
 INSERT INTO public.t_channel_groups (c_group_id, c_server_id, c_group_name) VALUES ('59f05e0e-b0ac-4fa4-b327-a7a48c2cecc9', 'b0e98cf2-c35f-4180-a61b-96fde10f48ff', '语音频道分组');
+INSERT INTO public.t_channel_groups (c_group_id, c_server_id, c_group_name) VALUES ('eab00874-d0a8-4ce2-8138-f1cdad0cd30c', 'c666e4a2-bdc6-4bf5-a41d-5b0b3f01a73e', '文字频道分组');
+INSERT INTO public.t_channel_groups (c_group_id, c_server_id, c_group_name) VALUES ('3d010288-26d2-4315-84f5-58554e4b0257', 'c666e4a2-bdc6-4bf5-a41d-5b0b3f01a73e', '语音频道分组');
 
 
 INSERT INTO public.t_channels (c_channel_id, c_group_id, c_name, c_type, c_description, c_create_by, c_create_time) VALUES ('aa6cd21b-7080-4e65-9059-8a6a8c303cbb', '97096b43-2de4-43ac-9024-ebb63ed3ec1e', '默认文字频道', 'text', '这是一个文字频道', 'e2cfa16b-c7a3-46f0-9995-22e2ae333e3e', 1713630328);
 INSERT INTO public.t_channels (c_channel_id, c_group_id, c_name, c_type, c_description, c_create_by, c_create_time) VALUES ('0362e80c-839b-4ee6-9e77-c2cb6668c961', '680c0836-58c4-43fb-8fb8-23a2103ffcdd', '默认语音频道', 'voice', '这是一个语音频道', 'e2cfa16b-c7a3-46f0-9995-22e2ae333e3e', 1713630328);
 INSERT INTO public.t_channels (c_channel_id, c_group_id, c_name, c_type, c_description, c_create_by, c_create_time) VALUES ('ff8bbfd2-a051-4791-abf6-4985b59b645a', 'f511c852-61ee-46d0-9c84-a49c8a9b2caf', '默认文字频道', 'text', '这是一个文字频道', 'e2cfa16b-c7a3-46f0-9995-22e2ae333e3e', 1714063936);
 INSERT INTO public.t_channels (c_channel_id, c_group_id, c_name, c_type, c_description, c_create_by, c_create_time) VALUES ('15af977e-fb02-4a9c-88d4-b70e001ad7cd', '59f05e0e-b0ac-4fa4-b327-a7a48c2cecc9', '默认语音频道', 'voice', '这是一个语音频道', 'e2cfa16b-c7a3-46f0-9995-22e2ae333e3e', 1714063936);
+INSERT INTO public.t_channels (c_channel_id, c_group_id, c_name, c_type, c_description, c_create_by, c_create_time) VALUES ('cbf49ff6-39e5-42fb-a52b-fbb9f58d0278', 'eab00874-d0a8-4ce2-8138-f1cdad0cd30c', '默认文字频道', 'text', '这是一个文字频道', 'e2cfa16b-c7a3-46f0-9995-22e2ae333e3e', 1715508211);
+INSERT INTO public.t_channels (c_channel_id, c_group_id, c_name, c_type, c_description, c_create_by, c_create_time) VALUES ('63319bb0-99de-4f3a-84cc-38d804982891', '3d010288-26d2-4315-84f5-58554e4b0257', '默认语音频道', 'voice', '这是一个语音频道', 'e2cfa16b-c7a3-46f0-9995-22e2ae333e3e', 1715508211);
+
+
+INSERT INTO public.t_channel_members (c_channel_id, c_user_id, c_permissions) VALUES ('cbf49ff6-39e5-42fb-a52b-fbb9f58d0278', 'e2cfa16b-c7a3-46f0-9995-22e2ae333e3e', 1);
+INSERT INTO public.t_channel_members (c_channel_id, c_user_id, c_permissions) VALUES ('63319bb0-99de-4f3a-84cc-38d804982891', 'e2cfa16b-c7a3-46f0-9995-22e2ae333e3e', 1);
+INSERT INTO public.t_channel_members (c_channel_id, c_user_id, c_permissions) VALUES ('aa6cd21b-7080-4e65-9059-8a6a8c303cbb', 'e2cfa16b-c7a3-46f0-9995-22e2ae333e3e', 1);
+INSERT INTO public.t_channel_members (c_channel_id, c_user_id, c_permissions) VALUES ('0362e80c-839b-4ee6-9e77-c2cb6668c961', 'e2cfa16b-c7a3-46f0-9995-22e2ae333e3e', 1);
+INSERT INTO public.t_channel_members (c_channel_id, c_user_id, c_permissions) VALUES ('ff8bbfd2-a051-4791-abf6-4985b59b645a', 'e2cfa16b-c7a3-46f0-9995-22e2ae333e3e', 1);
+INSERT INTO public.t_channel_members (c_channel_id, c_user_id, c_permissions) VALUES ('15af977e-fb02-4a9c-88d4-b70e001ad7cd', 'e2cfa16b-c7a3-46f0-9995-22e2ae333e3e', 1);
+INSERT INTO public.t_channel_members (c_channel_id, c_user_id, c_permissions) VALUES ('aa6cd21b-7080-4e65-9059-8a6a8c303cbb', '02c9aba4-44a0-4ddf-8cf2-70c6e5e554d7', 1);
+INSERT INTO public.t_channel_members (c_channel_id, c_user_id, c_permissions) VALUES ('0362e80c-839b-4ee6-9e77-c2cb6668c961', '02c9aba4-44a0-4ddf-8cf2-70c6e5e554d7', 1);
+
 
 
 INSERT INTO public.t_channel_chats (c_chat_id, c_channel_id, c_status) VALUES ('2aad344b-30d3-4af4-81ae-64f193fddbda', 'aa6cd21b-7080-4e65-9059-8a6a8c303cbb', 0);
