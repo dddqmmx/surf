@@ -95,3 +95,17 @@ class UserService(object):
         except Exception as e:
             logger.error(f"""{e}\n{traceback.format_exc()}""")
         return errorResult(f"{text_data['command']}_result", '获取失败', 'user')
+
+    def add_friend(self, text_data, session_id):
+        try:
+            res = self.__userModel.search_user_by_id(text_data['user_id'])
+            if len(res) == 1 and res[0] == 1:
+                filters = {
+                    "c_user_id": Session.get_session_by_id(session_id).get('user_id'),
+                    "c_friend_id": text_data['user_id'],
+                    "c_status": "pending"
+                }
+                return setResult(text_data['command'], self.__userModel.add_user_as_friend(filters), 'user')
+        except Exception as e:
+            logger.error(f"""{e}\n{traceback.format_exc()}""")
+        return errorResult(f"{text_data['command']}_result", '添加失败', 'user')

@@ -99,6 +99,10 @@ class SurfConsumer(BaseConsumer):
         respond_json = self.service_dict['user'].get_friends(text_data)
         await self.send(respond_json)
 
+    async def add_friend(self, text_data):
+        respond_json = self.service_dict['user'].add_friend(text_data, self.session_id)
+        await self.send(respond_json)
+
     """-------------------------------server----------------------------"""
 
     async def create_server(self, text_data):
