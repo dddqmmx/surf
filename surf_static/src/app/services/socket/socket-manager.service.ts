@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
-import {error} from "@angular/compiler-cli/src/transformers/util";
-
 @Injectable({
   providedIn: 'root'
 })
@@ -9,72 +7,113 @@ export class SocketManagerService {
     // 这是主连接的 Socket
     private socket: any
     // 存放指定command的订阅
-    messageSubjects: Map<string, Subject<MessageEvent>> = new Map();
+    // key是command
+    // messageSubjects: Map<string, Subject<MessageEvent>> = new Map();
+    // 外层Map，用于根据path存储和查找内层Map
+    pathMap = new Map();
 
-    //初始化总链接
-    public initializeMainConnection(serverAddress:string){
-        //判断socket是否存在
-        if(!this.socket){
-            // 这是主连接的socket
-            const endpoint: string = 'ws://' + serverAddress + '/ws/mian/';
-            this.socket = new WebSocket(endpoint)
-            // 设置 onmessage 事件处理器
-            this.socket.onmessage = (event: MessageEvent<any>) => {
-                // 解析接收到的消息，假定所有消息都按照规范走
-                const jsonMassage = JSON.parse(event.data)
-                const command = jsonMassage.command
-                let messageSubject: Subject<MessageEvent>;
-                // 检查是否已经为该命令创建了一个 Subject
-                if (this.messageSubjects.has(command)){
-                    // 如果已经存在，直接从 messageSubjects 映射中获取
-                    this.messageSubjects.get(command)
-                }else {
-                    // 如果没有，创建一个新的 Subject 并将其添加到 messageSubjects 映射中
-                    // 实际上我感觉没有获取过这个命令的 Subject 甚至可以不处理，return这个方法就好
-                     messageSubject = new Subject<MessageEvent>();
-                    this.messageSubjects.set(jsonMassage.command,messageSubject);
-                }
-                // 把消息事件发布到 Subject
-                messageSubject!.next(event);
-            };
-            this.socket.close =() =>{
-                // 当连接关闭时，完成所有的 Subject 并清除 messageSubjects 映射
-                for (const [command, messageSubject] of this.messageSubjects.entries()) {
-                    messageSubject.complete();
-                }
-                this.messageSubjects.clear();
-                // 将 socket 设置为 null，这样下次调用 initializeMainConnection 时，会创建一个新的 WebSocket 连接
-                this.socket = null;
-            }
+// 添加一个新的path和command
+    addMessageSubject(path: string, command: string, subject: Subject<MessageEvent>) {
+        if (!this.pathMap.has(path)) {
+            this.pathMap.set(path, new Map()); // 如果path不存在，创建一个新的Map
         }
+        const commandMap = this.pathMap.get(path); // 获取与path关联的Map
+        commandMap.set(command, subject); // 在内层Map中添加command和Subject
     }
 
-    //获取指定command的订阅
-    public getMessageSubject(command: string): Subject<MessageEvent> {
+    public getMessageSubject(path: string,command: string): Subject<MessageEvent> {
         let messageSubject: Subject<MessageEvent>;
-        if (this.messageSubjects.has(command)) {
-            // 如果已经存在，直接从 messageSubjects 映射中获取
-            messageSubject = this.messageSubjects.get(command)!;
+        const commandMap = this.pathMap.get(path);
+        if (commandMap && commandMap.get(command)) {
+            messageSubject = commandMap.get(command)
+            console.log('2')
         } else {
+            console.log("1")
             // 如果没有，创建一个新的 Subject 并将其添加到 messageSubjects 映射中
             messageSubject = new Subject<MessageEvent>();
-            this.messageSubjects.set(command, messageSubject);
+            this.addMessageSubject(path,command, messageSubject);
         }
         return messageSubject;
     }
 
+    existMessageSubject(path: string,command: string) {
+        const commandMap = this.pathMap.get(path);
+        if (commandMap) {
+            return commandMap.has(command); // 如果command存在，返回true
+        }
+        return false; // 如果path不存在，或者command不存在，返回false
+    }
+
+    //初始化总链接
+    public initializeMainConnection(serverAddress:string){
+        return new Promise<void>((resolve, reject) => {
+            //判断socket是否存在
+            if(!this.socket){
+                // 这是主连接的socket
+                const endpoint: string = 'ws://' + serverAddress + '/ws/surf/';
+                this.socket = new WebSocket(endpoint)
+                // 设置 onopen 事件处理器
+                this.socket.onopen = () => {
+                    // 连接成功后执行 resolve，表示 WebSocket 已经完全连接
+                    resolve();
+                };
+                // 设置 onmessage 事件处理器
+                this.socket.onmessage = (event: MessageEvent<any>) => {
+                    console.log(event.data)
+                    // 解析接收到的消息，假定所有消息都按照规范走
+                    const jsonMassage = JSON.parse(event.data)
+                    const path = jsonMassage.path
+                    const command = jsonMassage.command
+                    let messageSubject = this.getMessageSubject(path,command);
+                    // 检查是否已经为该命令创建了一个 Subject
+                    if (messageSubject) {
+                        // 把消息事件发布到 Subject
+                        messageSubject!.next(event);
+                    }
+                };
+                this.socket.close =() =>{
+                    // 当连接关闭时，完成所有的 Subject 并清除 pathMap 映射
+                    for (const [path, commandMap] of this.pathMap.entries()) {
+                        for (const [command, messageSubject] of commandMap.entries()) {
+                            messageSubject.complete();
+                        }
+                        commandMap.clear();
+                    }
+                    this.pathMap.clear();
+                    // 将 socket 设置为 null，这样下次调用 initializeMainConnection 时，会创建一个新的 WebSocket 连接
+                    this.socket = null;
+                }
+                this.socket.onerror = ()=>{
+                    this.socket = null;
+                }
+            } else {
+                // 如果 socket 已存在，则直接 resolve，表示 WebSocket 已经完全连接
+                resolve();
+            }
+        });
+    }
 
     public disconnect(){
         if (this.socket){
+            for (const [path, commandMap] of this.pathMap.entries()) {
+                for (const [command, messageSubject] of commandMap.entries()) {
+                    messageSubject.complete();
+                }
+                commandMap.clear();
+            }
+            this.pathMap.clear();
             this.socket.close();
+            // 将 socket 设置为 null，这样下次调用 initializeMainConnection 时，会创建一个新的 WebSocket 连接
+            this.socket = null;
         }
     }
 
-    public send(command: string, messages: any){
+    public send(path: string,command: string, messages: any){
         const respond_json = {
+            'path': path,
             "command": command,
-            "messages":messages
+            ...messages
         }
-        this.socket.send(respond_json)
+        this.socket.send(JSON.stringify(respond_json))
     }
 }
