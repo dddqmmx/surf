@@ -9,7 +9,7 @@ Last Edit Time  :
 import json
 import traceback
 
-from surf.modules.util import Session, UserPool
+from surf.modules.util import Session
 from surf.modules.consumer.models import UserModel
 from .server_service import ServerService
 from surf.appsGlobal import logger, setResult, errorResult
@@ -18,7 +18,6 @@ from surf.appsGlobal import logger, setResult, errorResult
 class UserService(object):
     def __init__(self):
         self.__userModel = UserModel()
-        self.__userPool = UserPool()
 
     def login(self, public_key):
         try:
