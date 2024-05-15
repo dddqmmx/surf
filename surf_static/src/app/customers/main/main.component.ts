@@ -1,4 +1,4 @@
-import {Component, input, OnInit} from '@angular/core';
+import {Component, input, OnInit, ViewChild} from '@angular/core';
 import {NgForOf, NgIf} from "@angular/common";
 import {CryptoService} from "../../services/crypto/crypto.service";
 import {LocalDataService} from "../../services/local_data/local-data.service";
@@ -7,7 +7,8 @@ import {ChatComponent} from "../chat/chat.component";
 import {SidebarServerComponent} from "../sidebar-server/sidebar-server.component";
 import {FormsModule} from "@angular/forms";
 import {SocketManagerService} from '../../services/socket/socket-manager.service'
-import {Subscription} from "rxjs";
+import {finalize, Subscription} from "rxjs";
+import {SidebarDierctMassagesComponent} from "../sidebar-dierct-massages/sidebar-dierct-massages.component";
 @Component({
   selector: 'app-main',
   standalone: true,
@@ -17,7 +18,8 @@ import {Subscription} from "rxjs";
         RouterOutlet,
         SidebarServerComponent,
         NgIf,
-        FormsModule
+        FormsModule,
+        SidebarDierctMassagesComponent
     ],
   templateUrl: './main.component.html',
   styleUrl: './main.component.css'
@@ -32,6 +34,7 @@ export class MainComponent implements OnInit{
     serverName = ""
     serverDescription = ""
     messageSubscription : any;
+    private subscriptions: Subscription[] = [];
 
 
     toggleCreatServerPopup() {
@@ -47,22 +50,19 @@ export class MainComponent implements OnInit{
                 private router: Router) {
             this.cryptoService = cryptoService;
             this.localDataService = localDataService;
+            this.socketMangerService = socketMangerService;
     }
 
+    @ViewChild('sidebarServer')
+    public sidebarServer: SidebarServerComponent | undefined
 
     ngOnInit(): void {
-        this.messageSubscription = this.socketMangerService.connect('ws://' + this.localDataService.serverAddress + '/ws/user/')
-            .subscribe(
-                message =>{
-                    console.log(message)
-                }
-            )
         this.getUserData();
         // this.getFriends();
     }
 
     ngOnDestroy(){
-        this.messageSubscription.unsubscribe()
+        this.subscriptions.forEach(subscription => subscription.unsubscribe());
     }
     previewImageUrl: string = ''; // 存储预览图像的URL
     // 打开文件选择对话框
@@ -75,7 +75,6 @@ export class MainComponent implements OnInit{
       this.previewImage(file); // 调用预览图像方法
     }
 
-
     // 预览图像
     previewImage(file: File) {
         const reader = new FileReader(); // 创建文件读取器
@@ -87,79 +86,89 @@ export class MainComponent implements OnInit{
 
     // Function to handle WebSocket connections and messages
     connectWebSocket(url:any, requestJson:any, messageHandler:any) {
-    const socket = new WebSocket(url);
-    socket.onopen = function () {
-        socket.send(JSON.stringify(requestJson));
-    };
-    socket.onclose = function (e) {
-        console.error('WebSocket closed unexpectedly');
-    };
-    socket.onmessage = function (e) {
-        const json = JSON.parse(e.data);
-        messageHandler(json);
-    };
-}
+        const socket = new WebSocket(url);
+        socket.onopen = function () {
+            socket.send(JSON.stringify(requestJson));
+        };
+        socket.onclose = function (e) {
+            console.error('WebSocket closed unexpectedly');
+        };
+        socket.onmessage = function (e) {
+            const json = JSON.parse(e.data);
+            messageHandler(json);
+        };
+    }
+    setSidebarServerId(serverId:string){
+        this.sidebarServer?.getServerDetails(serverId);
+    }
 
-// Reusing WebSocket connection for different functionalities
-searchUser() {
-    const requestJson = {
-        'command': 'search_user',
-        'user_id_list': [this.inputUserId]
-    };
-    this.connectWebSocket(
-        'ws://' + this.localDataService.serverAddress + '/ws/user/',
-        requestJson,
-        (json: { message: any; }) => {
-            this.invitationList.push(...json.message);
-        }
-    );
-}
+    // Reusing WebSocket connection for different functionalities
+    searchUser() {
+        const requestJson = {
+            'command': 'search_user',
+            'user_id_list': [this.inputUserId]
+        };
+        this.connectWebSocket(
+            'ws://' + this.localDataService.serverAddress + '/ws/user/',
+            requestJson,
+            (json: { message: any; }) => {
+                this.invitationList.push(...json.message);
+            }
+        );
+    }
+    getUserData() {
+        console.log('123')
+        const getUserDataSubject = this.socketMangerService.getMessageSubject("user","get_user_data_result").subscribe(
+            message => {
+                const data = JSON.parse(message.data).messages;
+                console.log(data)
+                this.servers.push(...data.user.servers);
+                this.setSidebarServerId(this.servers[0].id)
+                getUserDataSubject.unsubscribe()
+            })
+        this.subscriptions.push(getUserDataSubject);
+        this.socketMangerService.send('user','get_user_data', {
+            'session_id':this.cryptoService.session
+        })
+    }
 
-getUserData() {
-    const requestJson = {
-        'command': 'get_user_data',
-        'session_id': this.cryptoService.session,
-    };
-    this.connectWebSocket(
-        'ws://' + this.localDataService.serverAddress + '/ws/user/',
-        requestJson,
-        (json: { message: { user: { servers: any; }; }; }) => {
-            this.servers.push(...json.message.user.servers);
-        }
-    );
-}
-
-getFriends() {
-    const requestJson = {
-        'command': 'get_friends',
-        'session_id': this.cryptoService.session,
-    };
-    this.connectWebSocket(
-        'ws://' + this.localDataService.serverAddress + '/ws/user/',
-        requestJson,
-        (json: any) => {
-            console.log("Friends:", json);
-        }
-    );
-}
-
-createServer() {
-    const requestJson = {
-        'command': 'create_server',
-        'server': {
-            'description': this.serverDescription,
-            'name': this.serverName,
+    createServer() {
+        this.socketMangerService.send('server','create_server', {
             'session_id': this.cryptoService.session,
-            'is_private': true
-        }
-    };
-    this.connectWebSocket(
-        'ws://' + this.localDataService.serverAddress + '/ws/server/',
-        requestJson,
-        (json: any) => {
-            console.log("Server created:", json);
-        }
-    );
-}
+            'server': {
+                'description': this.serverDescription,
+                'name': this.serverName,
+                'is_private': true
+            }
+        })
+    }
+
+
+    getFriends() {
+        this.socketMangerService.send('user','get_friends', {
+            'session_id':this.cryptoService.session
+        })
+    }
+
+    // createServer() {
+    //     const requestJson = {
+    //         'command': 'create_server',
+    //         'server': {
+    //             'description': this.serverDescription,
+    //             'name': this.serverName,
+    //             'session_id': this.cryptoService.session,
+    //             'is_private': true
+    //         }
+    //     };
+    //     this.connectWebSocket(
+    //         'ws://' + this.localDataService.serverAddress + '/ws/server/',
+    //         requestJson,
+    //         (json: any) => {
+    //             console.log("Server created:", json);
+    //         }
+    //     );
+    // }
+
+
 
 }

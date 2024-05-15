@@ -20,7 +20,7 @@ body {
 }
 
 .sidebar {
-    background-color: #2c2f33;
+    background-color: #1e1f22;
     color: white;
     flex-shrink: 0;
     z-index: 1;
@@ -81,7 +81,7 @@ body {
 }
 
 .chat-sidebar {
-    background-color: #2f3136;
+    background-color: #2b2d31;
     color: white;
 
     flex: 0 0 auto; /* 新添加的 */
@@ -89,7 +89,8 @@ body {
 }
 
 .chat-content {
-    background-color: #36393f;
+    background-color: #313339;
+
     color: white;
     /*padding: 20px;*/
     flex: 1;

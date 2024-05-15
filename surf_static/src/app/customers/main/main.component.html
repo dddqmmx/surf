@@ -9,20 +9,21 @@
             </div>
             <div style="margin-top: 10px;margin-bottom: 10px;height: 1px;width: 48px;background: white"></div>
             <div *ngFor="let serverInfo of servers" class="avatar-container" style="margin-top: 10px;margin-bottom: 10px;">
-              <div class="avatar-wrapper">
+              <div class="avatar-wrapper" (click)="setSidebarServerId(serverInfo.id)">
                 <img class="avatar" src="assets/mike1.jpg" height="48" width="48">
                 <p class="name">{{ serverInfo.name }}</p>
               </div>
             </div>
             <div>
-                <img class="avatar" (click)="toggleCreatServerPopup()" style="border-radius: 50%;background: #36393f" src="assets/add_FILL0_wght400_GRAD0_opsz24.svg" height="48" width="48">
+                <img class="avatar" (click)="toggleCreatServerPopup()" style="border-radius: 50%;background: #313339" src="assets/add_FILL0_wght400_GRAD0_opsz24.svg" height="48" width="48">
             </div>
         </div>
     </div>
     <div class="main-content">
         <section class="chat-container">
             <div class="chat-sidebar">
-                <app-sidebar-server (selectUserPopup)="toggleSelectUserPopup()"></app-sidebar-server>
+                <app-sidebar-server #sidebarServer (selectUserPopup)="toggleSelectUserPopup()"></app-sidebar-server>
+<!--                <app-sidebar-dierct-massages></app-sidebar-dierct-massages>-->
             </div>
             <div class="chat-content">
                 <router-outlet/>

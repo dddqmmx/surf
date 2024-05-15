@@ -1,6 +1,11 @@
 import {Component, EventEmitter, Output, ViewChild} from '@angular/core';
 import {NgForOf, NgIf} from "@angular/common";
 import {MainComponent} from "../main/main.component";
+import {CryptoService} from "../../services/crypto/crypto.service";
+import {LocalDataService} from "../../services/local_data/local-data.service";
+import {Router} from "@angular/router";
+import {SocketManagerService} from "../../services/socket/socket-manager.service";
+import {Subscription} from "rxjs";
 
 @Component({
   selector: 'app-sidebar-server',
@@ -25,32 +30,49 @@ export class SidebarServerComponent {
     toggleMenu(){
         this.menuVisible = !this.menuVisible;
     }
-    channelInfo = {
-            "server_nane":"桐生可可粉丝频道",
-            "server_icon":"",
-            "channel_classes":[
-                {
-                    "channel_class_name":"文字聊天",
-                    "channels":[
-                        {
-                            "channel_name":"闲聊",
-                            "channel_type":"text"
-                        },
-                        {
-                            "channel_name":"文字",
-                            "channel_type":"text"
-                        }
-                    ]
-                },
-                {
-                    "channel_class_name":"语音聊天",
-                    "channels":[
-                        {
-                            "channel_name":"语音",
-                            "channel_type":"voice"
-                        }
-                    ]
-                }
-            ],
-        }
+    private subscriptions: Subscription[] = [];
+    ngOnDestroy(){
+        this.subscriptions.forEach(subscription => subscription.unsubscribe());
+    }
+
+    constructor(private cryptoService: CryptoService,private localDataService:LocalDataService,private socketManageService:SocketManagerService,private router: Router) {
+        this.cryptoService = cryptoService;
+        this.localDataService = localDataService;
+        this.socketManageService = socketManageService;
+    }
+    public toChat(){
+        this.router.navigate(['main/chat']);
+    }
+
+    public getServerDetails(serverId:string) {
+        const getServerDetailsSubject = this.socketManageService.getMessageSubject("server","get_server_details_result").subscribe(
+        message => {
+                this.channelInfo = JSON.parse(message.data).messages;
+                getServerDetailsSubject.unsubscribe()
+            })
+        this.subscriptions.push(getServerDetailsSubject)
+        this.socketManageService.send('server','get_server_details', {
+            'session_id': this.cryptoService.session,
+            'server_id': serverId
+        })
+    }
+    channelInfo: {
+        id: string
+        name: string
+        icon_url: string
+        channel_groups:[
+            {
+                "id": string,
+                "name": string,
+                "channels": [
+                    {
+                        "id": string,
+                        "name": string,
+                        "type": string,
+                        "description": string
+                    }
+                ]
+            },
+        ]
+    }|undefined
 }
