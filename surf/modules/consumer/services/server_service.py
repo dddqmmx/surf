@@ -7,6 +7,7 @@ Last Edit Time  :
 """
 import json
 import traceback
+from typing import Union
 
 from surf.modules.consumer.models import ServerModel, ChannelModel, RoleModel
 from surf.modules.util import Session
@@ -34,7 +35,7 @@ class ServerService(object):
                 filters = text_data.get("server", None)
                 if filters:
                     if isinstance(filters, dict):
-                        filters["owner_id"] = Session.get_session_by_id(filters["session_id"]).get("user_id")
+                        filters["owner_id"] = Session.get_session_by_id(text_data["session_id"]).get("user_id")
                         server_filter = {f"c_{k}": v for k, v in filters.items()}
                         server_id = self.__serverModel.save_server(server_filter)
                         if server_id:
@@ -77,9 +78,24 @@ class ServerService(object):
                                                 "c_create_by": server_filter["c_owner_id"]
                                             }
                                         ]
-                                        res = self.__channelModel.save_channel(filters)
-                                        if res is not False and len(res) == 2:
-                                            return setResult(f"{text_data['command']}_result", True, 'server')
+                                        channel_ids = self.__channelModel.save_channel(filters)
+                                        if channel_ids is not False and len(channel_ids) == 2:
+                                            filters = [
+                                                {
+                                                    "c_channel_id": channel_ids[0],
+                                                    "c_user_id": server_filter["c_owner_id"],
+                                                    # TODO:更改为实际权限
+                                                    "c_permissions": json.dumps(1)  # 假设权限ID 1 是基础访问权限
+                                                },
+                                                {
+                                                    "c_channel_id": channel_ids[1],
+                                                    "c_user_id": server_filter["c_owner_id"],
+                                                    # TODO:更改为实际权限
+                                                    "c_permissions": json.dumps(1)  # 假设权限ID 1 是基础访问权限
+                                                }
+                                            ]
+                                            if self.__channelModel.save_channel_members(filters):
+                                                return setResult(f"{text_data['command']}_result", True, 'server')
                                         else:
                                             error_flag = True
                                             logger.error('频道创建失败')
@@ -173,7 +189,7 @@ class ServerService(object):
                     channel_group_dict = {k: v for k, v in channel_group.items()}
                     channel_group_dict['channels'] = self.__channelModel.get_channel_by_group_id(channel_group_dict['id'])
                     server_dict['channel_groups'].append(channel_group_dict)
-                return setResult(f"{text_data['command']}_result", list(server_dict), 'server')
+                return setResult(f"{text_data['command']}_result", server_dict, 'server')
             return setResult(f"{text_data['command']}_result", False, 'server')
         except Exception as e:
             print(f"""{e}\n{traceback.format_exc()}""")
