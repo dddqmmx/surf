@@ -57,7 +57,12 @@ export class MainComponent implements OnInit{
     public sidebarServer: SidebarServerComponent | undefined
 
     ngOnInit(): void {
-        this.getUserData();
+        if (this.cryptoService.session){
+            this.getUserData();
+        }else {
+            alert('你没登录')
+            this.router.navigate(['/login'])
+        }
         // this.getFriends();
     }
 
