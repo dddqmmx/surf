@@ -1,4 +1,5 @@
 import re
+from typing import Union, List
 
 from psycopg2.pool import SimpleConnectionPool
 
@@ -322,7 +323,7 @@ class BaseDBPG(object):
                 cur.close()
                 self._releaseConn(conn)
 
-    def save(self, table, filters, primary=None, debug=False, return_id=False, return_id_clumn='ID'):
+    def save(self, table, filters, primary=None, debug=False, return_id=False, return_id_clumn='ID') -> Union[List[str], bool]:
         primary = 'id' if not primary else primary
         if type(filters) == type([]):
             return self._saveBat(table, filters, primary, debug=debug, return_id=return_id, return_id_clumn=return_id_clumn)
