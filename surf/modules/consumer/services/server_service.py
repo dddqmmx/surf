@@ -212,3 +212,21 @@ class ServerService(object):
         except Exception as e:
             print(f"""{e}\n{traceback.format_exc()}""")
         return errorResult(f"{text_data['command']}_result", 'session_id not get', 'server')
+
+    def get_channels_by_user_id(self, user_id) -> Union[list, bool]:
+        try:
+            res = self.__channelModel.get_channel_ids_by_user_id(user_id)
+            if res:
+                return res
+        except Exception as e:
+            print(f"""{e}\n{traceback.format_exc()}""")
+        return False
+
+    def get_server_by_channel_id(self, channel_id) -> Union[list, bool]:
+        try:
+            res = self.__channelModel.get_server_by_channel_id(channel_id)
+            if res:
+                return res
+        except Exception as e:
+            print(f"""{e}\n{traceback.format_exc()}""")
+        return False
