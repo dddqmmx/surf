@@ -222,11 +222,11 @@ class ServerService(object):
             print(f"""{e}\n{traceback.format_exc()}""")
         return False
 
-    def get_server_by_channel_id(self, channel_id) -> Union[list, bool]:
+    def get_server_by_channel_id(self, channel_id) -> Union[str, bool]:
         try:
             res = self.__channelModel.get_server_by_channel_id(channel_id)
             if res:
-                return res
+                return res[0]['id']
         except Exception as e:
             print(f"""{e}\n{traceback.format_exc()}""")
         return False

@@ -103,6 +103,11 @@ class SurfConsumer(BaseConsumer):
         respond_json = self.service_dict['user'].add_friend(text_data, self.session_id)
         await self.send(respond_json)
 
+    async def get_invitations(self, text_data):
+        respond_json = self.service_dict['user'].get_invitations(text_data)
+        await self.send(respond_json)
+
+
     """-------------------------------server----------------------------"""
 
     async def create_server(self, text_data):
@@ -133,8 +138,8 @@ class SurfConsumer(BaseConsumer):
 
     async def send_message(self, text_data):
         respond_json = self.service_dict['chat'].send_message(text_data)
-        if respond_json['message'] is not False:
-            self.userPool.broadcast_to_all_user_in_channel(text_data)
+        if json.loads(respond_json)['messages'] is not False:
+            self.userPool.broadcast_to_all_user_in_channel(json.loads(respond_json))
         else:
             await self.send(respond_json)
 

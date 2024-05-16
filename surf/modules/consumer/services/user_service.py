@@ -105,7 +105,15 @@ class UserService(object):
                     "c_friend_id": text_data['user_id'],
                     "c_status": "pending"
                 }
-                return setResult(text_data['command'], self.__userModel.add_user_as_friend(filters), 'user')
+                return setResult(f"{text_data['command']}_result", self.__userModel.add_user_as_friend(filters), 'user')
+        except Exception as e:
+            logger.error(f"""{e}\n{traceback.format_exc()}""")
+        return errorResult(f"{text_data['command']}_result", '添加失败', 'user')
+
+    def get_invitations(self, text_data):
+        try:
+            res = self.__userModel.get_invitations_by_user_id(text_data['user_id'])
+            return setResult(text_data['command'], res, 'user')
         except Exception as e:
             logger.error(f"""{e}\n{traceback.format_exc()}""")
         return errorResult(f"{text_data['command']}_result", '添加失败', 'user')

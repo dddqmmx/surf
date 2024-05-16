@@ -7,7 +7,7 @@ Project Name    : surf-extreme
 Last Edit Time  : 
 """
 import traceback
-from typing import Union
+from typing import Union, List
 
 from surf.appsGlobal import logger
 from surf.modules.util import BaseModel
@@ -66,3 +66,13 @@ class UserModel(BaseModel):
 
     def add_user_as_friend(self, filters: dict) -> bool:
         return self._pg.save("t_user_friends", filters)
+
+    def get_invitations_by_user_id(self, user_id: str):
+        res = []
+        try:
+            sql = """SELECT c_user_id as id, c_status as status FROM t_user_friends WHERE c_friend_id = %s"""
+            res.extend(self._pg.query(sql, [user_id]))
+        except Exception as e:
+            logger.error(f"""search user by id failed, search params:{user_id}\n{e}\n{traceback.format_exc()}""")
+        finally:
+            return res

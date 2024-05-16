@@ -14,7 +14,7 @@ import uuid
 from surf.appsGlobal import CHAT_TEMP, get_logger, setResult, errorResult
 from surf.modules.util import Ec, Session
 
-logger = get_logger('chat_service')
+logger = get_logger('chat')
 
 
 class ChatService(object):
@@ -43,13 +43,13 @@ class ChatService(object):
                     "track_scores": True
                 }
                 chat_list = self.ec.search('chat_message', search_body)['hits']['hits']
-                if chat_list:
-                    messages = [chat['_source'] for chat in chat_list]
-                    type = text_data['type']
-                    return setResult(command=f"{text_data['command']}_result",
-                                     data=messages,
-                                     extra_col=[{"type": type}],
-                                     path='chat')
+                messages = [chat['_source'] for chat in chat_list]
+                type = text_data['type']
+                logger.info(f"channel:{channel_id}'s chat data get:{chat_list}")
+                return setResult(command=f"{text_data['command']}_result",
+                                 data=messages,
+                                 extra_col=[{"type": type}],
+                                 path='chat')
         except Exception as e:
             logger.error(f"""获取消息失败\n{e}\n{traceback.format_exc()}""")
         return errorResult(f"{text_data['command']}_result", '获取消息失败', 'chat')
@@ -68,5 +68,7 @@ class ChatService(object):
                 count = self.ec.bulk(self.ec.generator([filters], 'create'))
                 if count[0] == 1:
                     return setResult('new_message', filters['_source'], 'chat')
+                logger.error('添加数据到es失败')
         except Exception as e:
             logger(f"""发送消息失败\n{e}\n{traceback.format_exc()}""")
+        return errorResult('new_message', '数据添加至es失败', 'chat')
