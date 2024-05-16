@@ -38,5 +38,6 @@ class SurfUser(object):
     async def broadcast(self, text_data):
         try:
             await self.__ws.send(text_data)
+            logger.info(f'broadcast data to:{self.__user_id}')
         except Exception as e:
             logger.error(f"broadcast failed, userid:{self.__user_id}, ex:{e}\n{traceback.print_exc()}")
