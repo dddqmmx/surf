@@ -68,5 +68,7 @@ class ChatService(object):
                 count = self.ec.bulk(self.ec.generator([filters], 'create'))
                 if count[0] == 1:
                     return setResult('new_message', filters['_source'], 'chat')
+                logger.error('添加数据到es失败')
         except Exception as e:
             logger(f"""发送消息失败\n{e}\n{traceback.format_exc()}""")
+        return errorResult('new_message', '数据添加至es失败', 'chat')

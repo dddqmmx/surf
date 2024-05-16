@@ -133,8 +133,8 @@ class SurfConsumer(BaseConsumer):
 
     async def send_message(self, text_data):
         respond_json = self.service_dict['chat'].send_message(text_data)
-        if respond_json['message'] is not False:
-            self.userPool.broadcast_to_all_user_in_channel(text_data)
+        if json.loads(respond_json)['messages'] is not False:
+            self.userPool.broadcast_to_all_user_in_channel(json.loads(respond_json)['messages'])
         else:
             await self.send(respond_json)
 
