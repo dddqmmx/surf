@@ -60,18 +60,19 @@ def setResult(command, data, path, extra_col=None, log=''):
         "path": path,
         "messages": []
     }
-    if data:
+    if data is False:
+        result['status'] = False
+        result['msg'] = '执行失败！'
+    else:
         for col in extra_col:
             result.update({k: v for k, v in col.items()})
         result['status'] = True
         result['messages'] = data
         result['msg'] = '执行成功！'
-    else:
-        result['status'] = False
-        result['msg'] = '执行失败！'
     # 添加审计日志编辑内容
     if log != '':
         result['log'] = log
+    print(json.dumps(result))
     return json.dumps(result)
 
 
@@ -85,6 +86,7 @@ def errorResult(command, error_msg, path, log=''):
     # 添加审计日志编辑内容
     if log != '':
         result['log'] = log
+    print(json.dumps(result))
     return json.dumps(result)
 
 
