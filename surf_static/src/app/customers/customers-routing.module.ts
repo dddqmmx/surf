@@ -16,7 +16,7 @@ const routes: Routes = [
         path:"main",
         component:MainComponent,
         children:[
-            {path:"chat",component:ChatComponent}
+            {path:"chat/:id",component:ChatComponent}
         ]
     },
     {path:"login",component:LoginComponent}

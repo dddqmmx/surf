@@ -40,8 +40,8 @@ export class SidebarServerComponent {
         this.localDataService = localDataService;
         this.socketManageService = socketManageService;
     }
-    public toChat(){
-        this.router.navigate(['main/chat']);
+    public toChat(id:string){
+        this.router.navigate(['main/chat',id]);
     }
 
     public getServerDetails(serverId:string) {

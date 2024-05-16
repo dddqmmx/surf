@@ -122,7 +122,6 @@ export class MainComponent implements OnInit{
         );
     }
     getUserData() {
-        console.log('123')
         const getUserDataSubject = this.socketMangerService.getMessageSubject("user","get_user_data_result").subscribe(
             message => {
                 const data = JSON.parse(message.data).messages;
