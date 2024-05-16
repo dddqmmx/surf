@@ -39,7 +39,7 @@ class UserPool(object):
         return self.__connected_user.copy()
 
     def get_broadcast_by_server_id(self, server_id):
-        return self.__broadcast_map.copy()[server_id]
+        return self.__broadcast_map.copy().get(server_id, {})
 
     async def connect_user_to_pool(self, session, user):
         async with self.lock:
@@ -69,9 +69,8 @@ class UserPool(object):
     def broadcast_to_all_user_in_channel(self, text_data):
         channel_id = text_data['messages']['channel_id']
         server_id = self.__server_service.get_server_by_channel_id(channel_id)
-        if server_id in self.__broadcast_map:
-            for user in self.get_broadcast_by_server_id(server_id)[channel_id]:
-                user.broadcast(json.dumps(text_data))
+        for user in self.get_broadcast_by_server_id(server_id).get(channel_id, []):
+            user.broadcast(json.dumps(text_data))
 
     async def connect_user_to_broadcast_map(self, session: Session, surf_user):
         user_id = session.get('user_id')
@@ -79,7 +78,7 @@ class UserPool(object):
         if ids is not False:
             async with self.lock:
                 for channel_id in ids:
-                    server_id = self.__server_service.get_server_by_channel_id(channel_id['id'])[0]['id']
+                    server_id = self.__server_service.get_server_by_channel_id(channel_id['id'])
                     if not self.__broadcast_map.get(server_id, None):
                         self.__broadcast_map[server_id] = {}
                     if not self.__broadcast_map[server_id].get(channel_id['id'], None):
