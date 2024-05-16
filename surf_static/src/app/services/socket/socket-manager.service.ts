@@ -26,9 +26,7 @@ export class SocketManagerService {
         const commandMap = this.pathMap.get(path);
         if (commandMap && commandMap.get(command)) {
             messageSubject = commandMap.get(command)
-            console.log('2')
         } else {
-            console.log("1")
             // 如果没有，创建一个新的 Subject 并将其添加到 messageSubjects 映射中
             messageSubject = new Subject<MessageEvent>();
             this.addMessageSubject(path,command, messageSubject);

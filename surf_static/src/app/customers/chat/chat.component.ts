@@ -20,6 +20,7 @@ import {Subscription} from "rxjs";
 })
 export class ChatComponent implements OnInit{
     massageInputValue = "";
+    newMassageSubject :any;
 
     private subscriptions: Subscription[] = [];
     ngOnDestroy(){
@@ -28,12 +29,14 @@ export class ChatComponent implements OnInit{
 
     // socket = new WebSocket('ws://'+this.localDataService.serverAddress+'/ws/chat/');
     messageList : any[] = []
+    channelId: string | null = "";
     constructor(private socketManageService:SocketManagerService,private cryptoService: CryptoService,private localDataService:LocalDataService,private route: ActivatedRoute,private router: Router) {
         const self = this;
         this.cryptoService = cryptoService;
         this.localDataService = localDataService;
         this.route.paramMap.subscribe(params => {
             const channelId = params.get('id')
+            self.channelId = channelId
             const getMessageResultSubject = this.socketManageService.getMessageSubject("chat", "get_message_result").subscribe(
             message => {
                 const data = JSON.parse(message.data).messages;
@@ -42,6 +45,17 @@ export class ChatComponent implements OnInit{
                 getMessageResultSubject.unsubscribe()
             })
             this.subscriptions.push(getMessageResultSubject);
+            if (self.newMassageSubject){
+                this.newMassageSubject.unsubscribe();
+                this.newMassageSubject = null;
+            }
+            self.newMassageSubject = this.socketManageService.getMessageSubject("chat", "new_message").subscribe(
+            message => {
+                const data = JSON.parse(message.data).messages;
+                console.log(data)
+                self.messageList.push(data)
+            })
+            this.subscriptions.push(self.newMassageSubject);
             this.socketManageService.send("chat", "get_message", {
                     "session_id": self.cryptoService.session,
                     "channel_id": channelId,
@@ -49,7 +63,6 @@ export class ChatComponent implements OnInit{
             })
         });
     }
-
     ngOnInit(): void {
             // this.socket.onopen = function () {
             //     const requestJson = {
@@ -78,14 +91,13 @@ export class ChatComponent implements OnInit{
 
     sendMessage() {
         const self=this;
-        // this.socket.send(JSON.stringify({
-        //     "command":"send_message",
-        //     "session_id": self.cryptoService.session,
-        //     "message":{
-        //         "content":self.massageInputValue,
-        //         "channel_id":"aa6cd21b-7080-4e65-9059-8a6a8c303cbb"
-        //     }
-        // }))
+        this.socketManageService.send("chat", "send_message", {
+                    "session_id": self.cryptoService.session,
+                    "message":{
+                        "channel_id": self.channelId,
+                        "content":self.massageInputValue,
+                    }
+            })
         this.massageInputValue = ""
     }
 }
