@@ -20,6 +20,9 @@ class SurfUser(object):
         self.__user_id = user_id
         self.__servers = []
         self.__ws = AsyncWebsocketConsumer()
+        self.update_consumer(consumer)
+
+    def update_consumer(self, consumer):
         self.__ws.scope = consumer.scope
         self.__ws.send = consumer.send
 

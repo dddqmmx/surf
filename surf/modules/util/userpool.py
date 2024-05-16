@@ -38,8 +38,8 @@ class UserPool(object):
     def get_users(self):
         return self.__connected_user.copy()
 
-    def get_broadcast_by_channel_id(self, channel_id):
-        return self.__broadcast_map.copy()[channel_id]
+    def get_broadcast_by_server_id(self, server_id):
+        return self.__broadcast_map.copy()[server_id]
 
     async def connect_user_to_pool(self, session, user):
         async with self.lock:
@@ -67,10 +67,11 @@ class UserPool(object):
         return flag
 
     def broadcast_to_all_user_in_channel(self, text_data):
-        channel_id = text_data['channel_id']
-        if channel_id in self.__broadcast_map:
-            for k, user_list in self.get_broadcast_by_channel_id(channel_id).items():
-                asyncio.create_task(user.broadcast(text_data) for user in user_list)
+        channel_id = text_data['messages']['channel_id']
+        server_id = self.__server_service.get_server_by_channel_id(channel_id)
+        if server_id in self.__broadcast_map:
+            for user in self.get_broadcast_by_server_id(server_id)[channel_id]:
+                user.broadcast(json.dumps(text_data))
 
     async def connect_user_to_broadcast_map(self, session: Session, surf_user):
         user_id = session.get('user_id')
