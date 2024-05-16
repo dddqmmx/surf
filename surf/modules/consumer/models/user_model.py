@@ -7,6 +7,7 @@ Project Name    : surf-extreme
 Last Edit Time  : 
 """
 import traceback
+from typing import Union
 
 from surf.appsGlobal import logger
 from surf.modules.util import BaseModel
@@ -40,8 +41,8 @@ class UserModel(BaseModel):
         finally:
             return res
 
-    def save_user(self, filters: dict, primary="c_user_id") -> str or bool:
-        self._pg.save("t_users", filters, primary, return_id=True, return_id_clumn="c_user_id")
+    def save_user(self, filters: dict, primary="c_user_id") -> Union[str, bool]:
+        return self._pg.save("t_users", filters, primary, return_id=True, return_id_clumn="c_user_id")
 
     def get_friends_by_user_id(self, user_id):
         res = []
@@ -52,3 +53,16 @@ class UserModel(BaseModel):
             logger.error(f"""get user friends by userid fails, user: {user_id}\n{e}\n{traceback.format_exc()}""")
         finally:
             return res
+
+    def search_user_by_id(self, user_id):
+        res = []
+        try:
+            sql = """SELECT count(1) FROM t_users WHERE c_user_id = %s"""
+            res.extend(self._pg.query(sql, [user_id]))
+        except Exception as e:
+            logger.error(f"""search user by id failed, search params:{user_id}\n{e}\n{traceback.format_exc()}""")
+        finally:
+            return res
+
+    def add_user_as_friend(self, filters: dict) -> bool:
+        return self._pg.save("t_user_friends", filters)
