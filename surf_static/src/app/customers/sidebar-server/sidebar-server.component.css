@@ -1,8 +1,16 @@
+
+*{
+    padding: 0;
+    margin: 0;
+}
 .channel-info-container {
+    padding: 0;
+    margin: 0;
 }
 
 .channel-class {
-
+    padding: 0;
+    margin: 0;
 }
 
 .chat-container {

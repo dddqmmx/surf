@@ -35,12 +35,11 @@
   .channel-list {
     list-style: none;
     padding-left: 0;
-      padding-top: 20px;
-    width: 150px;
+    padding-top: 20px;
   }
 
   .channel {
-      padding: 10px;
+    padding: 10px;
     background-color: #36393f;
     border-radius: 5px;
     margin-bottom: 5px;

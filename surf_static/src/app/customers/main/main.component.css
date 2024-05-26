@@ -358,6 +358,7 @@ footer img {
 }
 
 .user-options {
+    margin-left: 10px;
     display: flex;
     gap: 10px;
 }

@@ -1,13 +1,13 @@
 <div class="chat-container">
-  <h5 class="channel-class-title">
+  <div class="channel-class-title">
     <button>私聊</button>
     <button>好友</button>
-  </h5>
-  <div style="padding: 10px;" class="channel-class">
+  </div>
+  <div class="channel-class">
     <ul class="channel-list">
       <li *ngFor="let user of userList" class="channel">
         <div class="user-container">
-          <img src="favicon.ico" height="24" width="24">
+          <img style="border-radius: 50%;" src="assets/b_ded967904aa4a52c837ba3bb3139ca99.png" height="24" width="24">
           <span>{{ user.name }}</span>
         </div>
       </li>
