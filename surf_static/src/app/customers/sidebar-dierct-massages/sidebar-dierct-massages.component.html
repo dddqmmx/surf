@@ -1,1 +1,16 @@
-<p>sidebar-dierct-massages works!</p>
+<div class="chat-container">
+  <h5 class="channel-class-title">
+    <button>私聊</button>
+    <button>好友</button>
+  </h5>
+  <div style="padding: 10px;" class="channel-class">
+    <ul class="channel-list">
+      <li *ngFor="let user of userList" class="channel">
+        <div class="user-container">
+          <img src="favicon.ico" height="24" width="24">
+          <span>{{ user.name }}</span>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>

@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Output, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, EventEmitter, Output, ViewChild} from '@angular/core';
 import {NgForOf, NgIf} from "@angular/common";
 import {MainComponent} from "../main/main.component";
 import {CryptoService} from "../../services/crypto/crypto.service";
@@ -6,6 +6,7 @@ import {LocalDataService} from "../../services/local_data/local-data.service";
 import {Router} from "@angular/router";
 import {SocketManagerService} from "../../services/socket/socket-manager.service";
 import {Subscription} from "rxjs";
+import {util} from "node-forge";
 
 @Component({
   selector: 'app-sidebar-server',
@@ -17,7 +18,7 @@ import {Subscription} from "rxjs";
   templateUrl: './sidebar-server.component.html',
   styleUrl: './sidebar-server.component.css'
 })
-export class SidebarServerComponent {
+export class SidebarServerComponent{
 
 
     @Output() selectUserPopup = new EventEmitter();
@@ -40,8 +41,12 @@ export class SidebarServerComponent {
         this.localDataService = localDataService;
         this.socketManageService = socketManageService;
     }
-    public toChat(id:string){
-        this.router.navigate(['main/chat',id]);
+    public toChat(id:string,type:string){
+        if (type == "text"){
+            this.router.navigate(['main/chat',id]);
+        } else if ("voice") {
+            console.log('fuck you')
+        }
     }
 
     public getServerDetails(serverId:string) {

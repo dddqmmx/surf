@@ -22,6 +22,7 @@ export class ChatComponent implements OnInit{
     massageInputValue = "";
     newMassageSubject :any;
 
+
     private subscriptions: Subscription[] = [];
     ngOnDestroy(){
         this.subscriptions.forEach(subscription => subscription.unsubscribe());
@@ -30,7 +31,7 @@ export class ChatComponent implements OnInit{
     // socket = new WebSocket('ws://'+this.localDataService.serverAddress+'/ws/chat/');
     messageList : any[] = []
     channelId: string | null = "";
-    constructor(private socketManageService:SocketManagerService,private cryptoService: CryptoService,private localDataService:LocalDataService,private route: ActivatedRoute,private router: Router) {
+    constructor(private socketManageService:SocketManagerService,private cryptoService: CryptoService,public localDataService:LocalDataService,private route: ActivatedRoute,private router: Router) {
         const self = this;
         this.cryptoService = cryptoService;
         this.localDataService = localDataService;

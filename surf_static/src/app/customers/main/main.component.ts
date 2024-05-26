@@ -35,7 +35,7 @@ export class MainComponent implements OnInit{
     serverDescription = ""
     messageSubscription : any;
     private subscriptions: Subscription[] = [];
-
+    sidebarType = 0;
 
     toggleCreatServerPopup() {
       this.creatServerPopupVisible = !this.creatServerPopupVisible;
@@ -60,10 +60,10 @@ export class MainComponent implements OnInit{
         if (this.cryptoService.session){
             this.getUserData();
         }else {
-            alert('你没登录')
-            this.router.navigate(['/login'])
+            // alert('你没登录')
+            // this.router.navigate(['/login'])
         }
-        // this.getFriends();
+        this.getFriends();
     }
 
     ngOnDestroy(){
@@ -103,8 +103,24 @@ export class MainComponent implements OnInit{
             messageHandler(json);
         };
     }
+    setSidebarDirectMassage(){
+        this.sidebarType = 1;
+    }
     setSidebarServerId(serverId:string){
-        this.sidebarServer?.getServerDetails(serverId);
+        this.sidebarType = 0;
+        const waitForSidebarServer = new Promise<void>((resolve) => {
+        const intervalId = setInterval(() => {
+                if (this.sidebarServer) {
+                    clearInterval(intervalId);
+                    resolve();
+                }
+            }, 50); // 每秒检查一次 sidebarServer 是否存在
+        });
+
+        // 等待 sidebarServer 存在，然后调用 getServerDetails 方法
+        waitForSidebarServer.then(() => {
+            this.sidebarServer!.getServerDetails(serverId); // 使用非空断言操作符确保 sidebarServer 存在
+        });
     }
 
     // Reusing WebSocket connection for different functionalities

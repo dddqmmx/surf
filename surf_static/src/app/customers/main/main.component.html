@@ -2,7 +2,7 @@
     <div class="sidebar">
         <div class="sidebar-top">
             <div class="avatar-container">
-                <div class="avatar-wrapper">
+                <div class="avatar-wrapper" (click)="setSidebarDirectMassage()">
                     <img class="avatar" style="border-radius: 50%" src="assets/mike2.png" height="48" width="48">
                     <p class="name">私信</p>
                 </div>
@@ -22,8 +22,24 @@
     <div class="main-content">
         <section class="chat-container">
             <div class="chat-sidebar">
-                <app-sidebar-server #sidebarServer (selectUserPopup)="toggleSelectUserPopup()"></app-sidebar-server>
-<!--                <app-sidebar-dierct-massages></app-sidebar-dierct-massages>-->
+                <div class="sidebar-content">
+                    <app-sidebar-server *ngIf="sidebarType == 0" #sidebarServer (selectUserPopup)="toggleSelectUserPopup()"></app-sidebar-server>
+                    <app-sidebar-dierct-massages *ngIf="sidebarType == 1"></app-sidebar-dierct-massages>
+                </div>
+                <div class="user-profile">
+                    <img class="profile-img" src="assets/img.png" alt="User Image">
+                    <div class="user-details">
+                        <div class="user-info">
+                            <p class="user-name">name</p>
+                            <p class="user-status">在线</p>
+                        </div>
+                        <div class="user-options">
+                            <img src="favicon.ico" alt="Icon">
+                            <img src="favicon.ico" alt="Icon">
+                            <img src="favicon.ico" alt="Icon">
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="chat-content">
                 <router-outlet/>

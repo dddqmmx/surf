@@ -69,7 +69,6 @@ body {
 }
 
 .main-content {
-
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -83,11 +82,11 @@ body {
 .chat-sidebar {
     background-color: #2b2d31;
     color: white;
-
-    flex: 0 0 auto; /* 新添加的 */
-    order: 0;
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
-
 .chat-content {
     background-color: #313339;
 
@@ -312,4 +311,59 @@ footer img {
 
 .invite-btn:hover {
   background-color: #0056b3;
+}
+
+
+.sidebar-content {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: #3a3b3f;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.profile-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.user-details {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.user-info {
+    flex-grow: 1;
+}
+
+.user-name {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.user-status {
+    color: green;
+    font-size: 14px;
+    margin: 0;
+}
+
+.user-options {
+    display: flex;
+    gap: 10px;
+}
+
+.user-options img {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
 }
