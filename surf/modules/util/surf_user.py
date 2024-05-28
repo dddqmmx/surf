@@ -27,7 +27,11 @@ class SurfUser(object):
         self.__ws.send = consumer.send
 
     def check_user_id_by_session_id(self, session_id) -> bool:
+        # logger.info(f"sessionId:{session_id}'s user_id is：")
         return Session.get_session_by_id(session_id).get('user_id') == self.__user_id
+
+    def check_user_id(self, user_id):
+        return str(user_id) == str(self.__user_id)
 
     def set_cur_server(self, cur_server):
         self.__cur_server = cur_server

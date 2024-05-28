@@ -8,7 +8,8 @@ Last Edit Time  :
 import asyncio
 import datetime
 import json
-from typing import Union, Tuple, Dict, Any, Coroutine, List
+import threading
+from typing import *
 from .session_util import Session
 from .surf_user import SurfUser
 from surf.appsGlobal import logger, get_logger, setResult, errorResult
@@ -19,10 +20,13 @@ con_log = get_logger('connections')
 
 class UserPool(object):
     _instance = None
+    _lock = threading.Lock()  # 类级别的锁，用于线程安全
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
-            cls._instance = super(UserPool, cls).__new__(cls)
+            with cls._lock:
+                if cls._instance is None:
+                    cls._instance = super(UserPool, cls).__new__(cls)
         return cls._instance
 
     def __init__(self):
@@ -38,6 +42,9 @@ class UserPool(object):
     def get_users(self):
         return self.__connected_user.copy()
 
+    def get_user_by_session_id(self, session_id):
+        return self.__connected_user.get(session_id, None)
+
     def get_broadcast_by_server_id(self, server_id):
         return self.__broadcast_map.copy().get(server_id, {})
 
@@ -47,21 +54,21 @@ class UserPool(object):
             if self.__connected_user.get(session_id, None):
                 con_log.info(f"session_id:{session_id} has already logged in, user\'s info might be infiltrated")
                 return False
-            else:
-                for k, user in self.get_users().items():
-                    if user.check_user_id_by_session_id(session_id):
-                        con_log.info(
-                            f"session_id:{session_id}'s bound user_id has logged in already"
-                            f", user\'s info might be infiltrated")
-                        return False
-                self.__connected_user[session_id] = user
-                return True
+            for k, exist_user in self.get_users().items():
+                if exist_user.check_user_id_by_session_id(session_id):
+                    con_log.info(
+                        f"session_id:{session_id}'s bound user_id has logged in already"
+                        f", user\'s info might be infiltrated")
+                    return False
+            self.__connected_user[session_id] = user
+            return True
 
     async def access_new_user(self, session, consumer, return_id=False):
         user_id = session.get('user_id')
         surf_user = SurfUser(user_id, consumer)
         flag = await self.connect_user_to_pool(session, surf_user)
-        await self.connect_user_to_broadcast_map(session, surf_user)
+        if flag:
+            await self.connect_user_to_broadcast_map(session, surf_user)
         if return_id:
             return flag, session.session_id
         return flag
@@ -101,10 +108,10 @@ def session_check(func):
         if text_data['command'] != 'login' and text_data != 'key_exchange':
             session_id = text_data.get('session_id', None)
             if session_id:
-                for k, user in UserPool().get_users().items():
-                    if user.check_user_id_by_session_id(session_id) and session_id == args[0].session_id:
-                        flag = True
-                        break
+                up = UserPool()
+                user = up.get_user_by_session_id(session_id)
+                if user and user.check_user_id(Session.get_session_by_id(session_id).get('user_id')) and session_id == args[0].session_id:
+                    flag = True
         else:
             flag = True
         if flag:
@@ -113,5 +120,4 @@ def session_check(func):
             logger.error(text_data)
             logger.error(f"发现无效session进行操作：{session_id}， 已拦截")
             await args[0].send(errorResult(text_data['command'], '无效session', text_data['path']))
-
     return wrapper

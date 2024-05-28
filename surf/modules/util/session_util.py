@@ -1,6 +1,10 @@
 import uuid
 import redis
 
+from surf.appsGlobal import get_logger
+
+logger = get_logger('session')
+
 redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 
@@ -14,6 +18,11 @@ class Session:
     def set(self, key, value):
         self.is_session_active()
         self.data[key] = value
+        logger.info(f"sessions count:{len(self.sessions)}, sessions ids are:{self.sessions.keys()}")
+        logger.info(f"")
+        for session_id, session in self.sessions.items():
+            logger.info(f"session:{session_id}'s info: {session.data}")
+            logger.info(f"")
 
     def get(self, key):
         self.is_session_active()
