@@ -2,15 +2,15 @@
     <div class="sidebar">
         <div class="sidebar-top">
             <div class="avatar-container">
-                <div class="avatar-wrapper" (click)="setSidebarDirectMassage()">
-                    <img class="avatar" style="border-radius: 50%" src="assets/mike2.png" height="48" width="48">
+                <div class="avatar-wrapper">
+                    <img class="avatar" style="border-radius: 50%" (click)="setSidebarDirectMassage()" src="assets/mike2.png" height="48" width="48">
                     <p class="name">私信</p>
                 </div>
             </div>
             <div style="margin-top: 10px;margin-bottom: 10px;height: 1px;width: 48px;background: white"></div>
             <div *ngFor="let serverInfo of servers" class="avatar-container" style="margin-top: 10px;margin-bottom: 10px;">
-              <div class="avatar-wrapper" (click)="setSidebarServerId(serverInfo.id)">
-                <img class="avatar" src="assets/mike1.jpg" height="48" width="48">
+              <div class="avatar-wrapper">
+                <img class="avatar" (click)="setSidebarServerId(serverInfo.id)" src="assets/mike1.jpg" height="48" width="48">
                 <p class="name">{{ serverInfo.name }}</p>
               </div>
             </div>
@@ -26,11 +26,22 @@
                     <app-sidebar-server *ngIf="sidebarType == 0" #sidebarServer (selectUserPopup)="toggleSelectUserPopup()"></app-sidebar-server>
                     <app-sidebar-dierct-massages *ngIf="sidebarType == 1"></app-sidebar-dierct-massages>
                 </div>
-                <div class="user-profile">
+                <div>
+                    <div class="user-details" style="background-color: #3a3b3f;">
+                        <div  class="user-info">
+                            <p style="color: green"><img alt="" src="assets/rss_feed_24dp_FILL0_wght400_GRAD0_opsz24%20(1).png" height="20" width="20"> voice chat is connecting</p>
+                            <p>server's name / channel's name</p>
+                        </div>
+                        <div class="user-options">
+                            <img src="assets/phone_disabled_24dp_FILL0_wght400_GRAD0_opsz24.png" alt="Icon">
+                        </div>
+                        <div style="margin-top: 10px;height: 1px;background: white"></div>
+                    </div>
+                    <div class="user-profile">
                     <img class="profile-img" src="assets/img.png" alt="User Image">
                     <div class="user-details">
                         <div class="user-info">
-                            <p class="user-name">name</p>
+                            <p class="user-name">清水みき</p>
                             <p class="user-status">在线</p>
                         </div>
                         <div class="user-options">
@@ -39,6 +50,7 @@
                             <img src="favicon.ico" alt="Icon">
                         </div>
                     </div>
+                </div>
                 </div>
             </div>
             <div class="chat-content">
@@ -74,26 +86,26 @@
     <button class="search-btn" (click)="searchUser()">搜索</button>
   </div>
   <div class="user-list">
-    <div class="user-item">
+    <div class="user-item" *ngFor="let user of invitationUserList">
       <img src="assets/b_ded967904aa4a52c837ba3bb3139ca99.png" alt="大空スバル" height="48" width="48">
-      <span>大空スバル</span>
-      <button class="invite-btn">邀请</button>
-    </div>
-    <div class="user-item">
-      <img src="assets/img.png" alt="桐生一馬" height="48" width="48">
-      <span>桐生一馬</span>
-      <button class="invite-btn">邀请</button>
-    </div>
-    <div *ngFor="let user of invitationList" class="user-item">
-      <img src="assets/img.png" alt="桐生一馬" height="48" width="48">
       <span>{{user.user_nickname}}</span>
       <button class="invite-btn">邀请</button>
     </div>
-    <div class="user-item">
-      <img src="assets/q823E-P8_400x400.jpg" alt="小島秀夫" height="48" width="48">
-      <span>小島秀夫</span>
-      <button class="invite-btn">邀请</button>
-    </div>
+<!--    <div class="user-item">-->
+<!--      <img src="assets/b_ded967904aa4a52c837ba3bb3139ca99.png" alt="大空スバル" height="48" width="48">-->
+<!--      <span>大空スバル</span>-->
+<!--      <button class="invite-btn">邀请</button>-->
+<!--    </div>-->
+<!--    <div class="user-item">-->
+<!--      <img src="assets/img.png" alt="桐生一馬" height="48" width="48">-->
+<!--      <span>桐生一馬</span>-->
+<!--      <button class="invite-btn">邀请</button>-->
+<!--    </div>-->
+<!--    <div class="user-item">-->
+<!--      <img src="assets/q823E-P8_400x400.jpg" alt="小島秀夫" height="48" width="48">-->
+<!--      <span>小島秀夫</span>-->
+<!--      <button class="invite-btn">邀请</button>-->
+<!--    </div>-->
   </div>
 </div>
 

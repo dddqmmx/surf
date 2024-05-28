@@ -30,7 +30,7 @@ export class MainComponent implements OnInit{
     selectUserPopupVisible = false;
     servers: any[]=[];
     inputUserId = ""
-    invitationList:any = []
+    invitationUserList:any = []
     serverName = ""
     serverDescription = ""
     messageSubscription : any;
@@ -125,17 +125,29 @@ export class MainComponent implements OnInit{
 
     // Reusing WebSocket connection for different functionalities
     searchUser() {
-        const requestJson = {
-            'command': 'search_user',
+        const self= this;
+        const searchUserSubject = this.socketMangerService.getMessageSubject("user","search_user_result").subscribe(
+            message => {
+                const data = JSON.parse(message.data).messages;
+                self.invitationUserList = data;
+                searchUserSubject.unsubscribe()
+            })
+        this.subscriptions.push(searchUserSubject);
+        this.socketMangerService.send('user','search_user', {
+            'session_id':this.cryptoService.session,
             'user_id_list': [this.inputUserId]
-        };
-        this.connectWebSocket(
-            'ws://' + this.localDataService.serverAddress + '/ws/user/',
-            requestJson,
-            (json: { message: any; }) => {
-                this.invitationList.push(...json.message);
-            }
-        );
+        })
+        // const requestJson = {
+        //     'command': 'search_user',
+        //     'user_id_list': [this.inputUserId]
+        // };
+        // this.connectWebSocket(
+        //     'ws://' + this.localDataService.serverAddress + '/ws/user/',
+        //     requestJson,
+        //     (json: { message: any; }) => {
+        //         this.invitationList.push(...json.message);
+        //     }
+        // );
     }
     getUserData() {
         const getUserDataSubject = this.socketMangerService.getMessageSubject("user","get_user_data_result").subscribe(
