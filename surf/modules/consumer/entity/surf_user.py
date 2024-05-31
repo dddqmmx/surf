@@ -8,7 +8,7 @@ Last Edit Time  :
 import traceback
 
 from channels.generic.websocket import AsyncWebsocketConsumer
-from .session_util import Session
+from surf.modules.util.session_util import Session
 from surf.appsGlobal import get_logger
 
 logger = get_logger('user')

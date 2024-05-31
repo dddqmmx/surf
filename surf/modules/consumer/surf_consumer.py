@@ -9,7 +9,8 @@ import json
 from typing import Callable, Dict
 
 from surf.appsGlobal import logger, errorResult, setResult
-from surf.modules.util import BaseConsumer, UserPool, session_check
+from surf.modules.util import BaseConsumer
+from surf.modules.consumer.entity import UserPool, session_check
 from surf.modules.consumer.services import ChatService, ServerService, UserService
 
 from cryptography.hazmat.primitives import serialization

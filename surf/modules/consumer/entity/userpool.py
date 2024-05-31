@@ -10,7 +10,7 @@ import datetime
 import json
 import threading
 from typing import *
-from .session_util import Session
+from surf.modules.util.session_util import Session
 from .surf_user import SurfUser
 from surf.appsGlobal import logger, get_logger, setResult, errorResult
 from surf.modules.consumer.services import UserService, ServerService
