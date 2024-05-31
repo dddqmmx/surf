@@ -30,7 +30,7 @@ class UserModel(BaseModel):
     def get_userdata_by_userid(self, user_id_list):
         res = []
         try:
-            sql = "SELECT c_nickname as nickname, c_user_info as info FROM public.t_users WHERE c_user_id = %s"
+            sql = "SELECT c_user_id as id, c_nickname as nickname, c_user_info as info FROM public.t_users WHERE c_user_id = %s"
             for user_id in user_id_list:
                 if isinstance(user_id, str) and len(user_id) == 36:
                     res.extend(self._pg.query(sql, [user_id]))

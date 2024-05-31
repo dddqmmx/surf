@@ -35,7 +35,7 @@ class ChatService(object):
                     "sort": [
                         {
                             "chat_time": {
-                                "order": "asc"
+                                "order": "desc"
                             }
                         }
                     ],
@@ -44,6 +44,7 @@ class ChatService(object):
                 }
                 chat_list = self.ec.search('chat_message', search_body)['hits']['hits']
                 messages = [chat['_source'] for chat in chat_list]
+                messages = messages[::-1]
                 type = text_data['type']
                 logger.info(f"channel:{channel_id}'s chat data get:{chat_list}")
                 return setResult(command=f"{text_data['command']}_result",

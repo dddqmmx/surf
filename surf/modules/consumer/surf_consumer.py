@@ -32,7 +32,8 @@ class SurfConsumer(BaseConsumer):
             },
             "chat": {
                 "get_message": self.get_message,
-                "send_message": self.send_message
+                "send_message": self.send_message,
+                "send_audio": self.send_audio
             },
             "user": {
                 'login': self.login,
@@ -142,6 +143,12 @@ class SurfConsumer(BaseConsumer):
             await self.userPool.broadcast_to_all_user_in_channel(json.loads(respond_json))
         else:
             await self.send(respond_json)
+
+    async def send_audio(self, text_data):
+        text_data["is_audio"] = True
+        text_data['content'] = json.loads(text_data['content'])
+        print(len(text_data['content']))
+        await self.userPool.broadcast_to_all_user_in_channel(text_data)
 
     async def test(self, text_data):
         await self.send('114514')

@@ -47,6 +47,7 @@ class UserService(object):
                 res = self.__userModel.get_userdata_by_userid([user_id])
                 if len(res) > 0:
                     user_dict = {
+                        "user_id": user_id,
                         "user_nickname": res[0]["nickname"],
                         "user_info": res[0]["info"],
                         'servers': []
@@ -71,7 +72,13 @@ class UserService(object):
                 if len(res) > 0:
                     data = []
                     for item in res:
-                        data.append({"user_nickname": item["nickname"], "user_info": item["info"]})
+                        data.append(
+                            {
+                                "user_id": item['id'],
+                                "user_nickname": item["nickname"],
+                                "user_info": item["info"]
+                            }
+                        )
                 return setResult(f"{text_data['command']}_result", data, 'user')
         except Exception as e:
             logger.error(f"""{e}\n{traceback.format_exc()}""")
