@@ -130,7 +130,7 @@ class UserPool(object):
                         self.__broadcast_map[server_id][channel_id['id']] = SurfChannel(
                             channel_id['id'],
                             True if channel[0]['type'] == "voice" else False,
-                            int(channel[0]['max_member'])
+                            int(channel[0]['max_members'])
                         )
                     if channel[0]['type'] == "text":
                         await self.__broadcast_map[server_id][channel_id['id']].add_user(surf_user)
