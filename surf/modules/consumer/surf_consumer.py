@@ -83,7 +83,7 @@ class SurfConsumer(BaseConsumer):
     async def login(self, text_data):
         respond_json, session = self.service_dict['user'].login(text_data['public_key'])
         if session:
-            if not await self.userPool.access_new_user(session, self):
+            if not await self.userPool.init_new_user(session, self):
                 logger.error('user login failed, see more at connections.log')
                 await self.send(errorResult('login', '登录失败', 'user'))
         self.session_id = session.session_id

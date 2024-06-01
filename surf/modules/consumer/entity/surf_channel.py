@@ -37,13 +37,12 @@ class SurfChannel(object):
             logger.error(f"add user:{user.user_name} to to channel:{self.channel_id} error:{e}")
         return False, rtn_str
 
-    async def remove_user(self, user_id: str) -> bool:
+    async def remove_user(self, user: SurfUser) -> bool:
         try:
             async with self.lock:
-                for user in self.channel_users:
-                    if user.check_user_id(user_id):
-                        self.channel_users.remove(user)
-                        return True
+                if user in self.channel_users:
+                    self.channel_users.remove(user)
+                    return True
         except Exception as e:
             logger.error(f"remove user:{user.user_name} from channel:{self.channel_id} error:{e}")
         return False

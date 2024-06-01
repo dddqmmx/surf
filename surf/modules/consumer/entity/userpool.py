@@ -9,6 +9,7 @@ import asyncio
 import datetime
 import json
 import threading
+import traceback
 from typing import *
 from surf.appsGlobal import logger, get_logger, setResult, errorResult
 from surf.modules.util.session_util import Session
@@ -64,7 +65,7 @@ class UserPool(object):
             self.__connected_user[session_id] = user
             return True
 
-    async def access_new_user(self, session, consumer, return_id=False):
+    async def init_new_user(self, session, consumer, return_id=False):
         user_id = session.get('user_id')
         user_name = session.get('user_name')
         surf_user = SurfUser(user_id, consumer, user_name)
@@ -74,6 +75,28 @@ class UserPool(object):
         if return_id:
             return flag, session.session_id
         return flag
+
+    async def add_user_to_channel(self, session_id, channel_id):
+        user = self.get_users().get(session_id, None)
+        try:
+            if user:
+                server_id = self.__server_service.get_server_by_channel_id(channel_id)
+                await self.__broadcast_map[server_id][channel_id].add_user(user)
+                return True
+        except Exception as e:
+            logger.error(f"添加用户:{user.user_name} 到频道：{channel_id}失败:{e}\n{traceback.format_exc()}")
+        return False
+
+    async def remove_user_from_channel(self, session_id, channel_id):
+        user = self.get_users().get(session_id, None)
+        try:
+            if user:
+                server_id = self.__server_service.get_server_by_channel_id(channel_id)
+                await self.__broadcast_map[server_id][channel_id].remove_user(user)
+                return True
+        except Exception as e:
+            logger.error(f"从频道：{channel_id} 移除用户:{user.user_name} 失败:{e}\n{traceback.format_exc()}")
+        return False
 
     async def broadcast_to_all_user_in_channel(self, text_data):
         if text_data.get('is_audio', False):
