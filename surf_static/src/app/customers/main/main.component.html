@@ -33,24 +33,24 @@
                             <p>server's name / channel's name</p>
                         </div>
                         <div class="user-options">
-                            <img src="assets/phone_disabled_24dp_FILL0_wght400_GRAD0_opsz24.png" alt="Icon">
+                            <img src="assets/phone_disabled_24dp_FILL0_wght400_GRAD0_opsz24.png" alt="Icon" (click)="startRecording()">
                         </div>
-                        <div style="margin-top: 10px;height: 1px;background: white"></div>
                     </div>
+                    <div style="margin-top: 10px;height: 1px;background: white;"></div>
                     <div class="user-profile">
-                    <img class="profile-img" src="assets/img.png" alt="User Image">
-                    <div class="user-details">
-                        <div class="user-info">
-                            <p class="user-name">清水みき</p>
-                            <p class="user-status">在线</p>
-                        </div>
-                        <div class="user-options">
-                            <img src="favicon.ico" alt="Icon">
-                            <img src="favicon.ico" alt="Icon">
-                            <img src="favicon.ico" alt="Icon">
+                        <img class="profile-img" src="assets/img.png" alt="User Image">
+                        <div class="user-details">
+                            <div class="user-info">
+                                <p class="user-name">清水みき</p>
+                                <p class="user-status">在线</p>
+                            </div>
+                            <div class="user-options">
+                                <img src="favicon.ico" (click)="stopRecording()" alt="Icon">
+                                <img src="favicon.ico" alt="Icon">
+                                <img src="favicon.ico" alt="Icon">
+                            </div>
                         </div>
                     </div>
-                </div>
                 </div>
             </div>
             <div class="chat-content">
@@ -87,25 +87,10 @@
   </div>
   <div class="user-list">
     <div class="user-item" *ngFor="let user of invitationUserList">
-      <img src="assets/b_ded967904aa4a52c837ba3bb3139ca99.png" alt="大空スバル" height="48" width="48">
+      <img src="assets/q823E-P8_400x400.jpg" alt="大空スバル" height="48" width="48">
       <span>{{user.user_nickname}}</span>
       <button class="invite-btn">邀请</button>
     </div>
-<!--    <div class="user-item">-->
-<!--      <img src="assets/b_ded967904aa4a52c837ba3bb3139ca99.png" alt="大空スバル" height="48" width="48">-->
-<!--      <span>大空スバル</span>-->
-<!--      <button class="invite-btn">邀请</button>-->
-<!--    </div>-->
-<!--    <div class="user-item">-->
-<!--      <img src="assets/img.png" alt="桐生一馬" height="48" width="48">-->
-<!--      <span>桐生一馬</span>-->
-<!--      <button class="invite-btn">邀请</button>-->
-<!--    </div>-->
-<!--    <div class="user-item">-->
-<!--      <img src="assets/q823E-P8_400x400.jpg" alt="小島秀夫" height="48" width="48">-->
-<!--      <span>小島秀夫</span>-->
-<!--      <button class="invite-btn">邀请</button>-->
-<!--    </div>-->
   </div>
 </div>
 
