@@ -20,7 +20,7 @@ class UserModel(BaseModel):
     def get_userid_by_public_key(self, public_key):
         res = []
         try:
-            sql = "SELECT c_user_id as id FROM public.t_users WHERE c_public_key = %s"
+            sql = "SELECT c_user_id as id, c_nickname as name FROM public.t_users WHERE c_public_key = %s"
             res = self._pg.query(sql, [public_key])
         except Exception as e:
             logger.error(f"""get userid by user's public_key fails, key:{public_key}\n{e}\n{traceback.format_exc()}""")

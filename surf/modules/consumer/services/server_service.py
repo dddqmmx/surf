@@ -7,7 +7,7 @@ Last Edit Time  :
 """
 import json
 import traceback
-from typing import Union
+from typing import Union, List, Dict
 
 from surf.modules.consumer.models import ServerModel, ChannelModel, RoleModel
 from surf.modules.util import Session
@@ -227,6 +227,15 @@ class ServerService(object):
             res = self.__channelModel.get_server_by_channel_id(channel_id)
             if res:
                 return res[0]['id']
+        except Exception as e:
+            print(f"""{e}\n{traceback.format_exc()}""")
+        return False
+
+    def get_channel_details_by_channel_id(self, channel_id) -> Union[List[Dict[str, str]], bool]:
+        try:
+            res = self.__channelModel.get_channel_details_by_channel_id(channel_id)
+            if res:
+                return res
         except Exception as e:
             print(f"""{e}\n{traceback.format_exc()}""")
         return False

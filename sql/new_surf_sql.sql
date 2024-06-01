@@ -68,6 +68,7 @@ CREATE TABLE t_channels (
     c_description TEXT,
     c_create_by VARCHAR(36) NOT NULL,
     c_create_time BIGINT NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::BIGINT,
+    c_max_members INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (c_group_id) REFERENCES t_channel_groups(c_group_id) ON DELETE CASCADE
 );
 

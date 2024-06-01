@@ -89,3 +89,21 @@ class ChannelModel(BaseModel):
             print(f"""{e}\n{traceback.format_exc()}""")
         finally:
             return res
+
+    def get_channel_details_by_channel_id(self, channel_id) -> List[Dict[str, str]]:
+        res = []
+        try:
+            sql = """
+            SELECT
+                c_channel_id as id,
+                c_type as type,
+                c_max_members as max_members
+            FROM 
+                t_channels 
+            WHERE c_channel_id = %s
+            """
+            res.extend(self._pg.query(sql, [channel_id]))
+        except Exception as e:
+            print(f"""{e}\n{traceback.format_exc()}""")
+        finally:
+            return res

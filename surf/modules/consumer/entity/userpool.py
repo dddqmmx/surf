@@ -10,9 +10,10 @@ import datetime
 import json
 import threading
 from typing import *
+from surf.appsGlobal import logger, get_logger, setResult, errorResult
 from surf.modules.util.session_util import Session
 from .surf_user import SurfUser
-from surf.appsGlobal import logger, get_logger, setResult, errorResult
+from .surf_channel import SurfChannel
 from surf.modules.consumer.services import UserService, ServerService
 
 con_log = get_logger('connections')
@@ -32,7 +33,7 @@ class UserPool(object):
     def __init__(self):
         if not hasattr(self, '_initialized'):
             self.__connected_user: Dict[str, SurfUser] = {}
-            self.__broadcast_map: Dict[str, Dict[str, List[SurfUser]]] = {}
+            self.__broadcast_map: Dict[str, Dict[str, SurfChannel]] = {}
             self.lock = asyncio.Lock()
             self._initialized = True
             self.__user_service = UserService()
@@ -65,10 +66,11 @@ class UserPool(object):
 
     async def access_new_user(self, session, consumer, return_id=False):
         user_id = session.get('user_id')
-        surf_user = SurfUser(user_id, consumer)
+        user_name = session.get('user_name')
+        surf_user = SurfUser(user_id, consumer, user_name)
         flag = await self.connect_user_to_pool(session, surf_user)
         if flag:
-            await self.connect_user_to_broadcast_map(session, surf_user)
+            await self.init_users_broadcast_map(session, surf_user)
         if return_id:
             return flag, session.session_id
         return flag
@@ -91,7 +93,7 @@ class UserPool(object):
         await asyncio.gather(*tasks)
         logger.info(f'broadcast to all user in channel:{channel_id} done, total:{len(tasks)}')
 
-    async def connect_user_to_broadcast_map(self, session: Session, surf_user):
+    async def init_users_broadcast_map(self, session: Session, surf_user):
         user_id = session.get('user_id')
         ids = self.__server_service.get_channels_by_user_id(user_id)
         if ids is not False:
@@ -100,11 +102,18 @@ class UserPool(object):
                     server_id = self.__server_service.get_server_by_channel_id(channel_id['id'])
                     if not self.__broadcast_map.get(server_id, None):
                         self.__broadcast_map[server_id] = {}
+                    channel = self.__server_service.get_channel_details_by_channel_id(channel_id['id'])
                     if not self.__broadcast_map[server_id].get(channel_id['id'], None):
-                        self.__broadcast_map[server_id][channel_id['id']] = []
-                    self.__broadcast_map[server_id][channel_id['id']].append(surf_user)
+                        self.__broadcast_map[server_id][channel_id['id']] = SurfChannel(
+                            channel_id['id'],
+                            True if channel[0]['type'] == "voice" else False,
+                            int(channel[0]['max_member'])
+                        )
+                    if channel[0]['type'] == "text":
+                        await self.__broadcast_map[server_id][channel_id['id']].add_user(surf_user)
                     logger.info(
-                        f"add userid:{user_id} to channel:{channel_id} done, current user in channel: {len(self.__broadcast_map[server_id][channel_id['id']])}")
+                        f"add userid:{user_id} to channel:{channel_id} done, "
+                        f"current user in channel: {self.__broadcast_map[server_id][channel_id['id']].size()}")
 
     async def detach_user_from_pool_by_session_id(self, session_id):
         async with self.lock:
@@ -113,12 +122,9 @@ class UserPool(object):
             if ids is not False:
                 for channel_id in ids:
                     server_id = self.__server_service.get_server_by_channel_id(channel_id['id'])
-                    for user in self.__broadcast_map[server_id][channel_id['id']]:
-                        if user.check_user_id(user_id):
-                            self.__broadcast_map[server_id][channel_id['id']].remove(user)
-                            logger.info(
-                                f"remove userid:{user_id} to channel:{channel_id} done, current user in channel: {len(self.__broadcast_map[server_id][channel_id['id']])}")
-                            break
+                    await self.__broadcast_map[server_id][channel_id['id']].remove_user(user_id)
+                    logger.info(
+                        f"remove userid:{user_id} to channel:{channel_id} done, current user in channel: {self.__broadcast_map[server_id][channel_id['id']].size()}")
         del self.__connected_user[session_id]
         con_log.info(f'session_id:{session_id} has disconnect from surf, current online: {len(self.__connected_user)}')
 

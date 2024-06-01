@@ -26,14 +26,17 @@ class UserService(object):
             res = self.__userModel.get_userid_by_public_key(public_key)
             if len(res) > 0:
                 user_id = res[0]['id']
+                user_name = res[0]['name']
             else:
                 filters = {
                     "c_public_key": public_key
                 }
                 user_id = self.__userModel.save_user(filters)
+                user_name = self.__userModel.get_userid_by_public_key(public_key)[0]['name']
             if user_id is not False:
                 logger.info(f"user {user_id} has login")
                 session.set('user_id', user_id)
+                session.set('user_name', user_name)
                 return setResult('to_url', {'address': 'main', 'session_id': session.session_id}, 'user'), session
         except Exception as e:
             logger.error(f"""{e}\n{traceback.format_exc()}""")
