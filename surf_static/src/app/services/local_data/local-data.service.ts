@@ -8,58 +8,73 @@ import { debounceTime, Subject } from "rxjs";
 })
 export class LocalDataService {
     serverAddress = ""
-
-    private requestQueue = new Subject<void>();
-    private cache = new Map<string, { timestamp: number, data: any }>();
-    private pendingRequests = new Set<string>();
+    loggedUserId = ""
 
     constructor(
         private socketManagerService: SocketManagerService,
         private cryptoService: CryptoService
-    ) {
-        this.requestQueue.pipe(
-            debounceTime(300)
-        ).subscribe(() => {
-            this.processBatchRequest();
-        });
-    }
+    ) {}
 
-    getUserData(id: string) {
-        const cachedResult = this.cache.get(id);
+    userInfoList = new Map<string, { data: any, timestamp: number }>();
+
+    hasUserInfo(id: string){
+        return this.userInfoList.has(id)
+    }
+    getUserInfo(id: string){
+        return this.userInfoList.get(id)?.data
+    }
+    setUserInfo(id: string,data: any){
         const now = Date.now();
-
-        if (cachedResult && (now - cachedResult.timestamp < 60000)) {
-            console.log(cachedResult.data);
-            return;
-        }
-
-        if (!this.pendingRequests.has(id)) {
-            this.pendingRequests.add(id);
-            this.requestQueue.next();
-        }
+        this.userInfoList.set(id, { data: data, timestamp: now });
     }
+    getUserData(ids: string[]): Promise<Map<string, any>> {
+        const now = Date.now();
+        const result = new Map<string, any>();
+        const idsToFetch: string[] = [];
 
-    private processBatchRequest() {
-        const ids = Array.from(this.pendingRequests);
-        this.pendingRequests.clear();
+        // 使用 Set 去重
+        const uniqueIds = Array.from(new Set(ids));
 
-        if (ids.length === 0) {
-            return;
+        uniqueIds.forEach((id: string) => {
+            const userInfo = this.userInfoList.get(id);
+            if (userInfo && (now - userInfo.timestamp < 30 * 60 * 1000)) {
+                // 如果数据存在且未超过30分钟，使用缓存的数据
+                result.set(id, userInfo.data);
+            } else {
+                // 需要重新获取的数据
+                idsToFetch.push(id);
+            }
+        });
+
+        if (idsToFetch.length === 0) {
+            // 如果没有需要重新获取的数据，直接返回结果
+            return Promise.resolve(result);
         }
 
-        this.socketManagerService.getMessageSubject("user", "search_user_result").subscribe(
-            (message: { data: string; }) => {
-                const data = JSON.parse(message.data).messages;
-                data.forEach((item: any) => {
-                    this.cache.set(item.id, { timestamp: Date.now(), data: item });
-                    console.log(item);
-                });
-            }
-        );
+        return new Promise((resolve, reject) => {
+            // 订阅消息以获取数据
+            const subscription = this.socketManagerService.getMessageSubject("user", "search_user_result").subscribe(
+                (message) => {
+                    const data = JSON.parse(message.data).messages;
+                    data.forEach((item: any) => {
+                        this.userInfoList.set(item.user_id, { data: item, timestamp: now });
+                        result.set(item.user_id, item);
+                    });
+                    subscription.unsubscribe(); // 取消订阅
+                    resolve(result); // 返回结果
+                },
+                (error) => {
+                    subscription.unsubscribe(); // 取消订阅
+                    reject(error); // 处理错误
+                }
+            );
 
-        this.socketManagerService.send('user', 'search_user', {
-            'session_id': this.cryptoService.session,
-            'user_id_list': ids
+            // 发送请求以获取用户数据
+            this.socketManagerService.send('user', 'search_user', {
+                'session_id': this.cryptoService.session,
+                'user_id_list': idsToFetch
+            });
         });
     }
+
 }

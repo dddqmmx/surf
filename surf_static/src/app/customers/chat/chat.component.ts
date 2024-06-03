@@ -3,7 +3,7 @@ import * as forge from 'node-forge';
 import {encryptData} from "../../util/encryption/encryption_ras";
 import {CryptoService} from "../../services/crypto/crypto.service";
 import {ActivatedRoute, Router} from "@angular/router";
-import {NgForOf} from "@angular/common";
+import {NgForOf, NgIf} from "@angular/common";
 import {LocalDataService} from "../../services/local_data/local-data.service";
 import {FormsModule} from "@angular/forms";
 import {SocketManagerService} from "../../services/socket/socket-manager.service";
@@ -13,7 +13,8 @@ import {Subscription} from "rxjs";
     standalone: true,
     imports: [
         NgForOf,
-        FormsModule
+        FormsModule,
+        NgIf
     ],
     templateUrl: './chat.component.html',
     styleUrls: ['./chat.component.css']
@@ -43,6 +44,12 @@ export class ChatComponent implements OnInit{
                 const data = JSON.parse(message.data).messages;
                 console.log(data)
                 self.messageList = data
+                const userDataList:any = []
+                data.forEach((message:any) => {
+                    userDataList.push(message.user_id)
+                })
+                console.log(userDataList)
+                localDataService.getUserData(userDataList)
                 getMessageResultSubject.unsubscribe()
             })
             this.subscriptions.push(getMessageResultSubject);
@@ -53,7 +60,7 @@ export class ChatComponent implements OnInit{
             self.newMassageSubject = this.socketManageService.getMessageSubject("chat", "new_message").subscribe(
             message => {
                 const data = JSON.parse(message.data).messages;
-                console.log(data)
+                localDataService.getUserData(data.id)
                 self.messageList.push(data)
             })
             this.subscriptions.push(self.newMassageSubject);
