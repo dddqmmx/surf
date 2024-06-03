@@ -152,7 +152,19 @@ class UserPool(object):
         con_log.info(f'session_id:{session_id} has disconnect from surf, current online: {len(self.__connected_user)}')
 
     def check_online(self, session_id: str) -> bool:
-        return self.__connected_user.get(session_id, False)
+        return self.get_users().get(session_id, False)
+
+    async def connect_user_to_single_channel_by_id(self, session_id, channel_id: str) -> Tuple[bool, str]:
+        user: SurfUser = self.get_users()[session_id]
+        server_id = self.__server_service.get_server_by_channel_id(channel_id)
+        flag, rtn_str = await self.__broadcast_map[server_id][channel_id].add_user(user)
+        return flag, rtn_str
+
+    async def remove_user_from_single_channel_by_id(self, session_id, channel_id: str) -> bool:
+        user: SurfUser = self.get_users()[session_id]
+        server_id = self.__server_service.get_server_by_channel_id(channel_id)
+        flag= await self.__broadcast_map[server_id][channel_id].remove_user(user)
+        return flag
 
 
 def session_check(func):

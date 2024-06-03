@@ -71,6 +71,11 @@ class SurfConsumer(BaseConsumer):
             await self.func_dict[path].get(command)(text_data)
 
     async def key_exchange(self, text_data):
+        """
+        key 交换
+        :param text_data:
+        :return:
+        """
         private_key, public_key = generate_key_pair()  # 将private_key保存为self.private_key
         serialized_public_key = public_key.public_bytes(
             encoding=serialization.Encoding.PEM,
@@ -81,6 +86,11 @@ class SurfConsumer(BaseConsumer):
     """-------------------------------user----------------------------"""
 
     async def login(self, text_data):
+        """
+        登陆
+        :param text_data:
+        :return:
+        """
         respond_json, session = self.service_dict['user'].login(text_data['public_key'])
         if session:
             if not await self.userPool.init_new_user(session, self):
@@ -90,55 +100,137 @@ class SurfConsumer(BaseConsumer):
         await self.send(respond_json)
 
     async def get_user_data(self, text_data):
+        """
+        获取用户信息
+        :param text_data:
+        :return:
+        """
         respond_json = self.service_dict['user'].get_user_data(text_data)
         await self.send(respond_json)
 
     async def search_user(self, text_data):
+        """
+        查询用户
+        :param text_data:
+        :return:
+        """
         respond_json = self.service_dict['user'].search_user(text_data)
         await self.send(respond_json)
 
     async def get_friends(self, text_data):
+        """
+        获取好友
+        :param text_data:
+        :return:
+        """
         respond_json = self.service_dict['user'].get_friends(text_data)
         await self.send(respond_json)
 
     async def add_friend(self, text_data):
+        """
+        添加好友
+        :param text_data:
+        :return:
+        """
         respond_json = self.service_dict['user'].add_friend(text_data, self.session_id)
         await self.send(respond_json)
 
     async def get_invitations(self, text_data):
+        """
+        获取好友申请列表
+        :param text_data:
+        :return:
+        """
         respond_json = self.service_dict['user'].get_invitations(text_data)
         await self.send(respond_json)
-
 
     """-------------------------------server----------------------------"""
 
     async def create_server(self, text_data):
+        """
+        创建服务器
+        :param text_data:
+        :return:
+        """
         respond_json = self.service_dict['server'].create_server(text_data)
         await self.send(respond_json)
 
     async def create_channel_group(self, text_data):
+        """
+        创建频道组
+        :param text_data:
+        :return:
+        """
         respond_json = self.service_dict['server'].create_channel_group(text_data)
         await self.send(respond_json)
 
     async def create_channel(self, text_data):
+        """
+        创建频道
+        :param text_data:
+        :return:
+        """
         respond_json = self.service_dict['server'].create_channel(text_data)
         await self.send(respond_json)
 
     async def get_server_details(self, text_data):
+        """
+        获取服务器详细信息
+        :param text_data:
+        :return:
+        """
         respond_json = self.service_dict['server'].get_server_details(text_data)
         await self.send(respond_json)
 
     async def add_server_member(self, text_data):
+        """
+        添加服务器成员
+        :param text_data:
+        :return:
+        """
         respond_json = self.service_dict['server'].add_server_member(text_data)
         await self.send(respond_json)
+
+    async def connect_to_channel(self, text_data):
+        """
+        链接用户到频道
+        :param text_data:
+        :return:
+        """
+        flag, rtn_str = await self.userPool.connect_user_to_single_channel_by_id(text_data['session_id'],
+                                                                                 text_data['channel_id'])
+        result = setResult(text_data['command'], flag, 'server') if flag else setResult(text_data['command'], rtn_str,
+                                                                                        'server')
+        await self.send(result)
+
+    async def disconnect_from_channel(self, text_data):
+        """
+        从频道中断开用户联机
+        :param text_data:
+        :return:
+        """
+        flag = await self.userPool.connect_user_to_single_channel_by_id(text_data['session_id'],
+                                                                        text_data['channel_id'])
+        result = setResult(text_data['command'], flag, 'server')
+        await self.send(result)
 
     """-------------------------------chat----------------------------"""
 
     async def get_message(self, text_data):
+        """
+        获取消息
+        :param text_data:
+        :return:
+        """
         respond_json = self.service_dict['chat'].get_message(text_data)
         await self.send(respond_json)
 
     async def send_message(self, text_data):
+        """
+        发送消息
+        :param text_data:
+        :return:
+        """
         respond_json = self.service_dict['chat'].send_message(text_data)
         if json.loads(respond_json)['messages'] is not False:
             await self.userPool.broadcast_to_all_user_in_channel(json.loads(respond_json))
@@ -146,6 +238,11 @@ class SurfConsumer(BaseConsumer):
             await self.send(respond_json)
 
     async def send_audio(self, text_data):
+        """
+        发送音频
+        :param text_data:
+        :return:
+        """
         text_data["is_audio"] = True
         text_data['content'] = json.loads(text_data['content'])
         print(len(text_data['content']))
