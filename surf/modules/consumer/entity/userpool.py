@@ -151,27 +151,40 @@ class UserPool(object):
         del self.__connected_user[session_id]
         con_log.info(f'session_id:{session_id} has disconnect from surf, current online: {len(self.__connected_user)}')
 
+    def check_online(self, session_id: str) -> bool:
+        return self.__connected_user.get(session_id, False)
+
 
 def session_check(func):
     async def wrapper(*args, **kwargs):
         flag = False
-        session_id = None
+        up = UserPool()
         text_data = json.loads(kwargs['text_data'])
-        if text_data['command'] != 'login' and text_data != 'key_exchange':
-            session_id = text_data.get('session_id', None)
+        session_id = text_data.get('session_id', None)
+        error_str = ""
+        rtn_str = ""
+
+        if text_data['command'] != 'login' and text_data['command'] != 'key_exchange':
             if session_id:
-                up = UserPool()
                 user = up.get_user_by_session_id(session_id)
-                if user and user.check_user_id(Session.get_session_by_id(session_id).get('user_id')) and session_id == \
-                        args[0].session_id:
+                session = Session.get_session_by_id(session_id)
+                if user and user.check_user_id(session.get('user_id')) and session_id == args[0].session_id:
                     flag = True
+                else:
+                    error_str = f"发现无效session进行操作：{session_id}， 已拦截"
+                    rtn_str = "无效session"
         else:
-            flag = True
+            flag = up.check_online(session_id)
+            if not flag:
+                error_str = "用户已离线，无法操作"
+                rtn_str = "已离线"
+
         if flag:
             return await func(*args, **kwargs)
         else:
             logger.error(text_data)
-            logger.error(f"发现无效session进行操作：{session_id}， 已拦截")
-            await args[0].send(errorResult(text_data['command'], '无效session', text_data['path']))
+            logger.error(error_str)
+            await args[0].send(errorResult(text_data['command'], rtn_str, text_data['path']))
 
     return wrapper
+
