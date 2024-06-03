@@ -163,8 +163,15 @@ class UserPool(object):
     async def remove_user_from_single_channel_by_id(self, session_id, channel_id: str) -> bool:
         user: SurfUser = self.get_users()[session_id]
         server_id = self.__server_service.get_server_by_channel_id(channel_id)
-        flag= await self.__broadcast_map[server_id][channel_id].remove_user(user)
+        flag = await self.__broadcast_map[server_id][channel_id].remove_user(user)
         return flag
+
+    def get_channel_users(self, channel_id: str) -> List[Dict[str, str]]:
+        user_list = []
+        server_id = self.__server_service.get_server_by_channel_id(channel_id)
+        for user in self.__broadcast_map[server_id][channel_id].get_users_in_channel():
+            user_list.append(user.get_user_data())
+        return user_list
 
 
 def session_check(func):

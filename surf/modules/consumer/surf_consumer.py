@@ -199,7 +199,7 @@ class SurfConsumer(BaseConsumer):
         """
         flag, rtn_str = await self.userPool.connect_user_to_single_channel_by_id(text_data['session_id'],
                                                                                  text_data['channel_id'])
-        result = setResult(text_data['command'], flag, 'server') if flag else setResult(text_data['command'], rtn_str,
+        result = setResult(f"{text_data['command']}_result", flag, 'server') if flag else setResult(text_data['command'], rtn_str,
                                                                                         'server')
         await self.send(result)
 
@@ -211,7 +211,18 @@ class SurfConsumer(BaseConsumer):
         """
         flag = await self.userPool.connect_user_to_single_channel_by_id(text_data['session_id'],
                                                                         text_data['channel_id'])
-        result = setResult(text_data['command'], flag, 'server')
+        result = setResult(f"{text_data['command']}_result", flag, 'server')
+        await self.send(result)
+
+    async def get_channel_users_data(self, text_data):
+        """
+        获取频道内的用户（语音频道用）
+        :param text_data:
+        :return:
+        """
+        result = setResult(f"{text_data['command']}_result",
+                           self.userPool.get_channel_users(text_data['channel_id']),
+                           "server")
         await self.send(result)
 
     """-------------------------------chat----------------------------"""
