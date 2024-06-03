@@ -188,15 +188,15 @@ def session_check(func):
                 user = up.get_user_by_session_id(session_id)
                 session = Session.get_session_by_id(session_id)
                 if user and user.check_user_id(session.get('user_id')) and session_id == args[0].session_id:
-                    flag = True
+                    flag = up.check_online(session_id)
+                    if not flag:
+                        error_str = "用户已离线，无法操作"
+                        rtn_str = "已离线"
                 else:
                     error_str = f"发现无效session进行操作：{session_id}， 已拦截"
                     rtn_str = "无效session"
         else:
-            flag = up.check_online(session_id)
-            if not flag:
-                error_str = "用户已离线，无法操作"
-                rtn_str = "已离线"
+            flag = True
 
         if flag:
             return await func(*args, **kwargs)
