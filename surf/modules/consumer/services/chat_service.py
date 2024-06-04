@@ -12,6 +12,7 @@ import traceback
 import uuid
 
 from surf.appsGlobal import CHAT_TEMP, get_logger, setResult, errorResult
+from surf.modules.consumer.models import ChatModel
 from surf.modules.util import Ec, Session
 
 logger = get_logger('chat')
@@ -20,7 +21,7 @@ logger = get_logger('chat')
 class ChatService(object):
     def __init__(self):
         self.ec = Ec()
-        pass
+        self.__chat_model = ChatModel()
 
     def get_message(self, text_data):
         try:
@@ -58,9 +59,13 @@ class ChatService(object):
     def send_message(self, text_data):
         try:
             if text_data.get('session_id', None) and text_data.get('message', None):
+                chat_id = self.__chat_model.send_chat({
+                    "c_channel_id": text_data['channel_id'],
+                    "c_status": 0
+                })
                 session = Session.get_session_by_id(text_data["session_id"])
                 filters = copy.deepcopy(CHAT_TEMP)
-                filters['_id'] = str(uuid.uuid4())
+                filters['_id'] = chat_id
                 filters['_source'] = text_data['message']
                 filters['_source']['chat_id'] = filters['_id']
                 filters['_source']['type'] = 'text'

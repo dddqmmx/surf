@@ -226,8 +226,10 @@ class SurfConsumer(BaseConsumer):
         """
         flag, rtn_str = await self.userPool.connect_user_to_single_channel_by_id(text_data['session_id'],
                                                                                  text_data['channel_id'])
-        result = setResult(f"{text_data['command']}_result", flag, 'server') if flag else setResult(text_data['command'], rtn_str,
-                                                                                        'server')
+        result = setResult(f"{text_data['command']}_result", flag, 'server') if flag else setResult(
+            text_data['command'],
+            rtn_str,
+            'server')
         await self.send(result)
 
     async def disconnect_from_channel(self, text_data):
