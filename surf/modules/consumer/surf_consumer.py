@@ -34,7 +34,8 @@ class SurfConsumer(BaseConsumer):
             "chat": {
                 "get_message": self.get_message,
                 "send_message": self.send_message,
-                "send_audio": self.send_audio
+                "send_audio": self.send_audio,
+                "revoke_message": self.revoke_message
             },
             "user": {
                 'login': self.login,
@@ -287,6 +288,15 @@ class SurfConsumer(BaseConsumer):
         text_data['content'] = json.loads(text_data['content'])
         print(len(text_data['content']))
         await self.userPool.broadcast_to_all_user_in_channel(text_data)
+
+    async def revoke_message(self, text_data):
+        """
+        撤回消息
+        :param text_data:
+        :return:
+        """
+        respond_json = self.service_dict['chat'].revoke_message(text_data)
+        await self.send(respond_json)
 
     async def test(self, text_data):
         await self.send('114514')

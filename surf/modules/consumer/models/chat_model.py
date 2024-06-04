@@ -29,3 +29,10 @@ class ChatModel(BaseModel):
             logger.error(f"""{e}\n{traceback.format_exc()}""")
         finally:
             return flag
+
+    def revoke_message(self, filters):
+        return self._pg.save("c_channel_chats",
+                             filters,
+                             primary="c_chat_id",
+                             return_id=True,
+                             return_id_clumn="c_chat_id")

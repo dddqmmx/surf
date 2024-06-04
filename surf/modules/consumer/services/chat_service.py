@@ -82,3 +82,17 @@ class ChatService(object):
         except Exception as e:
             logger(f"""发送消息失败\n{e}\n{traceback.format_exc()}""")
         return errorResult('new_message', '数据添加至es失败', 'chat')
+
+    def revoke_message(self, text_data):
+        chat_id = text_data['chat_id']
+        if not self.__chat_model.is_revoked(chat_id):
+            res_id = self.__chat_model.revoke_message(
+                {
+                    "c_chat_id": chat_id,
+                    "c_status": 1
+                }
+            )
+            if chat_id == res_id:
+                return setResult(f"{text_data['command']}_result", True, 'chat')
+            return errorResult(f"{text_data['command']}_result", "撤回失败", 'chat')
+        return errorResult(f"{text_data['command']}_result", "消息已经被撤回", 'chat')
