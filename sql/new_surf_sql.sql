@@ -1,8 +1,4 @@
--- create database surf;
--- \c surf;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp"; -- 确保扩展已安装
-
-
 
 CREATE OR REPLACE FUNCTION generate_random_nickname() RETURNS VARCHAR(20) AS $$
 BEGIN
@@ -21,8 +17,7 @@ DROP TABLE IF EXISTS t_roles;
 DROP TABLE IF EXISTS t_servers;
 DROP TABLE IF EXISTS t_user_friends;
 DROP TABLE IF EXISTS t_users;
-
-
+DROP TABLE IF EXISTS t_user_roles;
 
 CREATE TABLE t_users
 (
@@ -84,7 +79,6 @@ CREATE TABLE t_server_members (
     c_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
     c_server_id VARCHAR(36) NOT NULL,
     c_user_id VARCHAR(36) NOT NULL,
-    c_roles jsonb,
     FOREIGN KEY (c_server_id) REFERENCES t_servers(c_server_id) ON DELETE CASCADE,
     FOREIGN KEY (c_user_id) REFERENCES t_users(c_user_id) ON DELETE CASCADE
 );
@@ -93,7 +87,6 @@ CREATE TABLE t_permissions (
     c_permission_id INTEGER PRIMARY KEY,
     c_description TEXT NOT NULL
 );
-
 
 CREATE TABLE t_audit_logs (
     c_log_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -121,6 +114,16 @@ CREATE TABLE t_channel_chats (
 );
 COMMENT ON column t_channel_chats.c_status is '-1->撤回 0->未撤回';
 
+CREATE TABLE t_user_roles (
+    c_user_id VARCHAR(36),
+    c_role_id VARCHAR(36),
+    c_server_id VARCHAR(36),
+    PRIMARY KEY (c_user_id, c_role_id, c_server_id),
+    FOREIGN KEY (c_user_id) REFERENCES t_users(c_user_id) ON DELETE CASCADE,
+    FOREIGN KEY (c_role_id) REFERENCES t_roles(c_role_id) ON DELETE CASCADE,
+    FOREIGN KEY (c_server_id) REFERENCES t_servers(c_server_id) ON DELETE CASCADE
+);
+
 -- 为用户ID和好友ID创建索引以优化查找性能
 CREATE INDEX idx_user_friends_user_id ON t_user_friends (c_user_id);
 CREATE INDEX idx_user_friends_friend_id ON t_user_friends (c_friend_id);
@@ -141,12 +144,10 @@ CREATE INDEX idx_channel_group_id_on_channels ON t_channels (c_group_id);
 -- 为频道ID创建索引
 CREATE INDEX idx_channel_id ON t_channels (c_channel_id);
 
-
 CREATE INDEX idx_audit_logs_timestamp ON t_audit_logs (c_timestamp);
 
 CREATE INDEX idx_message_type ON t_channel_chats (c_chat_id);
 CREATE INDEX idx_channel_id_on_messages ON t_channel_chats (c_channel_id);
-
 
 CREATE OR REPLACE FUNCTION check_permissions_exist()
 RETURNS TRIGGER AS $$
@@ -159,24 +160,6 @@ BEGIN
         -- 检查元素是否存在于 t_permissions 表中
         IF NOT EXISTS (SELECT 1 FROM t_permissions WHERE c_permission_id = permission_id) THEN
             RAISE EXCEPTION 'Permission ID % does not exist in t_permissions.', permission_id;
-        END IF;
-    END LOOP;
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION check_roles_exist()
-RETURNS TRIGGER AS $$
-DECLARE
-    role_id INT;
-BEGIN
-    -- 遍历 JSONB 数组中的每个元素
-    FOR role_id IN SELECT jsonb_array_elements_text(NEW.c_roles)::int
-    LOOP
-        -- 检查元素是否存在于 t_permissions 表中
-        IF NOT EXISTS (SELECT 1 FROM t_roles WHERE c_role_id = role_id) THEN
-            RAISE EXCEPTION 'Permission ID % does not exist in t_permissions.', role_id;
         END IF;
     END LOOP;
 
