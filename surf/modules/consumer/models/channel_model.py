@@ -107,3 +107,27 @@ class ChannelModel(BaseModel):
             print(f"""{e}\n{traceback.format_exc()}""")
         finally:
             return res
+
+    def get_server_by_channel_group_id(self, channel_group_id: List[str]) -> List[Dict[str, str]]:
+        res = []
+        try:
+            for cgid in channel_group_id:
+                sql = """
+                        SELECT
+                            c_server_id as id
+                        FROM 
+                            t_channel_groups
+                        WHERE c_group_id = %s
+                        """
+                res.extend(self._pg.query(sql, [cgid]))
+        except Exception as e:
+            print(f"""{e}\n{traceback.format_exc()}""")
+        finally:
+            return res
+
+    def remove_channel_group_by_id(self, filters):
+        return self._pg.delete("t_channel_groups", filters)
+
+    def remove_channel_by_id(self, filters):
+        return self._pg.delete("t_channels", filters)
+

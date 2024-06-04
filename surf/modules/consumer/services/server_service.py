@@ -123,7 +123,7 @@ class ServerService(object):
             logger.error(f"create server error：{e}\n{traceback.format_exc()}")
         if error_flag and server_id:
             self.__serverModel.delete_server_by_id({"c_server_id": server_id})
-            print('delete error server done')
+            logger.error('delete error server done')
         return errorResult(f"{text_data['command']}_result", '服务器创建失败', 'server')
 
     def create_channel_group(self, text_data):
@@ -192,7 +192,7 @@ class ServerService(object):
                 return setResult(f"{text_data['command']}_result", server_dict, 'server')
             return setResult(f"{text_data['command']}_result", False, 'server')
         except Exception as e:
-            print(f"""{e}\n{traceback.format_exc()}""")
+            logger.error(f"""{e}\n{traceback.format_exc()}""")
         return errorResult(f"{text_data['command']}_result", '查询错误', 'server')
 
     def get_servers_by_user(self, text_data):
@@ -210,7 +210,7 @@ class ServerService(object):
             else:
                 logger.error('session_id not get')
         except Exception as e:
-            print(f"""{e}\n{traceback.format_exc()}""")
+            logger.error(f"""{e}\n{traceback.format_exc()}""")
         return errorResult(f"{text_data['command']}_result", 'session_id not get', 'server')
 
     def get_channels_by_user_id(self, user_id) -> Union[list, bool]:
@@ -219,7 +219,7 @@ class ServerService(object):
             if res:
                 return res
         except Exception as e:
-            print(f"""{e}\n{traceback.format_exc()}""")
+            logger.error(f"""{e}\n{traceback.format_exc()}""")
         return False
 
     def get_server_by_channel_id(self, channel_id) -> Union[str, bool]:
@@ -228,7 +228,7 @@ class ServerService(object):
             if res:
                 return res[0]['id']
         except Exception as e:
-            print(f"""{e}\n{traceback.format_exc()}""")
+            logger.error(f"""{e}\n{traceback.format_exc()}""")
         return False
 
     def get_channel_details_by_channel_id(self, channel_id) -> Union[List[Dict[str, str]], bool]:
@@ -237,5 +237,53 @@ class ServerService(object):
             if res:
                 return res
         except Exception as e:
-            print(f"""{e}\n{traceback.format_exc()}""")
+            logger.error(f"""{e}\n{traceback.format_exc()}""")
         return False
+
+    def delete_channel_group(self, text_data):
+        user_id = Session.get_session_by_id(text_data['session_id']).get("user_id")
+        try:
+            # 验证用户是否在服务器中
+            # TODO: 权限验证
+            server_id = self.__channelModel.get_server_by_channel_group_id(text_data['channel_group_id'])[0]['id']
+            flag = self.__serverModel.check_is_user_in_server_by_id(server_id, user_id)
+            if flag:
+                res = self.__channelModel.remove_channel_group_by_id({
+                    "c_group_id": text_data['channel_group_id']
+                })
+                return setResult(f"{text_data['command']}_result",
+                                 True if res == 1 else False,
+                                 'server')
+            else:
+                return errorResult(f"{text_data['command']}_result",
+                                   "用户不存在于该频道组所在服务器中，无法删除",
+                                   'server')
+        except Exception as e:
+            logger.error(f"""{e}\n{traceback.format_exc()}""")
+        return errorResult(f"{text_data['command']}_result",
+                           "删除失败，组件异常",
+                           'server')
+
+    def delete_channel(self, text_data):
+        user_id = Session.get_session_by_id(text_data['session_id']).get("user_id")
+        try:
+            # 验证用户是否在服务器中
+            # TODO: 权限验证
+            server_id = self.__channelModel.get_server_by_channel_id(text_data['channel_id'])[0]['id']
+            flag = self.__serverModel.check_is_user_in_server_by_id(server_id, user_id)
+            if flag:
+                res = self.__channelModel.remove_channel_by_id({
+                    "c_channel_id": text_data['channel_id']
+                })
+                return setResult(f"{text_data['command']}_result",
+                                 True if res == 1 else False,
+                                 'server')
+            else:
+                return errorResult(f"{text_data['command']}_result",
+                                   "用户不存在于该频道所在服务器中，无法删除",
+                                   'server')
+        except Exception as e:
+            logger.error(f"""{e}\n{traceback.format_exc()}""")
+        return errorResult(f"{text_data['command']}_result",
+                           "删除失败，组件异常",
+                           'server')

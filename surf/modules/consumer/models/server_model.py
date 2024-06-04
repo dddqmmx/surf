@@ -53,3 +53,20 @@ class ServerModel(BaseModel):
             logger.error(f"""{e}\n{traceback.format_exc()}""")
         finally:
             return res
+
+    def check_is_user_in_server_by_id(self, server_id: str, user_id: str) -> bool:
+        flag = False
+        try:
+            sql = """
+            SELECT
+                COUNT(1) as count
+            FROM
+                t_server_members
+            WHERE c_server_id = %s and c_user_id = %s
+            """
+            res = self._pg.query(sql, [server_id, user_id])
+            flag = True if res == 1 else flag
+        except Exception as e:
+            logger.error(f"""{e}\n{traceback.format_exc()}""")
+        finally:
+            return flag

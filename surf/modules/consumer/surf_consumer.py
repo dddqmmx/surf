@@ -164,13 +164,33 @@ class SurfConsumer(BaseConsumer):
         respond_json = self.service_dict['server'].create_channel_group(text_data)
         await self.send(respond_json)
 
+    async def delete_channel_group(self, text_data):
+        """
+        删除频道组
+        :param text_data:
+        :return:
+        """
+        respond_json = self.service_dict['server'].delete_channel_group(text_data)
+        await self.send(respond_json)
+
     async def create_channel(self, text_data):
         """
         创建频道
         :param text_data:
         :return:
+        TODO: 相关权限验证
         """
         respond_json = self.service_dict['server'].create_channel(text_data)
+        await self.send(respond_json)
+
+    async def delete_channel(self, text_data):
+        """
+        删除频道
+        :param text_data:
+        :return:
+        TODO: 相关权限验证
+        """
+        respond_json = self.service_dict['server'].delete_channel(text_data)
         await self.send(respond_json)
 
     async def get_server_details(self, text_data):
