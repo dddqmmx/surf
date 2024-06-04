@@ -1,7 +1,9 @@
 <div class="channel-info-container">
-    <div style="padding: 20px;border-bottom: #2b2b2b solid 2px">
+    <div style="padding: 10px;
+            /*border-bottom: 3px solid rgba(0, 0, 0, 0.5);*/
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4); ">
         <div style="" (click)="toggleMenu()">
-            <h2>{{ channelInfo?.name }}</h2>
+            <h1>{{ channelInfo?.name }}</h1>
         </div>
         <div *ngIf="menuVisible" class="menu-container .show-menu">
             <div class="menu-item">踢出频道主</div>
