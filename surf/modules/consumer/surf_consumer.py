@@ -40,14 +40,21 @@ class SurfConsumer(BaseConsumer):
                 'login': self.login,
                 'get_user_data': self.get_user_data,
                 'search_user': self.search_user,
-                'get_friends': self.get_friends
+                'get_friends': self.get_friends,
+                'add_friends': self.add_friend,
+                'get_invitations': self.get_invitations
             },
             "server": {
                 "create_server": self.create_server,
                 "create_channel_group": self.create_channel_group,
+                "delete_channel_group": self.delete_channel_group,
                 "create_channel": self.create_channel,
+                "delete_channel": self.delete_channel,
                 "get_server_details": self.get_server_details,
-                "add_server_member": self.add_server_member
+                "add_server_member": self.add_server_member,
+                "connect_to_channel": self.connect_to_channel,
+                "disconnect_from_channel": self.disconnect_from_channel,
+                "get_channel_users_data": self.get_channel_users_data
             },
             'test': {
                 'test1': self.test
