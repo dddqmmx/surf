@@ -57,13 +57,14 @@ export class MainComponent implements OnInit{
     public sidebarServer: SidebarServerComponent | undefined
 
     ngOnInit(): void {
-        const self = this;
-        const sendAudioSubject = this.socketMangerService.getMessageSubject("chat", "send_audio").subscribe(
-            message => {
-                const data = JSON.parse(message.data).content;
-                self.playAudio(data)
-            })
-        this.subscriptions.push(sendAudioSubject);
+    const self = this;
+    const sendAudioSubject = this.socketMangerService.getMessageSubject("chat", "send_audio").subscribe(
+      message => {
+        const data = JSON.parse(message.data).content;
+        self.enqueueAudioData(data);
+      }
+    );
+    this.subscriptions.push(sendAudioSubject);
         if (this.cryptoService.session){
             this.getUserData()
             this.getFriends();
@@ -219,6 +220,57 @@ export class MainComponent implements OnInit{
     isRecording: boolean = false;
     sendDataInterval: any;
     mainAudioContext: AudioContext | null = null;
+    audioBufferQueue :any[]= [];
+    isPlaying = false;
+
+    enqueueAudioData(audioData: any) {
+        this.audioBufferQueue.push(...audioData);
+        if (!this.isPlaying) {
+          this.playBufferedAudio();
+        }
+    }
+
+    playBufferedAudio() {
+    if (this.audioBufferQueue.length === 0) {
+      this.isPlaying = false;
+      return;
+    }
+
+    this.isPlaying = true;
+
+    const bufferSize = 512; // Choose an appropriate buffer size
+    const audioData = this.audioBufferQueue.splice(0, bufferSize);
+
+    this.playAudio(new Float32Array(audioData)).then(() => {
+      this.playBufferedAudio();
+    });
+  }
+
+  playAudio(audioData: Float32Array) {
+    return new Promise((resolve, reject) => {
+      if (!this.mainAudioContext) {
+        this.mainAudioContext = new AudioContext();
+      }
+
+      this.mainAudioContext.resume();
+
+      const channelCount = 1;
+      const sampleRate = this.mainAudioContext.sampleRate;
+      const totalSamples = audioData.length;
+
+      const audioBuffer = this.mainAudioContext.createBuffer(channelCount, totalSamples, sampleRate);
+      const channelData = audioBuffer.getChannelData(0);
+
+      channelData.set(audioData);
+
+      const source = this.mainAudioContext.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(this.mainAudioContext.destination);
+      source.onended = resolve; // Resolve the promise when playback finishes
+      source.start();
+    });
+  }
+
 
     async startRecording () {
       if (this.isRecording) {
@@ -234,7 +286,7 @@ export class MainComponent implements OnInit{
           this.audioContext = new AudioContext();
 
           // Use a smaller buffer size (512) for lower latency
-          this.scriptProcessor = this.audioContext.createScriptProcessor(16384, 1, 1);
+          this.scriptProcessor = this.audioContext.createScriptProcessor(0, 1, 1);
           this.scriptProcessor.onaudioprocess = (event) => this.handleAudioProcess(event);
 
           const inputNode = this.audioContext.createMediaStreamSource(mediaStream);
@@ -251,7 +303,7 @@ export class MainComponent implements OnInit{
             if (this.isRecording && this.audioChunks.length > 0) {
               this.sendAudioData();
             }
-          }, 100); // Adjusted for lower latency
+          }, 50); // Adjusted for lower latency
         }
       } catch (err) {
         console.error('无法访问麦克风:', err);
@@ -267,30 +319,15 @@ export class MainComponent implements OnInit{
     }
     sendAudioData() {
         const message: Float32Array = this.mergeArrays(this.audioChunks);
-
-        // 打印合并后的音频数据长度
-        // console.log('Merged audio data length:', message.length);
-
-        // 将 Float32Array 转换为普通数组
         const regularArray: number[] = Array.from(message);
-
-        // 检查转换后的数组是否包含有效数据
-        // console.log('Regular array:', regularArray);
-
-        // 将普通数组转换为 JSON 字符串
         const jsonArray: string = JSON.stringify(regularArray);
-        // console.log('JSON array:', jsonArray);
-
-        // 解析 JSON 字符串以检查其内容
-        // const data = JSON.parse(jsonArray);
-        // console.log('Parsed data length:', data.length);
-
         // 发送音频数据
-        this.socketMangerService.send( "chat", "send_audio",{
-            "session_id": this.cryptoService.session,
-            "channel_id": '0362e80c-839b-4ee6-9e77-c2cb6668c961',
-            "content": jsonArray,
-        });
+        // this.socketMangerService.send( "chat", "send_audio",{
+        //     "session_id": this.cryptoService.session,
+        //     "channel_id": '0362e80c-839b-4ee6-9e77-c2cb6668c961',
+        //     "content": jsonArray,
+        // });
+        this.enqueueAudioData(message);
         this.audioChunks = [];
     }
 
@@ -306,8 +343,6 @@ export class MainComponent implements OnInit{
 
       return result;
     }
-
-
 
     stopRecording() {
       if (!this.isRecording) {
@@ -331,27 +366,6 @@ export class MainComponent implements OnInit{
       console.log('停止录制音频...');
     }
 
-    playAudio(audioData: Float32Array) {
-      if (!this.mainAudioContext) {
-        this.mainAudioContext = new AudioContext();
-      }
-
-      this.mainAudioContext.resume();
-
-      const channelCount = 1;
-      const sampleRate = this.mainAudioContext.sampleRate;
-      const totalSamples = audioData.length;
-
-      const audioBuffer = this.mainAudioContext.createBuffer(channelCount, totalSamples, sampleRate);
-      const channelData = audioBuffer.getChannelData(0);
-
-      channelData.set(audioData);
-
-      const source = this.mainAudioContext.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(this.mainAudioContext.destination);
-      source.start();
-    }
 
     protected readonly console = console;
 }
