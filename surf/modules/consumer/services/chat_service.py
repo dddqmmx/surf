@@ -45,6 +45,10 @@ class ChatService(object):
                 }
                 chat_list = self.ec.search('chat_message', search_body)['hits']['hits']
                 messages = [chat['_source'] for chat in chat_list]
+                for message in messages:
+                    if self.__chat_model.is_revoked(message['chat_id']):
+                        message['type'] = 'revoked'
+                        del message['content']
                 messages = messages[::-1]
                 type = text_data['type']
                 logger.info(f"channel:{channel_id}'s chat data get:{chat_list}")
