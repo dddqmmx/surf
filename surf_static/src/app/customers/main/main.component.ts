@@ -45,7 +45,7 @@ export class MainComponent implements OnInit{
 
     }
     constructor(private cryptoService: CryptoService,
-                private localDataService:LocalDataService,
+                protected localDataService:LocalDataService,
                 private socketMangerService: SocketManagerService,
                 private router: Router) {
             this.cryptoService = cryptoService;
@@ -65,12 +65,12 @@ export class MainComponent implements OnInit{
             })
         this.subscriptions.push(sendAudioSubject);
         if (this.cryptoService.session){
-            this.getUserData();
+            this.getUserData()
+            this.getFriends();
         }else {
             alert('你没登录')
             this.router.navigate(['/login'])
         }
-        this.getFriends();
     }
 
     ngOnDestroy(){
@@ -162,6 +162,8 @@ export class MainComponent implements OnInit{
                 const data = JSON.parse(message.data).messages;
                 console.log(data)
                 this.servers.push(...data.user.servers);
+                this.localDataService.loggedUserId = data.user.id
+                this.localDataService.setUserInfo(data.user.id,data.user)
                 this.setSidebarServerId(this.servers[0].id)
                 getUserDataSubject.unsubscribe()
             })
@@ -170,6 +172,9 @@ export class MainComponent implements OnInit{
             'session_id':this.cryptoService.session
         })
     }
+
+
+
 
     createServer() {
         this.socketMangerService.send('server','create_server', {
@@ -347,4 +352,6 @@ export class MainComponent implements OnInit{
       source.connect(this.mainAudioContext.destination);
       source.start();
     }
+
+    protected readonly console = console;
 }

@@ -4,7 +4,17 @@
     </div>
     <div style="flex-grow: 1; overflow-y: auto; padding: 10px;">
         <div *ngFor="let message of messageList">
-            <p><span style="color: #0077b6; font-weight: bold; margin-right: 10px;">{{message.user_id}}</span><span>{{message.content}}</span></p>
+            <div style="display: flex; align-items: flex-start;">
+                <img height="40" width="40" src="assets/img_3.png" alt="User Image" style="border-radius: 50%;">
+                <div style="margin-left: 10px;">
+                    <p>
+                        <span style="color: #0077b6; font-weight: bold; display: block;" *ngIf="localDataService.hasUserInfo(message.user_id)">
+                            {{localDataService.getUserInfo(message.user_id).user_nickname}}
+                        </span>
+                        <span style="display: block;">{{message.content}}</span>
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
     <div style="background: #333; padding: 10px; position: absolute; bottom: 0; left: 0; right: 0; display: flex;">

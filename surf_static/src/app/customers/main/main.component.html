@@ -41,12 +41,12 @@
                         <img class="profile-img" src="assets/img.png" alt="User Image">
                         <div class="user-details">
                             <div class="user-info">
-                                <p class="user-name">清水みき</p>
+                                <p class="user-name" *ngIf="localDataService.hasUserInfo(localDataService.loggedUserId)" >{{localDataService.getUserInfo(localDataService.loggedUserId).user_nickname}}</p>
                                 <p class="user-status">在线</p>
                             </div>
                             <div class="user-options">
                                 <img src="favicon.ico" (click)="stopRecording()" alt="Icon">
-                                <img src="favicon.ico" alt="Icon">
+                                <img src="favicon.ico" (click)="console.log(localDataService.getUserData(['e2cfa16b-c7a3-46f0-9995-22e2ae333e3e']))" alt="Icon">
                                 <img src="favicon.ico" alt="Icon">
                             </div>
                         </div>
