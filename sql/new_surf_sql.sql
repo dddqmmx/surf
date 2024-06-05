@@ -13,11 +13,14 @@ DROP TABLE IF EXISTS t_channel_groups;
 DROP TABLE IF EXISTS t_audit_logs;
 DROP TABLE IF EXISTS t_permissions;
 DROP TABLE IF EXISTS t_server_members;
+DROP TABLE IF EXISTS t_user_roles;
 DROP TABLE IF EXISTS t_roles;
 DROP TABLE IF EXISTS t_servers;
 DROP TABLE IF EXISTS t_user_friends;
 DROP TABLE IF EXISTS t_users;
-DROP TABLE IF EXISTS t_user_roles;
+DROP TABLE IF EXISTS t_message_reactions;
+DROP TABLE IF EXISTS t_blacklist;
+DROP TABLE IF EXISTS t_reports;
 
 CREATE TABLE t_users
 (
@@ -106,13 +109,16 @@ CREATE TABLE t_channel_members (
     FOREIGN KEY (c_user_id) REFERENCES t_users(c_user_id) ON DELETE CASCADE
 );
 
-CREATE TABLE t_channel_chats (
-    c_chat_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
-    c_channel_id VARCHAR(36) NOT NULL,
-    c_status INTEGER NOT NULL DEFAULT 0,
-    FOREIGN KEY (c_channel_id) REFERENCES t_channels(c_channel_id) ON DELETE CASCADE
+CREATE TABLE t_channel_chats
+(
+    c_chat_id            VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
+    c_referenced_chat_id VARCHAR(36) NULL        DEFAULT NULL,
+    c_channel_id         VARCHAR(36) NOT NULL,
+    c_status             INTEGER     NOT NULL    DEFAULT 0,
+    FOREIGN KEY (c_channel_id) REFERENCES t_channels (c_channel_id) ON DELETE CASCADE,
+    FOREIGN KEY (c_referenced_chat_id) REFERENCES t_channel_chats (c_chat_id) ON DELETE CASCADE
 );
-COMMENT ON column t_channel_chats.c_status is '-1->撤回 0->未撤回';
+
 
 CREATE TABLE t_user_roles (
     c_user_id VARCHAR(36),
@@ -123,6 +129,38 @@ CREATE TABLE t_user_roles (
     FOREIGN KEY (c_role_id) REFERENCES t_roles(c_role_id) ON DELETE CASCADE,
     FOREIGN KEY (c_server_id) REFERENCES t_servers(c_server_id) ON DELETE CASCADE
 );
+
+CREATE TABLE t_message_reactions (
+    c_reaction_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
+    c_chat_id VARCHAR(36) NOT NULL,
+    c_user_id VARCHAR(36) NOT NULL,
+    c_reaction VARCHAR(10) NOT NULL,
+    c_reaction_time BIGINT NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::BIGINT,
+    FOREIGN KEY (c_chat_id) REFERENCES t_channel_chats(c_chat_id) ON DELETE CASCADE,
+    FOREIGN KEY (c_user_id) REFERENCES t_users(c_user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE t_blacklist (
+    c_blacklist_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
+    c_user_id VARCHAR(36) NOT NULL,
+    c_blocked_user_id VARCHAR(36) NOT NULL,
+    c_reason TEXT,
+    c_block_time BIGINT NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::BIGINT,
+    FOREIGN KEY (c_user_id) REFERENCES t_users(c_user_id) ON DELETE CASCADE,
+    FOREIGN KEY (c_blocked_user_id) REFERENCES t_users(c_user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE t_reports (
+    c_report_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
+    c_reporter_id VARCHAR(36) NOT NULL,
+    c_reported_user_id VARCHAR(36) NOT NULL,
+    c_report_reason TEXT NOT NULL,
+    c_report_time BIGINT NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::BIGINT,
+    c_status VARCHAR(10) CHECK (c_status IN ('pending', 'resolved', 'dismissed')) DEFAULT 'pending',
+    FOREIGN KEY (c_reporter_id) REFERENCES t_users(c_user_id) ON DELETE CASCADE,
+    FOREIGN KEY (c_reported_user_id) REFERENCES t_users(c_user_id) ON DELETE CASCADE
+);
+
 
 -- 为用户ID和好友ID创建索引以优化查找性能
 CREATE INDEX idx_user_friends_user_id ON t_user_friends (c_user_id);
@@ -148,6 +186,13 @@ CREATE INDEX idx_audit_logs_timestamp ON t_audit_logs (c_timestamp);
 
 CREATE INDEX idx_message_type ON t_channel_chats (c_chat_id);
 CREATE INDEX idx_channel_id_on_messages ON t_channel_chats (c_channel_id);
+
+CREATE INDEX idx_reaction_id ON t_message_reactions (c_reaction_id);
+CREATE INDEX idx_chat_id_on_reactions ON t_message_reactions (c_chat_id);
+
+CREATE INDEX idx_blacklist_id ON t_blacklist (c_blacklist_id);
+
+CREATE INDEX idx_report_id ON t_reports (c_report_id);
 
 CREATE OR REPLACE FUNCTION check_permissions_exist()
 RETURNS TRIGGER AS $$
