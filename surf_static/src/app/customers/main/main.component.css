@@ -117,6 +117,7 @@ body {
     padding: 8px;
     border-radius: 5%;
     opacity: 0;
+    pointer-events: none;
     margin-left: 16px;
 }
 
@@ -323,7 +324,7 @@ footer img {
     display: flex;
     align-items: center;
     padding: 10px;
-    background-color: #3a3b3f;
+    background-color: #232428;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
@@ -335,6 +336,8 @@ footer img {
 }
 
 .user-details {
+    padding: 10px;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: space-between;
