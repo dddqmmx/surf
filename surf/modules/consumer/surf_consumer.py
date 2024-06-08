@@ -55,7 +55,8 @@ class SurfConsumer(BaseConsumer):
                 "add_server_member": self.add_server_member,
                 "connect_to_channel": self.connect_to_channel,
                 "disconnect_from_channel": self.disconnect_from_channel,
-                "get_channel_users_data": self.get_channel_users_data
+                "get_channel_users_data": self.get_channel_users_data,
+                'get_server_members': self.get_server_members
             },
             'test': {
                 'test1': self.test
