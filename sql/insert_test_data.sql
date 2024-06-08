@@ -43,13 +43,13 @@ INSERT INTO public.t_servers (c_server_id, c_description, c_name, c_owner_id, c_
 ('c666e4a2-bdc6-4bf5-a41d-5b0b3f01a73e', '123', '123', 'e2cfa16b-c7a3-46f0-9995-22e2ae333e3e', 1715508210, null, true, true);
 
 -- 插入角色数据
-INSERT INTO public.t_roles (c_role_id, c_server_id, c_name, c_permissions) VALUES
-('bdabb221-ebe9-478d-bb42-86578cb2e4c0', 'fdad3e5e-818d-4201-8b07-4734da71d9b7', '服务器拥有者', '[0]'),
-('720712a3-8eb0-421e-a269-776bac5c5dd2', 'fdad3e5e-818d-4201-8b07-4734da71d9b7', '普通成员', '[2, 5, 601, 701]'),
-('dd531822-99bf-4bd7-aae9-14aa341d6514', 'b0e98cf2-c35f-4180-a61b-96fde10f48ff', '服务器拥有者', '[0]'),
-('8d24e43c-ad94-4344-8e35-167ee60935d5', 'b0e98cf2-c35f-4180-a61b-96fde10f48ff', '普通成员', '[2, 5, 601, 701]'),
-('4c5f75e4-56ad-46d3-b355-cdafd3d1306f', 'c666e4a2-bdc6-4bf5-a41d-5b0b3f01a73e', '普通成员', '[2, 5, 601, 701]'),
-('79708888-9a41-425a-ab6b-e91dd11c63c1', 'c666e4a2-bdc6-4bf5-a41d-5b0b3f01a73e', '服务器拥有者', '[0]');
+INSERT INTO public.t_roles (c_role_id, c_server_id, c_name, c_permissions, c_level) VALUES
+('bdabb221-ebe9-478d-bb42-86578cb2e4c0', 'fdad3e5e-818d-4201-8b07-4734da71d9b7', '服务器拥有者', '[0]', 3),
+('720712a3-8eb0-421e-a269-776bac5c5dd2', 'fdad3e5e-818d-4201-8b07-4734da71d9b7', '普通成员', '[2, 5, 601, 701]', 1),
+('dd531822-99bf-4bd7-aae9-14aa341d6514', 'b0e98cf2-c35f-4180-a61b-96fde10f48ff', '服务器拥有者', '[0]', 3),
+('8d24e43c-ad94-4344-8e35-167ee60935d5', 'b0e98cf2-c35f-4180-a61b-96fde10f48ff', '普通成员', '[2, 5, 601, 701]', 1),
+('79708888-9a41-425a-ab6b-e91dd11c63c1', 'c666e4a2-bdc6-4bf5-a41d-5b0b3f01a73e', '服务器拥有者', '[0]', 3),
+('4c5f75e4-56ad-46d3-b355-cdafd3d1306f', 'c666e4a2-bdc6-4bf5-a41d-5b0b3f01a73e', '普通成员', '[2, 5, 601, 701]', 1);
 
 -- 插入服务器成员数据
 INSERT INTO public.t_server_members (c_id, c_server_id, c_user_id) VALUES

@@ -77,6 +77,7 @@ CREATE TABLE t_roles (
     c_server_id VARCHAR(36) NOT NULL,
     c_name VARCHAR NOT NULL,
     c_permissions jsonb NOT NULL default '[1,2,3]',
+    c_level INTEGER NOT NULL default 1 CHECK ( c_level in (1, 2, 3) ),
     FOREIGN KEY (c_server_id) REFERENCES t_servers(c_server_id) ON DELETE CASCADE
 );
 
@@ -127,7 +128,6 @@ CREATE TABLE t_user_roles (
     c_user_id VARCHAR(36),
     c_role_id VARCHAR(36),
     c_server_id VARCHAR(36),
-    PRIMARY KEY (c_user_id, c_role_id, c_server_id),
     FOREIGN KEY (c_user_id) REFERENCES t_users(c_user_id) ON DELETE CASCADE,
     FOREIGN KEY (c_role_id) REFERENCES t_roles(c_role_id) ON DELETE CASCADE,
     FOREIGN KEY (c_server_id) REFERENCES t_servers(c_server_id) ON DELETE CASCADE
