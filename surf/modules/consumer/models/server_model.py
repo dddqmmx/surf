@@ -70,3 +70,15 @@ class ServerModel(BaseModel):
             logger.error(f"""{e}\n{traceback.format_exc()}""")
         finally:
             return flag
+
+    def get_members_by_server_id(self, server_id):
+        res = []
+        try:
+            sql = """
+            SELECT c_user_id as user_id FROM t_server_members WHERE c_server_id = %s
+            """
+            res.extend(self._pg.query(sql, [server_id]))
+        except Exception as e:
+            logger.error(f"""{e}\n{traceback.format_exc()}""")
+        finally:
+            return res

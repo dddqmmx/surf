@@ -10,8 +10,9 @@ import traceback
 from typing import Union, List, Dict
 
 from surf.modules.consumer.models import ServerModel, ChannelModel, RoleModel
+from surf.modules.consumer.services import UserService
 from surf.modules.util import Session
-from surf.appsGlobal import logger, setResult, errorResult
+from surf.appsGlobal import logger, setResult, errorResult, USER_ROLE_PERMISSIONS
 
 
 class ServerService(object):
@@ -39,7 +40,6 @@ class ServerService(object):
                         server_filter = {f"c_{k}": v for k, v in filters.items()}
                         server_id = self.__serverModel.save_server(server_filter)
                         if server_id:
-                            permissions = self.__roleModel.get_all_permissions()
                             filters = [
                                 {
                                     "c_server_id": server_id,
@@ -291,4 +291,17 @@ class ServerService(object):
             logger.error(f"""{e}\n{traceback.format_exc()}""")
         return errorResult(f"{text_data['command']}_result",
                            "删除失败，组件异常",
+                           'server')
+
+    def get_server_members(self, text_data):
+        server_id = text_data['server_id']
+        try:
+            res = self.__serverModel.get_members_by_server_id(server_id)
+            res = [user['user_id'] for user in res]
+            data = UserService().search_user({'command': 'search_user', 'user_id_list': res})['messages']
+            return setResult(f'{text_data["command"]}_result', data, 'server')
+        except Exception as e:
+            logger.error(f"""{e}\n{traceback.format_exc()}""")
+        return errorResult(f"{text_data['command']}_result",
+                           "获取失败",
                            'server')
