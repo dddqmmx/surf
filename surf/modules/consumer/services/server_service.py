@@ -44,12 +44,17 @@ class ServerService(object):
                                 {
                                     "c_server_id": server_id,
                                     "c_name": "服务器拥有者",
-                                    "c_permissions": json.dumps([item['id'] for item in permissions])
+                                    "c_permissions": json.dumps(USER_ROLE_PERMISSIONS['owner'])
+                                },
+                                {
+                                    "c_server_id": server_id,
+                                    "c_name": "管理员",
+                                    "c_permissions": json.dumps(USER_ROLE_PERMISSIONS['admin'])
                                 },
                                 {
                                     "c_server_id": server_id,
                                     "c_name": "普通成员",
-                                    "c_permissions": json.dumps([permissions[0]['id']])
+                                    "c_permissions": json.dumps(USER_ROLE_PERMISSIONS['member'])
                                 }
                             ]
                             role_ids = self.__roleModel.create_role(filters)
