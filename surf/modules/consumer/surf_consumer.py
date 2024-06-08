@@ -255,6 +255,13 @@ class SurfConsumer(BaseConsumer):
                            "server")
         await self.send(result)
 
+    async def get_server_members(self, text_data):
+        """
+        获取服务器内的所有用户
+        """
+        respond_json = self.service_dict['server'].get_server_members(text_data)
+        await self.send(respond_json)
+
     """-------------------------------chat----------------------------"""
 
     async def get_message(self, text_data):
