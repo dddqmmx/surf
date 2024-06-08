@@ -75,7 +75,19 @@ class ServerModel(BaseModel):
         res = []
         try:
             sql = """
-            SELECT c_user_id as user_id FROM t_server_members WHERE c_server_id = %s
+            SELECT
+                sm.c_user_id as user_id,
+                r.c_name as name,
+                r.c_level as level
+            FROM
+                t_server_members AS sm
+            JOIN
+                t_user_roles AS ur ON sm.c_user_id = ur.c_user_id
+            JOIN
+                t_roles as r ON ur.c_role_id = r.c_role_id
+            WHERE
+                sm.c_server_id = ur.c_server_id
+                AND sm.c_server_id = %s
             """
             res.extend(self._pg.query(sql, [server_id]))
         except Exception as e:

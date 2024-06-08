@@ -297,8 +297,30 @@ class ServerService(object):
         server_id = text_data['server_id']
         try:
             res = self.__serverModel.get_members_by_server_id(server_id)
-            res = [user['user_id'] for user in res]
-            data = UserService().search_user({'command': 'search_user', 'user_id_list': res})['messages']
+            data = {}
+            for members in res:
+                if not members['name'] in data:
+                    data[members['name']] = {
+                        'level': members['level'],
+                        'members': []
+                    }
+                    # 检查用户是否已经在其他角色组中
+                found = False
+                found_role = None
+                for role, v in data.items():
+                    if members['user_id'] in v['members']:
+                        found = True
+                        found_role = role
+                        break
+
+                # 如果用户不在任何角色组中，或者当前角色级别更高
+                if not found or data[members['name']]['level'] > data[found_role]['level']:
+                    # 从其他角色组中移除用户
+                    for role in data:
+                        if members['user_id'] in data[role]['members']:
+                            data[role]['members'].remove(members['user_id'])
+                    # 添加到当前角色组
+                    data[members['name']]['members'].append(members['user_id'])
             return setResult(f'{text_data["command"]}_result', data, 'server')
         except Exception as e:
             logger.error(f"""{e}\n{traceback.format_exc()}""")
