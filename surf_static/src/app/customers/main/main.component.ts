@@ -213,63 +213,71 @@ export class MainComponent implements OnInit{
     //         }
     //     );
     // }
-    mediaStream: MediaStream | null = null;
-    audioContext: AudioContext | null = null;
-    scriptProcessor: ScriptProcessorNode | null = null;
-    audioChunks: Float32Array[] = [];
-    isRecording: boolean = false;
-    sendDataInterval: any;
-    mainAudioContext: AudioContext | null = null;
-    audioBufferQueue :any[]= [];
-    isPlaying = false;
+        mediaStream: MediaStream | null = null;
+        audioContext: AudioContext | null = null;
+        scriptProcessor: ScriptProcessorNode | null = null;
+        audioChunks: Float32Array[] = [];
+        isRecording: boolean = false;
+        sendDataInterval: any;
+        mainAudioContext: AudioContext | null = null;
+        audioBufferQueue :any[]= [];
+        isPlaying = false;
+        bufferSize = 4096; // Adjust buffer size if needed
 
     enqueueAudioData(audioData: any) {
-        this.audioBufferQueue.push(...audioData);
-        if (!this.isPlaying) {
-          this.playBufferedAudio();
+      // Convert incoming audio data to Float32Array if necessary
+      const float32Array = new Float32Array(audioData);
+      this.audioBufferQueue.push(float32Array);
+      if (!this.isPlaying) {
+        this.playBufferedAudio();
+      }
+    }
+
+    async playBufferedAudio() {
+      this.isPlaying = true;
+
+      while (this.audioBufferQueue.length > 0) {
+        const audioData = this.audioBufferQueue.shift();
+        if (audioData) {
+          await this.playAudio(audioData);
         }
-    }
-
-    playBufferedAudio() {
-    if (this.audioBufferQueue.length === 0) {
-      this.isPlaying = false;
-      return;
-    }
-
-    this.isPlaying = true;
-
-    const bufferSize = 512; // Choose an appropriate buffer size
-    const audioData = this.audioBufferQueue.splice(0, bufferSize);
-
-    this.playAudio(new Float32Array(audioData)).then(() => {
-      this.playBufferedAudio();
-    });
-  }
-
-  playAudio(audioData: Float32Array) {
-    return new Promise((resolve, reject) => {
-      if (!this.mainAudioContext) {
-        this.mainAudioContext = new AudioContext();
       }
 
-      this.mainAudioContext.resume();
+      this.isPlaying = false;
+    }
 
-      const channelCount = 1;
-      const sampleRate = this.mainAudioContext.sampleRate;
-      const totalSamples = audioData.length;
+    playAudio(audioData: Float32Array): Promise<void> {
+      return new Promise((resolve, reject) => {
+        if (!this.mainAudioContext) {
+          this.mainAudioContext = new AudioContext();
+        }
 
-      const audioBuffer = this.mainAudioContext.createBuffer(channelCount, totalSamples, sampleRate);
-      const channelData = audioBuffer.getChannelData(0);
+        this.mainAudioContext.resume();
 
-      channelData.set(audioData);
+        const channelCount = 1;
+        const sampleRate = this.mainAudioContext.sampleRate;
+        const totalSamples = audioData.length;
 
-      const source = this.mainAudioContext.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(this.mainAudioContext.destination);
-      source.onended = resolve; // Resolve the promise when playback finishes
-      source.start();
-    });
-  }
+        const audioBuffer = this.mainAudioContext.createBuffer(channelCount, totalSamples, sampleRate);
+        const channelData = audioBuffer.getChannelData(0);
+
+        channelData.set(audioData);
+
+        const source = this.mainAudioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(this.mainAudioContext.destination);
+        source.onended = () => {
+          resolve();
+          // Immediately check and play the next audio buffer if available
+          if (this.audioBufferQueue.length > 0) {
+            this.playBufferedAudio();
+          } else {
+            this.isPlaying = false;
+          }
+        };
+        source.start();
+      });
+    }
 
 
     async startRecording () {
@@ -286,7 +294,7 @@ export class MainComponent implements OnInit{
           this.audioContext = new AudioContext();
 
           // Use a smaller buffer size (512) for lower latency
-          this.scriptProcessor = this.audioContext.createScriptProcessor(0, 1, 1);
+          this.scriptProcessor = this.audioContext.createScriptProcessor(1024, 1, 1);
           this.scriptProcessor.onaudioprocess = (event) => this.handleAudioProcess(event);
 
           const inputNode = this.audioContext.createMediaStreamSource(mediaStream);
@@ -303,7 +311,7 @@ export class MainComponent implements OnInit{
             if (this.isRecording && this.audioChunks.length > 0) {
               this.sendAudioData();
             }
-          }, 50); // Adjusted for lower latency
+          }, 0); // Adjusted for lower latency
         }
       } catch (err) {
         console.error('无法访问麦克风:', err);

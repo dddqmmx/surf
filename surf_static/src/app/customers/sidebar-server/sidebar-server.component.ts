@@ -50,9 +50,11 @@ export class SidebarServerComponent{
     }
 
     public getServerDetails(serverId:string) {
+        const self = this;
         const getServerDetailsSubject = this.socketManageService.getMessageSubject("server","get_server_details_result").subscribe(
         message => {
                 this.channelInfo = JSON.parse(message.data).messages;
+                self.localDataService.addChannelGroups(this.channelInfo?.channel_groups)
                 getServerDetailsSubject.unsubscribe()
             })
         this.subscriptions.push(getServerDetailsSubject)

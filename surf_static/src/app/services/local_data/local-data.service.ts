@@ -3,11 +3,35 @@ import { SocketManagerService } from "../socket/socket-manager.service";
 import { CryptoService } from "../crypto/crypto.service";
 import { debounceTime, Subject } from "rxjs";
 
+type Channel = {
+  id: string;
+  name: string;
+  type: string;
+  description: string;
+};
+
+type ChannelGroup = {
+  id: string;
+  name: string;
+  channels: Channel[];
+};
+
+type ServerDetailsData = {
+  id: string;
+  description: string;
+  name: string;
+  icon_url: string | null;
+  channel_groups: ChannelGroup[];
+};
+
 @Injectable({
     providedIn: 'root'
 })
+
 export class LocalDataService {
+    //服务器地址
     serverAddress = ""
+    //登录的用户ID
     loggedUserId = ""
 
     constructor(
@@ -15,6 +39,39 @@ export class LocalDataService {
         private cryptoService: CryptoService
     ) {}
 
+    /**
+     * 存储频道相关
+     */
+   private channelGroups: ChannelGroup[] = [];
+
+  // 根据ID检索ChannelGroup
+  getChannelGroupById(id: string): ChannelGroup | undefined {
+    return this.channelGroups.find(group => group.id === id);
+  }
+
+  // 根据ID检索Channel
+    getChannelById(id: string | null): Channel | undefined {
+    for (const group of this.channelGroups) {
+      const channel = group.channels.find(channel => channel.id === id);
+      if (channel) {
+        return channel;
+      }
+    }
+    return undefined;
+  }
+
+  // 添加新的ChannelGroups
+  addChannelGroups(newChannelGroups: ChannelGroup[] | undefined): void {
+    if (newChannelGroups && Array.isArray(newChannelGroups)) {
+      this.channelGroups.push(...newChannelGroups);
+    } else {
+      console.error("Invalid channelGroups data");
+    }
+  }
+
+    /**
+     * 存储用户相关
+     */
     userInfoList = new Map<string, { data: any, timestamp: number }>();
 
     hasUserInfo(id: string){

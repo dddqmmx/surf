@@ -8,13 +8,16 @@ import { Component } from '@angular/core';
     styleUrl: './hello.component.css'
 })
 export class HelloComponent {
-      mediaStream: MediaStream | null = null;
+mediaStream: MediaStream | null = null;
   audioContext: AudioContext | null = null;
   scriptProcessor: ScriptProcessorNode | null = null;
   audioChunks: Float32Array[] = [];
   isRecording: boolean = false;
   sendDataInterval: any;
   mainAudioContext: AudioContext | null = null;
+  playQueue: Float32Array[] = [];
+  bufferSize: number = 4096; // Larger buffer size for smoother playback
+  maxQueueSize: number = 100; // Limit the queue size to avoid delay accumulation
 
   async startRecording() {
     if (this.isRecording) {
@@ -29,7 +32,6 @@ export class HelloComponent {
         this.mediaStream = mediaStream;
         this.audioContext = new AudioContext();
 
-        // Use a smaller buffer size (512) for lower latency
         this.scriptProcessor = this.audioContext.createScriptProcessor(512, 1, 1);
         this.scriptProcessor.onaudioprocess = (event) => this.handleAudioProcess(event);
 
@@ -42,12 +44,11 @@ export class HelloComponent {
 
         console.log('开始录制音频...');
 
-        // Reduce the interval for data sending
         this.sendDataInterval = setInterval(() => {
           if (this.isRecording && this.audioChunks.length > 0) {
             this.sendAudioData();
           }
-        }, 500); // Adjusted for lower latency
+        }, 100); // Slightly increased interval to allow buffering
       }
     } catch (err) {
       console.error('无法访问麦克风:', err);
@@ -92,35 +93,50 @@ export class HelloComponent {
     }
 
     const message = this.mergeArrays(this.audioChunks);
-    // const regularArray = Array.from(message);
-    // const jsonArray = JSON.stringify(regularArray);
-    // console.log(jsonArray);
-
-    this.playAudio(message);
-
     this.audioChunks = [];
+
+    // Append new data to the play queue
+    this.playQueue.push(message);
+
+    // Keep the play queue within the max size
+    while (this.playQueue.length > this.maxQueueSize) {
+      this.playQueue.shift();
+    }
+
+    // Play audio if enough data is buffered
+    if (this.playQueue.length > 0) {
+      this.playBufferedAudio();
+    }
   }
 
-  playAudio(audioData: Float32Array) {
+  async playBufferedAudio() {
     if (!this.mainAudioContext) {
       this.mainAudioContext = new AudioContext();
     }
 
-    this.mainAudioContext.resume();
+    while (this.playQueue.length > 0) {
+      const audioData = this.playQueue.shift();
+      if (audioData) {
+        const channelCount = 1;
+        const sampleRate = this.mainAudioContext.sampleRate;
+        const totalSamples = audioData.length;
 
-    const channelCount = 1;
-    const sampleRate = this.mainAudioContext.sampleRate;
-    const totalSamples = audioData.length;
+        const audioBuffer = this.mainAudioContext.createBuffer(channelCount, totalSamples, sampleRate);
+        const channelData = audioBuffer.getChannelData(0);
 
-    const audioBuffer = this.mainAudioContext.createBuffer(channelCount, totalSamples, sampleRate);
-    const channelData = audioBuffer.getChannelData(0);
+        channelData.set(audioData);
 
-    channelData.set(audioData);
+        const source = this.mainAudioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(this.mainAudioContext.destination);
+        source.start();
 
-    const source = this.mainAudioContext.createBufferSource();
-    source.buffer = audioBuffer;
-    source.connect(this.mainAudioContext.destination);
-    source.start();
+        // Wait for the audio to finish playing before proceeding
+        await new Promise(resolve => {
+          source.onended = resolve;
+        });
+      }
+    }
   }
 
   mergeArrays(arrays: Float32Array[]): Float32Array {

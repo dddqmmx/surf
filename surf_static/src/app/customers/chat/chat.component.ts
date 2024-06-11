@@ -30,6 +30,7 @@ export class ChatComponent implements OnInit{
     }
 
     // socket = new WebSocket('ws://'+this.localDataService.serverAddress+'/ws/chat/');
+    chatName:string | undefined = "";
     messageList : any[] = []
     channelId: string | null = "";
     constructor(private socketManageService:SocketManagerService,private cryptoService: CryptoService,public localDataService:LocalDataService,private route: ActivatedRoute,private router: Router) {
@@ -38,6 +39,7 @@ export class ChatComponent implements OnInit{
         this.localDataService = localDataService;
         this.route.paramMap.subscribe(params => {
             const channelId = params.get('id')
+            this.chatName = localDataService.getChannelById(channelId)?.name
             self.channelId = channelId
             const getMessageResultSubject = this.socketManageService.getMessageSubject("chat", "get_message_result").subscribe(
             message => {
