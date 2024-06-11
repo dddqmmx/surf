@@ -103,3 +103,9 @@ CHAT_TEMP = {
         "chat_time": ""
     }
 }
+
+USER_ROLE_PERMISSIONS = {
+    "owner": [0],
+    "admin": [1],
+    "member": [2, 5, 601, 701]
+}

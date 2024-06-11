@@ -6,6 +6,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TABLE IF EXISTS t_message_reactions;
 DROP TABLE IF EXISTS t_channel_chats;
 DROP TABLE IF EXISTS t_channel_members;
 DROP TABLE IF EXISTS t_channels;
@@ -17,10 +18,9 @@ DROP TABLE IF EXISTS t_user_roles;
 DROP TABLE IF EXISTS t_roles;
 DROP TABLE IF EXISTS t_servers;
 DROP TABLE IF EXISTS t_user_friends;
-DROP TABLE IF EXISTS t_users;
-DROP TABLE IF EXISTS t_message_reactions;
 DROP TABLE IF EXISTS t_blacklist;
 DROP TABLE IF EXISTS t_reports;
+DROP TABLE IF EXISTS t_users;
 
 CREATE TABLE t_users
 (
@@ -55,6 +55,7 @@ CREATE TABLE t_channel_groups(
     c_group_id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
     c_server_id VARCHAR(36) NOT NULL,
     c_group_name VARCHAR NOT NULL,
+    c_settings jsonb NOT NULL default '{}',
     FOREIGN KEY (c_server_id) REFERENCES t_servers(c_server_id) ON DELETE CASCADE
 );
 
@@ -67,6 +68,7 @@ CREATE TABLE t_channels (
     c_create_by VARCHAR(36) NOT NULL,
     c_create_time BIGINT NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::BIGINT,
     c_max_members INTEGER NOT NULL DEFAULT 0,
+    c_settings jsonb NOT NULL default '{}',
     FOREIGN KEY (c_group_id) REFERENCES t_channel_groups(c_group_id) ON DELETE CASCADE
 );
 
@@ -75,6 +77,7 @@ CREATE TABLE t_roles (
     c_server_id VARCHAR(36) NOT NULL,
     c_name VARCHAR NOT NULL,
     c_permissions jsonb NOT NULL default '[1,2,3]',
+    c_level INTEGER NOT NULL default 1 CHECK ( c_level in (1, 2, 3) ),
     FOREIGN KEY (c_server_id) REFERENCES t_servers(c_server_id) ON DELETE CASCADE
 );
 
@@ -88,7 +91,8 @@ CREATE TABLE t_server_members (
 
 CREATE TABLE t_permissions (
     c_permission_id INTEGER PRIMARY KEY,
-    c_description TEXT NOT NULL
+    c_description_en TEXT NOT NULL,
+    c_description_cn TEXT NOT NULL
 );
 
 CREATE TABLE t_audit_logs (
@@ -124,7 +128,6 @@ CREATE TABLE t_user_roles (
     c_user_id VARCHAR(36),
     c_role_id VARCHAR(36),
     c_server_id VARCHAR(36),
-    PRIMARY KEY (c_user_id, c_role_id, c_server_id),
     FOREIGN KEY (c_user_id) REFERENCES t_users(c_user_id) ON DELETE CASCADE,
     FOREIGN KEY (c_role_id) REFERENCES t_roles(c_role_id) ON DELETE CASCADE,
     FOREIGN KEY (c_server_id) REFERENCES t_servers(c_server_id) ON DELETE CASCADE

@@ -9,22 +9,32 @@ INSERT INTO public.t_user_friends(c_user_id, c_friend_id, c_status) VALUES
 ('02c9aba4-44a0-4ddf-8cf2-70c6e5e554d7', 'e2cfa16b-c7a3-46f0-9995-22e2ae333e3e', 'accepted');
 
 -- 插入权限数据
-INSERT INTO t_permissions (c_permission_id, c_description) VALUES
-(1, 'View Channel'),
-(2, 'Send Messages'),
-(3, 'Delete Messages'),
-(4, 'Manage Messages'),
-(5, 'Create Channels'),
-(6, 'Edit Channels'),
-(7, 'Delete Channels'),
-(8, 'Manage Channels'),
-(9, 'Manage Server'),
-(10, 'Invite Users'),
-(11, 'Mute Users'),
-(12, 'Kick Users'),
-(13, 'Manage Roles'),
-(14, 'Manage Permissions'),
-(15, 'Manage Emojis');
+INSERT INTO t_permissions (c_permission_id, c_description_en, c_description_cn) VALUES
+(0, 'Server Owner', '服务器拥有者'),
+(1, 'Manage Server', '管理服务器'),
+(101, 'Manage Roles', '管理角色'),
+(102, 'Manage Permissions', '管理权限'),
+(103, 'Manage Emojis', '管理表情'),
+(2, 'View Channel', '浏览频道'),
+(3, 'Manage Channels', '管理频道'),
+(301, 'Create Channels', '创建频道'),
+(302, 'Edit Channels', '编辑频道'),
+(303, 'Delete Channels', '删除频道'),
+(4, 'Manage Channel Groups', '编辑频道组'),
+(401, 'Create Channel Groups', '创建频道组'),
+(402, 'Edit Channel Groups', '编辑频道组'),
+(403, 'Delete Channel Groups', '删除频道组'),
+(5, 'Send Messages', '发送消息'),
+(6, 'Revoke Messages(all)', '撤回消息(所有的)'),
+(601, 'Revoke Messages(self)', '撤回消息(自己发送的)'),
+(7, 'Manage Users', '管理用户'),
+(701, 'Invite Users', '邀请用户'),
+(702, 'Mute Users', '禁言用户'),
+(703, 'Kick Users(all)', '踢出用户(所有)'),
+(70301, 'Kick Users(server)', '踢出用户(服务器)'),
+(70302, 'Kick Users(voice channel)', '踢出用户(语音频道)'),
+(8, 'React Message', '添加回应'),
+(114514, 'Test Permission', '测试权限');
 
 -- 插入服务器数据
 INSERT INTO public.t_servers (c_server_id, c_description, c_name, c_owner_id, c_create_time, c_icon_url, c_is_active, c_is_private) VALUES
@@ -33,13 +43,13 @@ INSERT INTO public.t_servers (c_server_id, c_description, c_name, c_owner_id, c_
 ('c666e4a2-bdc6-4bf5-a41d-5b0b3f01a73e', '123', '123', 'e2cfa16b-c7a3-46f0-9995-22e2ae333e3e', 1715508210, null, true, true);
 
 -- 插入角色数据
-INSERT INTO public.t_roles (c_role_id, c_server_id, c_name, c_permissions) VALUES
-('bdabb221-ebe9-478d-bb42-86578cb2e4c0', 'fdad3e5e-818d-4201-8b07-4734da71d9b7', '服务器拥有者', '[1, 2, 3]'),
-('720712a3-8eb0-421e-a269-776bac5c5dd2', 'fdad3e5e-818d-4201-8b07-4734da71d9b7', '普通成员', '[1]'),
-('dd531822-99bf-4bd7-aae9-14aa341d6514', 'b0e98cf2-c35f-4180-a61b-96fde10f48ff', '服务器拥有者', '[1, 2, 3]'),
-('8d24e43c-ad94-4344-8e35-167ee60935d5', 'b0e98cf2-c35f-4180-a61b-96fde10f48ff', '普通成员', '[1]'),
-('4c5f75e4-56ad-46d3-b355-cdafd3d1306f', 'c666e4a2-bdc6-4bf5-a41d-5b0b3f01a73e', '普通成员', '[1]'),
-('79708888-9a41-425a-ab6b-e91dd11c63c1', 'c666e4a2-bdc6-4bf5-a41d-5b0b3f01a73e', '服务器拥有者', '[1, 2, 3]');
+INSERT INTO public.t_roles (c_role_id, c_server_id, c_name, c_permissions, c_level) VALUES
+('bdabb221-ebe9-478d-bb42-86578cb2e4c0', 'fdad3e5e-818d-4201-8b07-4734da71d9b7', '服务器拥有者', '[0]', 3),
+('720712a3-8eb0-421e-a269-776bac5c5dd2', 'fdad3e5e-818d-4201-8b07-4734da71d9b7', '普通成员', '[2, 5, 601, 701]', 1),
+('dd531822-99bf-4bd7-aae9-14aa341d6514', 'b0e98cf2-c35f-4180-a61b-96fde10f48ff', '服务器拥有者', '[0]', 3),
+('8d24e43c-ad94-4344-8e35-167ee60935d5', 'b0e98cf2-c35f-4180-a61b-96fde10f48ff', '普通成员', '[2, 5, 601, 701]', 1),
+('79708888-9a41-425a-ab6b-e91dd11c63c1', 'c666e4a2-bdc6-4bf5-a41d-5b0b3f01a73e', '服务器拥有者', '[0]', 3),
+('4c5f75e4-56ad-46d3-b355-cdafd3d1306f', 'c666e4a2-bdc6-4bf5-a41d-5b0b3f01a73e', '普通成员', '[2, 5, 601, 701]', 1);
 
 -- 插入服务器成员数据
 INSERT INTO public.t_server_members (c_id, c_server_id, c_user_id) VALUES
