@@ -109,3 +109,16 @@ USER_ROLE_PERMISSIONS = {
     "admin": [1],
     "member": [2, 5, 601, 701]
 }
+
+DEFAULT_PERMISSION_SETTINGS = {
+    '2': None,
+    "3": None,
+    '5': None,
+    '6': None,
+    '601': None,
+    '701': None,
+    '702': None,
+    '70302': None,
+    '8': None,
+    '114514': None
+}

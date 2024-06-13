@@ -1,5 +1,5 @@
 import re
-from typing import Union, List
+from typing import Union, List, Dict
 
 from psycopg2.pool import SimpleConnectionPool
 
