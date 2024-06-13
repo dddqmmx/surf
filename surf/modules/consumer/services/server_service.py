@@ -10,7 +10,6 @@ import traceback
 from typing import Union, List, Dict
 
 from surf.modules.consumer.models import ServerModel, ChannelModel, RoleModel
-from surf.modules.consumer.services import UserService
 from surf.modules.util import Session
 from surf.appsGlobal import logger, setResult, errorResult, USER_ROLE_PERMISSIONS
 
