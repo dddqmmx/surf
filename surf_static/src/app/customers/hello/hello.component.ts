@@ -1,14 +1,14 @@
 import { Component } from '@angular/core';
 
 @Component({
-    selector: 'app-hello',
-    standalone: true,
-    imports: [],
-    templateUrl: './hello.component.html',
-    styleUrl: './hello.component.css'
+  selector: 'app-hello',
+  standalone: true,
+  imports: [],
+  templateUrl: './hello.component.html',
+  styleUrl: './hello.component.css'
 })
 export class HelloComponent {
-mediaStream: MediaStream | null = null;
+  mediaStream: MediaStream | null = null;
   audioContext: AudioContext | null = null;
   scriptProcessor: ScriptProcessorNode | null = null;
   audioChunks: Float32Array[] = [];
@@ -16,8 +16,12 @@ mediaStream: MediaStream | null = null;
   sendDataInterval: any;
   mainAudioContext: AudioContext | null = null;
   playQueue: Float32Array[] = [];
-  bufferSize: number = 4096; // Larger buffer size for smoother playback
-  maxQueueSize: number = 100; // Limit the queue size to avoid delay accumulation
+  bufferSize: number = 4096; // Fixed buffer size for audio processing (adjust as needed)
+  maxQueueSize: number = 500; // Fixed max queue size (adjust as needed)
+  messageTimestamps: number[] = []; // Array to store message timestamps
+  adjustmentInterval: number = 5000; // Interval to adjust parameters (in milliseconds)
+  minSendDataInterval: number = 50; // Minimum interval for sendDataInterval (adjust as needed)
+  maxSendDataInterval: number = 500; // Maximum interval for sendDataInterval (adjust as needed)
 
   async startRecording() {
     if (this.isRecording) {
@@ -32,7 +36,7 @@ mediaStream: MediaStream | null = null;
         this.mediaStream = mediaStream;
         this.audioContext = new AudioContext();
 
-        this.scriptProcessor = this.audioContext.createScriptProcessor(512, 1, 1);
+        this.scriptProcessor = this.audioContext.createScriptProcessor(this.bufferSize, 1, 1);
         this.scriptProcessor.onaudioprocess = (event) => this.handleAudioProcess(event);
 
         const inputNode = this.audioContext.createMediaStreamSource(mediaStream);
@@ -48,7 +52,10 @@ mediaStream: MediaStream | null = null;
           if (this.isRecording && this.audioChunks.length > 0) {
             this.sendAudioData();
           }
-        }, 100); // Slightly increased interval to allow buffering
+        }, this.maxSendDataInterval); // Use the maximum interval for sendDataInterval
+
+        // Start adjusting parameters periodically
+        setInterval(() => this.adjustParameters(), this.adjustmentInterval);
       }
     } catch (err) {
       console.error('无法访问麦克风:', err);
@@ -95,11 +102,15 @@ mediaStream: MediaStream | null = null;
     const message = this.mergeArrays(this.audioChunks);
     this.audioChunks = [];
 
+    // Record the timestamp of the message
+    this.messageTimestamps.push(Date.now());
+
     // Append new data to the play queue
     this.playQueue.push(message);
 
     // Keep the play queue within the max size
     while (this.playQueue.length > this.maxQueueSize) {
+      console.log("playQueue.shift() to maintain maxQueueSize")
       this.playQueue.shift();
     }
 
@@ -150,5 +161,26 @@ mediaStream: MediaStream | null = null;
     });
 
     return result;
+  }
+
+  adjustParameters() {
+    const now = Date.now();
+    // Remove timestamps older than the adjustment interval
+    this.messageTimestamps = this.messageTimestamps.filter(timestamp => now - timestamp <= this.adjustmentInterval);
+
+    // Calculate the message rate (messages per second)
+    const messageRate = this.messageTimestamps.length / (this.adjustmentInterval / 1000);
+
+    // Log current parameters for reference
+    console.log(`当前参数设置: bufferSize=${this.bufferSize}, maxQueueSize=${this.maxQueueSize}, maxSendDataInterval=${this.maxSendDataInterval}`);
+
+    // Example adjustments (you can customize this logic)
+    // For simplicity, let's keep the parameters fixed
+    // You can implement more sophisticated logic based on your requirements
+    // this.bufferSize = calculateOptimalBufferSize(messageRate);
+    // this.maxQueueSize = calculateOptimalMaxQueueSize(messageRate);
+    // this.maxSendDataInterval = calculateOptimalSendDataInterval(messageRate);
+
+    console.log(`调整后的参数设置: bufferSize=${this.bufferSize}, maxQueueSize=${this.maxQueueSize}, maxSendDataInterval=${this.maxSendDataInterval}`);
   }
 }
