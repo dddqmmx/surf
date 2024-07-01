@@ -16,7 +16,7 @@ class ChatModel(BaseModel):
         super().__init__()
 
     def send_chat(self, filters):
-        return self._pg.save("c_channel_chats", filters, return_id=True, return_id_clumn="c_chat_id")
+        return self._pg.save("t_channel_chats", filters, return_id=True, return_id_clumn="c_chat_id")
 
     def is_revoked(self, chat_id):
         flag = False

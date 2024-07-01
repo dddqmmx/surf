@@ -26,7 +26,7 @@ class SurfChannel(object):
         try:
             async with self.lock:
                 if user not in self.channel_users:
-                    if self.max_members > 0 and len(self.channel_users) <= self.max_members:
+                    if self.max_members == 0 or len(self.channel_users) < self.max_members:
                         self.channel_users.append(user)
                         return True, rtn_str
                     rtn_str = "频道列表已经满人"
@@ -37,12 +37,13 @@ class SurfChannel(object):
             logger.error(f"add user:{user.user_name} to to channel:{self.channel_id} error:{e}")
         return False, rtn_str
 
-    async def remove_user(self, user: SurfUser) -> bool:
+    async def remove_user(self, user_id: str) -> bool:
         try:
             async with self.lock:
-                if user in self.channel_users:
-                    self.channel_users.remove(user)
-                    return True
+                for user in self.channel_users:
+                    if user.check_user_id(user_id):
+                        self.channel_users.remove(user)
+                        return True
         except Exception as e:
             logger.error(f"remove user:{user.user_name} from channel:{self.channel_id} error:{e}")
         return False

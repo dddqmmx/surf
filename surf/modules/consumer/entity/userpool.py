@@ -102,17 +102,17 @@ class UserPool(object):
         if text_data.get('is_audio', False):
             channel_id = text_data['channel_id']
             server_id = self.__server_service.get_server_by_channel_id(channel_id)
-            user_list = self.get_broadcast_by_server_id(server_id).get(channel_id, [])
+            channel = self.get_broadcast_by_server_id(server_id).get(channel_id, [])
             tasks = []
-            for user in user_list:
+            for user in channel.channel_users:
                 if user.check_user_id_by_session_id(text_data['session_id']):
                     continue
                 tasks.append(user.broadcast(json.dumps(text_data)))
         else:
             channel_id = text_data['messages']['channel_id']
             server_id = self.__server_service.get_server_by_channel_id(channel_id)
-            user_list = self.get_broadcast_by_server_id(server_id).get(channel_id, [])
-            tasks = [user.broadcast(json.dumps(text_data)) for user in user_list]
+            channel = self.get_broadcast_by_server_id(server_id).get(channel_id, [])
+            tasks = [user.broadcast(json.dumps(text_data)) for user in channel.channel_users]
         await asyncio.gather(*tasks)
         logger.info(f'broadcast to all user in channel:{channel_id} done, total:{len(tasks)}')
 
@@ -147,7 +147,7 @@ class UserPool(object):
                     server_id = self.__server_service.get_server_by_channel_id(channel_id['id'])
                     await self.__broadcast_map[server_id][channel_id['id']].remove_user(user_id)
                     logger.info(
-                        f"remove userid:{user_id} to channel:{channel_id} done, current user in channel: {self.__broadcast_map[server_id][channel_id['id']].size()}")
+                        f"remove userid:{user_id} from channel:{channel_id['id']} done, current user in channel: {self.__broadcast_map[server_id][channel_id['id']].size()}")
         del self.__connected_user[session_id]
         con_log.info(f'session_id:{session_id} has disconnect from surf, current online: {len(self.__connected_user)}')
 
