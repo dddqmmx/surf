@@ -84,7 +84,7 @@ export class LocalDataService {
         const now = Date.now();
         this.userInfoList.set(id, { data: data, timestamp: now });
     }
-    getUserData(ids: string[]): Promise<Map<string, any>> {
+    getUserDataFormServer(ids: string[]): Promise<Map<string, any>> {
         const now = Date.now();
         const result = new Map<string, any>();
         const idsToFetch: string[] = [];

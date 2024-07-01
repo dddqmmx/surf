@@ -46,16 +46,32 @@
                             </div>
                             <div class="user-options">
                                 <img src="favicon.ico" (click)="stopRecording()" alt="Icon">
-                                <img src="favicon.ico" (click)="console.log(localDataService.getUserData(['e2cfa16b-c7a3-46f0-9995-22e2ae333e3e']))" alt="Icon">
+                                <img src="favicon.ico" (click)="console.log(localDataService.getUserDataFormServer(['e2cfa16b-c7a3-46f0-9995-22e2ae333e3e']))" alt="Icon">
                                 <img src="favicon.ico" alt="Icon">
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="chat-content">
-                <router-outlet/>
+            <div style="width:100%;display: flex; background: #2b2d31; color: white;">
+                <div style="flex: 1;" class="chat-content">
+                    <router-outlet></router-outlet>
+                </div>
+                <div style="width: 15%; padding: 20px;">
+                    <div *ngFor="let role of Object.keys(serverMembers)">
+                        <h3 style="margin-top: 10px;">{{ role }}</h3>
+                        <div *ngFor="let member of serverMembers[role].members"
+                             style="display: flex; align-items: center; margin-top: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            <img style="border-radius: 50%; margin-right: 10px;" src="assets/mike1.jpg" height="40" width="40">
+                            <span style="flex: 1; min-width: 0;">
+                                {{ localDataService.getUserInfo(member).user_nickname }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+
         </section>
     </div>
 </div>

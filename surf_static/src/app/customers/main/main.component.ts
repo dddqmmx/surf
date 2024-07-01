@@ -36,6 +36,7 @@ export class MainComponent implements OnInit{
     messageSubscription : any;
     private subscriptions: Subscription[] = [];
     sidebarType = 0;
+    serverMembers:any= {} ;
 
     toggleCreatServerPopup() {
       this.creatServerPopupVisible = !this.creatServerPopupVisible;
@@ -128,9 +129,34 @@ export class MainComponent implements OnInit{
         // 等待 sidebarServer 存在，然后调用 getServerDetails 方法
         waitForSidebarServer.then(() => {
             this.sidebarServer!.getServerDetails(serverId); // 使用非空断言操作符确保 sidebarServer 存在
+            this.getServerMembers(serverId);
         });
     }
 
+    getServerMembers(server_id:string){
+        const self= this;
+        const getServerMembersSubject = this.socketMangerService.getMessageSubject("server","get_server_members_result").subscribe(
+            message => {
+                const data = JSON.parse(message.data).messages;
+                console.log(data)
+                const memberUserList:any = []
+                //这里的key是角色名称
+                Object.keys(data).forEach(key=> {
+                    const membersOfRole = data[key].members;
+                    membersOfRole.forEach((userId: string)=>{
+                        memberUserList.push(userId)
+                    })
+                })
+                self.localDataService.getUserDataFormServer(memberUserList)
+                self.serverMembers = data as { [key: string]: { level: number; members: string[] } };
+                getServerMembersSubject.unsubscribe()
+            })
+        this.subscriptions.push(getServerMembersSubject);
+        this.socketMangerService.send('server','get_server_members', {
+            'session_id':this.cryptoService.session,
+            'server_id':server_id
+        })
+    }
     // Reusing WebSocket connection for different functionalities
     searchUser() {
         const self= this;
@@ -195,34 +221,16 @@ export class MainComponent implements OnInit{
         })
     }
 
-    // createServer() {
-    //     const requestJson = {
-    //         'command': 'create_server',
-    //         'server': {
-    //             'description': this.serverDescription,
-    //             'name': this.serverName,
-    //             'session_id': this.cryptoService.session,
-    //             'is_private': true
-    //         }
-    //     };
-    //     this.connectWebSocket(
-    //         'ws://' + this.localDataService.serverAddress + '/ws/server/',
-    //         requestJson,
-    //         (json: any) => {
-    //             console.log("Server created:", json);
-    //         }
-    //     );
-    // }
-        mediaStream: MediaStream | null = null;
-        audioContext: AudioContext | null = null;
-        scriptProcessor: ScriptProcessorNode | null = null;
-        audioChunks: Float32Array[] = [];
-        isRecording: boolean = false;
-        sendDataInterval: any;
-        mainAudioContext: AudioContext | null = null;
-        audioBufferQueue :any[]= [];
-        isPlaying = false;
-        bufferSize = 4096; // Adjust buffer size if needed
+    mediaStream: MediaStream | null = null;
+    audioContext: AudioContext | null = null;
+    scriptProcessor: ScriptProcessorNode | null = null;
+    audioChunks: Float32Array[] = [];
+    isRecording: boolean = false;
+    sendDataInterval: any;
+    mainAudioContext: AudioContext | null = null;
+    audioBufferQueue :any[]= [];
+    isPlaying = false;
+    bufferSize = 4096; // Adjust buffer size if needed
 
     enqueueAudioData(audioData: any) {
       // Convert incoming audio data to Float32Array if necessary
@@ -376,4 +384,5 @@ export class MainComponent implements OnInit{
 
 
     protected readonly console = console;
+    protected readonly Object = Object;
 }

@@ -29,7 +29,6 @@ export class ChatComponent implements OnInit{
         this.subscriptions.forEach(subscription => subscription.unsubscribe());
     }
 
-    // socket = new WebSocket('ws://'+this.localDataService.serverAddress+'/ws/chat/');
     chatName:string | undefined = "";
     messageList : any[] = []
     channelId: string | null = "";
@@ -44,14 +43,13 @@ export class ChatComponent implements OnInit{
             const getMessageResultSubject = this.socketManageService.getMessageSubject("chat", "get_message_result").subscribe(
             message => {
                 const data = JSON.parse(message.data).messages;
-                console.log(data)
                 self.messageList = data
+                console.log(self.messageList)
                 const userDataList:any = []
                 data.forEach((message:any) => {
                     userDataList.push(message.user_id)
                 })
-                console.log(userDataList)
-                localDataService.getUserData(userDataList)
+                localDataService.getUserDataFormServer(userDataList)
                 getMessageResultSubject.unsubscribe()
             })
             this.subscriptions.push(getMessageResultSubject);
@@ -62,17 +60,46 @@ export class ChatComponent implements OnInit{
             self.newMassageSubject = this.socketManageService.getMessageSubject("chat", "new_message").subscribe(
             message => {
                 const data = JSON.parse(message.data).messages;
-                localDataService.getUserData(data.id)
+                localDataService.getUserDataFormServer(data.id)
                 self.messageList.push(data)
             })
             this.subscriptions.push(self.newMassageSubject);
             this.socketManageService.send("chat", "get_message", {
                     "session_id": self.cryptoService.session,
                     "channel_id": channelId,
-                    "type":0
             })
         });
     }
+
+    onScroll(event: any) {
+        const element = event.target;
+        if (element.scrollTop === 0) {
+            this.getMessageFromHistory();
+        }
+    }
+    getMessageFromHistory(){
+        const self = this;
+        const oldestMessage = this.messageList[0]
+        const getMessageResultSubject = this.socketManageService.getMessageSubject("chat", "get_message_result").subscribe(
+            message => {
+                const data = JSON.parse(message.data).messages;
+                self.messageList = data.concat(this.messageList);
+                console.log(self.messageList)
+                const userDataList:any = []
+                data.forEach((message:any) => {
+                    userDataList.push(message.user_id)
+                })
+                self.localDataService.getUserDataFormServer(userDataList)
+                getMessageResultSubject.unsubscribe()
+            })
+        this.socketManageService.send("chat", "get_message", {
+            "session_id": this.cryptoService.session,
+            "channel_id": this.channelId,
+            "last_msg": [oldestMessage.chat_time,oldestMessage.chat_id]
+        })
+        console.log(this.messageList.length)
+    }
+
     ngOnInit(): void {
             // this.socket.onopen = function () {
             //     const requestJson = {
