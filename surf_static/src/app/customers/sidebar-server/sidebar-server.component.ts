@@ -7,6 +7,7 @@ import {Router} from "@angular/router";
 import {SocketManagerService} from "../../services/socket/socket-manager.service";
 import {Subscription} from "rxjs";
 import {util} from "node-forge";
+import {VoiceChatService} from "../../services/service/voice-chat.service";
 
 @Component({
   selector: 'app-sidebar-server',
@@ -19,6 +20,7 @@ import {util} from "node-forge";
   styleUrl: './sidebar-server.component.css'
 })
 export class SidebarServerComponent{
+    protected serverId:string = "";
 
 
     @Output() selectUserPopup = new EventEmitter();
@@ -36,21 +38,22 @@ export class SidebarServerComponent{
         this.subscriptions.forEach(subscription => subscription.unsubscribe());
     }
 
-    constructor(private cryptoService: CryptoService,private localDataService:LocalDataService,private socketManageService:SocketManagerService,private router: Router) {
+    constructor(private cryptoService: CryptoService,private localDataService:LocalDataService,private socketManageService:SocketManagerService,private voiceChatService:VoiceChatService,private router: Router) {
         this.cryptoService = cryptoService;
         this.localDataService = localDataService;
         this.socketManageService = socketManageService;
     }
-    public toChat(id:string,type:string){
+    public toChat(serverId:string,channelId:string,type:string){
         if (type == "text"){
-            this.router.navigate(['main/chat',id]);
+            this.router.navigate(['main/chat',channelId]);
         } else if ("voice") {
-            console.log('fuck you')
+            this.voiceChatService.startRecording(serverId,channelId).then(r => {})
         }
     }
 
     public getServerDetails(serverId:string) {
         const self = this;
+        this.serverId = serverId;
         const getServerDetailsSubject = this.socketManageService.getMessageSubject("server","get_server_details_result").subscribe(
         message => {
                 this.channelInfo = JSON.parse(message.data).messages;

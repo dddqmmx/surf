@@ -4,7 +4,7 @@ class AudioProcessor extends AudioWorkletProcessor {
     super();
     this.buffer = [];
     this.overflowBuffer = [];
-    this.bufferMaxSize = 512;
+    this.bufferMaxSize = 256;
     this.missedPackets = 10;
     this.excessPackets = 10;
     this.adjustmentThreshold = 5;

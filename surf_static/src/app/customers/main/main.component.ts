@@ -9,6 +9,7 @@ import {FormsModule} from "@angular/forms";
 import {SocketManagerService} from '../../services/socket/socket-manager.service'
 import {finalize, Subscription} from "rxjs";
 import {SidebarDierctMassagesComponent} from "../sidebar-dierct-massages/sidebar-dierct-massages.component";
+import {VoiceChatService} from "../../services/service/voice-chat.service";
 @Component({
   selector: 'app-main',
   standalone: true,
@@ -48,7 +49,8 @@ export class MainComponent implements OnInit{
     constructor(private cryptoService: CryptoService,
                 protected localDataService:LocalDataService,
                 private socketMangerService: SocketManagerService,
-                private router: Router) {
+                private router: Router,
+                protected voiceChatService:VoiceChatService) {
             this.cryptoService = cryptoService;
             this.localDataService = localDataService;
             this.socketMangerService = socketMangerService;
@@ -187,11 +189,11 @@ export class MainComponent implements OnInit{
         const getUserDataSubject = this.socketMangerService.getMessageSubject("user","get_user_data_result").subscribe(
             message => {
                 const data = JSON.parse(message.data).messages;
-                console.log(data)
                 this.servers.push(...data.user.servers);
                 this.localDataService.loggedUserId = data.user.id
                 this.localDataService.setUserInfo(data.user.id,data.user)
                 this.setSidebarServerId(this.servers[0].id)
+                this.localDataService.addServers(this.servers)
                 getUserDataSubject.unsubscribe()
             })
         this.subscriptions.push(getUserDataSubject);
@@ -286,103 +288,6 @@ export class MainComponent implements OnInit{
         source.start();
       });
     }
-
-
-    async startRecording () {
-      if (this.isRecording) {
-        console.log('已经在录制中...');
-        return;
-      }
-      try {
-        const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        if (mediaStream.active) {
-          console.log('音频流已经开始传输。');
-
-          this.mediaStream = mediaStream;
-          this.audioContext = new AudioContext();
-
-          // Use a smaller buffer size (512) for lower latency
-          this.scriptProcessor = this.audioContext.createScriptProcessor(1024, 1, 1);
-          this.scriptProcessor.onaudioprocess = (event) => this.handleAudioProcess(event);
-
-          const inputNode = this.audioContext.createMediaStreamSource(mediaStream);
-          inputNode.connect(this.scriptProcessor);
-          this.scriptProcessor.connect(this.audioContext.destination);
-
-          this.audioChunks = [];
-          this.isRecording = true;
-
-          console.log('开始录制音频...');
-
-          // Reduce the interval for data sending
-          this.sendDataInterval = setInterval(() => {
-            if (this.isRecording && this.audioChunks.length > 0) {
-              this.sendAudioData();
-            }
-          }, 0); // Adjusted for lower latency
-        }
-      } catch (err) {
-        console.error('无法访问麦克风:', err);
-      }
-    }
-
-    handleAudioProcess(event: AudioProcessingEvent) {
-      if (!this.isRecording) return;
-
-      const audioBuffer = event.inputBuffer;
-      const inputData = new Float32Array(audioBuffer.getChannelData(0));
-      this.audioChunks.push(inputData);
-    }
-    sendAudioData() {
-        const message: Float32Array = this.mergeArrays(this.audioChunks);
-        const regularArray: number[] = Array.from(message);
-        const jsonArray: string = JSON.stringify(regularArray);
-        // 发送音频数据
-        // this.socketMangerService.send( "chat", "send_audio",{
-        //     "session_id": this.cryptoService.session,
-        //     "channel_id": '0362e80c-839b-4ee6-9e77-c2cb6668c961',
-        //     "content": jsonArray,
-        // });
-        this.enqueueAudioData(message);
-        this.audioChunks = [];
-    }
-
-    mergeArrays(arrays: Float32Array[]): Float32Array {
-      let totalLength = arrays.reduce((sum, array) => sum + array.length, 0);
-      let result = new Float32Array(totalLength);
-      let offset = 0;
-
-      arrays.forEach((array) => {
-        result.set(array, offset);
-        offset += array.length;
-      });
-
-      return result;
-    }
-
-    stopRecording() {
-      if (!this.isRecording) {
-        console.log('未在录制中...');
-        return;
-      }
-
-      this.isRecording = false;
-      clearInterval(this.sendDataInterval);
-
-      if (this.scriptProcessor) {
-        this.scriptProcessor.disconnect();
-      }
-      if (this.mediaStream) {
-        this.mediaStream.getTracks().forEach((track) => track.stop());
-      }
-      if (this.audioContext) {
-        this.audioContext.close();
-      }
-
-      console.log('停止录制音频...');
-    }
-
-
     protected readonly console = console;
     protected readonly Object = Object;
 }

@@ -16,12 +16,11 @@ type ChannelGroup = {
   channels: Channel[];
 };
 
-type ServerDetailsData = {
+type Server = {
   id: string;
   description: string;
   name: string;
   icon_url: string | null;
-  channel_groups: ChannelGroup[];
 };
 
 @Injectable({
@@ -33,11 +32,34 @@ export class LocalDataService {
     serverAddress = ""
     //登录的用户ID
     loggedUserId = ""
+    isInVoiceCall = false
+    voiceCallServerName: string | undefined = ""
+    voiceCallChannelName: string | undefined = ""
 
     constructor(
         private socketManagerService: SocketManagerService,
         private cryptoService: CryptoService
     ) {}
+
+    /**
+     * 存储服务器相关
+     */
+    private servers: Server[] = [];
+
+    // 根据ID检索ChannelGroup
+    getServerById(id: string): Server | undefined {
+        return this.servers.find(group => group.id === id);
+    }
+
+    // 添加新的ChannelGroups
+    addServers(newServers: Server[] | undefined): void {
+        console.log(newServers)
+        if (newServers && Array.isArray(newServers)) {
+            this.servers.push(...newServers);
+        } else {
+            console.error("Invalid servers data");
+        }
+    }
 
     /**
      * 存储频道相关

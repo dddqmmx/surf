@@ -16,7 +16,7 @@
     <div style="padding: 10px;" *ngFor="let group of channelInfo?.channel_groups" class="channel-class">
         <h3 class="channel-class-title">{{ group.name }}</h3>
         <ul class="channel-list">
-            <li *ngFor="let channel of group.channels" class="channel" (click)="toChat(channel.id,channel.type)">
+            <li *ngFor="let channel of group.channels" class="channel" (click)="toChat(serverId,channel.id,channel.type)">
                 {{ channel.name }} - {{ channel.type }}
             </li>
         </ul>
