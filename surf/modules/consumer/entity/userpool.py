@@ -88,14 +88,14 @@ class UserPool(object):
         return False
 
     async def remove_user_from_channel(self, session_id, channel_id):
-        user = self.get_users().get(session_id, None)
+        user_id = Session.get_session_by_id(session_id).get('user_id')
         try:
-            if user:
+            if user_id:
                 server_id = self.__server_service.get_server_by_channel_id(channel_id)
-                await self.__broadcast_map[server_id][channel_id].remove_user(user)
+                await self.__broadcast_map[server_id][channel_id].remove_user(user_id)
                 return True
         except Exception as e:
-            logger.error(f"从频道：{channel_id} 移除用户:{user.user_name} 失败:{e}\n{traceback.format_exc()}")
+            logger.error(f"从频道：{channel_id} 移除用户:{user_id} 失败:{e}\n{traceback.format_exc()}")
         return False
 
     async def broadcast_to_all_user_in_channel(self, text_data):
@@ -161,9 +161,9 @@ class UserPool(object):
         return flag, rtn_str
 
     async def remove_user_from_single_channel_by_id(self, session_id, channel_id: str) -> bool:
-        user: SurfUser = self.get_users()[session_id]
         server_id = self.__server_service.get_server_by_channel_id(channel_id)
-        flag = await self.__broadcast_map[server_id][channel_id].remove_user(user)
+        user_id = Session.get_session_by_id(session_id).get('user_id')
+        flag = await self.__broadcast_map[server_id][channel_id].remove_user(user_id)
         return flag
 
     def get_channel_users(self, channel_id: str) -> List[Dict[str, str]]:
@@ -206,4 +206,3 @@ def session_check(func):
             await args[0].send(errorResult(text_data['command'], rtn_str, text_data['path']))
 
     return wrapper
-
