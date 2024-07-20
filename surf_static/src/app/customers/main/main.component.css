@@ -89,12 +89,12 @@ body {
 }
 .chat-content {
     background-color: #313339;
-
+  /*flex-direction: row; !* 改为横向布局 *!*/
     color: white;
     /*padding: 20px;*/
-    flex: 1;
+    /*flex: 1;*/
     overflow-y: auto;
-    order: 1;
+    /*order: 1;*/
 }
 
 .avatar {

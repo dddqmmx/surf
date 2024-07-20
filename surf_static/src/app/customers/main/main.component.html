@@ -27,13 +27,13 @@
                     <app-sidebar-dierct-massages *ngIf="sidebarType == 1"></app-sidebar-dierct-massages>
                 </div>
                 <div>
-                    <div class="user-details" style="background-color: #232428;">
+                    <div *ngIf="localDataService.isInVoiceCall"  class="user-details" style="background-color: #232428;">
                         <div  class="user-info">
                             <p style="color: #408040"><img alt="" src="assets/rss_feed_24dp_FILL0_wght400_GRAD0_opsz24%20(1).png" height="20" width="20">语音已连接</p>
-                            <p>hololive / 默认语音聊天频道</p>
+                            <p>{{localDataService.voiceCallServerName}} / {{localDataService.voiceCallChannelName}}</p>
                         </div>
                         <div class="user-options">
-                            <img src="assets/phone_enabled_24dp_FILL0_wght400_GRAD0_opsz24.png" alt="Icon" (click)="startRecording()">
+                            <img src="assets/phone_enabled_24dp_FILL0_wght400_GRAD0_opsz24.png" alt="Icon" (click)="voiceChatService.stopRecording()">
                         </div>
                     </div>
                     <div style="height: 1px;background: #383940;"></div>
@@ -45,17 +45,33 @@
                                 <p class="user-status">在线</p>
                             </div>
                             <div class="user-options">
-                                <img src="favicon.ico" (click)="stopRecording()" alt="Icon">
-                                <img src="favicon.ico" (click)="console.log(localDataService.getUserData(['e2cfa16b-c7a3-46f0-9995-22e2ae333e3e']))" alt="Icon">
+                                <img src="favicon.ico" alt="Icon">
+                                <img src="favicon.ico" alt="Icon">
                                 <img src="favicon.ico" alt="Icon">
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="chat-content">
-                <router-outlet/>
+            <div style="width:100%;display: flex; background: #2b2d31; color: white;">
+                <div style="flex: 1;" class="chat-content">
+                    <router-outlet></router-outlet>
+                </div>
+                <div style="width: 15%; padding: 20px;">
+                    <div *ngFor="let role of Object.keys(serverMembers)">
+                        <h3 style="margin-top: 10px;">{{ role }}</h3>
+                        <div *ngFor="let member of serverMembers[role].members"
+                             style="display: flex; align-items: center; margin-top: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            <img style="border-radius: 50%; margin-right: 10px;" src="assets/mike1.jpg" height="40" width="40">
+                            <span style="flex: 1; min-width: 0;">
+                                {{ localDataService.getUserInfo(member).user_nickname }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+
         </section>
     </div>
 </div>

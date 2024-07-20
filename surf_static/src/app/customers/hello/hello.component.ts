@@ -1,154 +1,180 @@
 import { Component } from '@angular/core';
 
 @Component({
-    selector: 'app-hello',
-    standalone: true,
-    imports: [],
-    templateUrl: './hello.component.html',
-    styleUrl: './hello.component.css'
+  selector: 'app-hello',
+  standalone: true,
+  imports: [],
+  templateUrl: './hello.component.html',
+  styleUrl: './hello.component.css'
 })
 export class HelloComponent {
-mediaStream: MediaStream | null = null;
-  audioContext: AudioContext | null = null;
-  scriptProcessor: ScriptProcessorNode | null = null;
-  audioChunks: Float32Array[] = [];
+  private audioContext: AudioContext | null = null;
+  private mediaStream: MediaStream | null = null;
+  private workletNode: AudioWorkletNode | null = null;
+  private playbackAudioContext: AudioContext | null = null;
   isRecording: boolean = false;
-  sendDataInterval: any;
-  mainAudioContext: AudioContext | null = null;
-  playQueue: Float32Array[] = [];
-  bufferSize: number = 4096; // Larger buffer size for smoother playback
-  maxQueueSize: number = 100; // Limit the queue size to avoid delay accumulation
+  private playQueue: Float32Array[] = [];
+  private isAudioContextInitialized: boolean = false;
+  errorMessage: string = '';
+  private playQueueMaxSize: number = 20; // 默认值
+  private missedPackets: number = 0;
+  private excessPackets: number = 0;
+  private adjustmentThreshold: number = 5; // 调整阈值
+  private minQueueSize: number = 10;
+  private maxQueueSize: number = 50;
+
+  async toggleRecording() {
+    if (this.isRecording) {
+      this.stopRecording();
+    } else {
+      await this.startRecording();
+    }
+  }
+
+  private async initializeAudioContext() {
+    if (!this.isAudioContextInitialized) {
+      this.audioContext = new AudioContext();
+      this.playbackAudioContext = new AudioContext();
+      try {
+        await this.audioContext.audioWorklet.addModule('/assets/audio-processor.js');
+        this.isAudioContextInitialized = true;
+      } catch (error) {
+        console.error('无法加载 audio-processor.js:', error);
+        this.errorMessage = '无法初始化音频处理器。请刷新页面重试。';
+        throw error;
+      }
+    }
+  }
 
   async startRecording() {
-    if (this.isRecording) {
-      console.log('已经在录制中...');
-      return;
-    }
+    if (this.isRecording) return;
+
+    this.errorMessage = ''; // 清除之前的错误消息
+
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      if (mediaStream.active) {
-        console.log('音频流已经开始传输。');
+      await this.initializeAudioContext();
 
-        this.mediaStream = mediaStream;
-        this.audioContext = new AudioContext();
-
-        this.scriptProcessor = this.audioContext.createScriptProcessor(512, 1, 1);
-        this.scriptProcessor.onaudioprocess = (event) => this.handleAudioProcess(event);
-
-        const inputNode = this.audioContext.createMediaStreamSource(mediaStream);
-        inputNode.connect(this.scriptProcessor);
-        this.scriptProcessor.connect(this.audioContext.destination);
-
-        this.audioChunks = [];
-        this.isRecording = true;
-
-        console.log('开始录制音频...');
-
-        this.sendDataInterval = setInterval(() => {
-          if (this.isRecording && this.audioChunks.length > 0) {
-            this.sendAudioData();
-          }
-        }, 100); // Slightly increased interval to allow buffering
+      if (this.audioContext?.state === 'suspended') {
+        await this.audioContext.resume();
       }
+
+      if (this.playbackAudioContext?.state === 'suspended') {
+        await this.playbackAudioContext.resume();
+      }
+
+      this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const source = this.audioContext!.createMediaStreamSource(this.mediaStream);
+
+      this.workletNode = new AudioWorkletNode(this.audioContext!, 'audio-processor');
+      this.workletNode.port.onmessage = (event) => {
+        this.handleAudioData(event.data);
+      };
+
+      source.connect(this.workletNode);
+      this.workletNode.connect(this.audioContext!.destination);
+
+      this.isRecording = true;
     } catch (err) {
-      console.error('无法访问麦克风:', err);
+      console.error('无法开始录音:', err);
+      if (err instanceof DOMException) {
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          this.errorMessage = '麦克风访问被拒绝。请检查您的浏览器设置并允许麦克风访问。';
+        } else if (err.name === 'NotFoundError') {
+          this.errorMessage = '未找到麦克风设备。请确保您的设备已正确连接。';
+        } else if (err.name === 'AbortError') {
+          this.errorMessage = '录音请求被中断。请重试。';
+        } else {
+          this.errorMessage = '录音过程中发生错误。请重试。';
+        }
+      } else {
+        this.errorMessage = '发生未知错误。请重试。';
+      }
     }
   }
 
-  handleAudioProcess(event: AudioProcessingEvent) {
-    if (!this.isRecording) return;
 
-    const audioBuffer = event.inputBuffer;
-    const inputData = new Float32Array(audioBuffer.getChannelData(0));
-    this.audioChunks.push(inputData);
-  }
 
   stopRecording() {
-    if (!this.isRecording) {
-      console.log('未在录制中...');
-      return;
-    }
+    if (!this.isRecording) return;
 
     this.isRecording = false;
-    clearInterval(this.sendDataInterval);
-
-    if (this.scriptProcessor) {
-      this.scriptProcessor.disconnect();
+    if (this.workletNode) {
+      this.workletNode.disconnect();
+      this.workletNode = null;
     }
     if (this.mediaStream) {
       this.mediaStream.getTracks().forEach((track) => track.stop());
+      this.mediaStream = null;
     }
-    if (this.audioContext) {
-      this.audioContext.close();
-    }
-
-    console.log('停止录制音频...');
-    this.sendAudioData();
   }
 
-  sendAudioData() {
-    if (this.audioChunks.length === 0) {
-      console.log('没有录制的音频数据...');
-      return;
-    }
+  private handleAudioData(audioData: Float32Array) {
+    this.playQueue.push(audioData);
 
-    const message = this.mergeArrays(this.audioChunks);
-    this.audioChunks = [];
-
-    // Append new data to the play queue
-    this.playQueue.push(message);
-
-    // Keep the play queue within the max size
-    while (this.playQueue.length > this.maxQueueSize) {
+    if (this.playQueue.length > this.playQueueMaxSize) {
       this.playQueue.shift();
+      this.excessPackets++;
+      this.missedPackets = 0;
+    } else if (this.playQueue.length < this.playQueueMaxSize / 2) {
+      this.missedPackets++;
+      this.excessPackets = 0;
+    } else {
+      this.missedPackets = 0;
+      this.excessPackets = 0;
     }
 
-    // Play audio if enough data is buffered
-    if (this.playQueue.length > 0) {
-      this.playBufferedAudio();
+    this.adjustQueueSize();
+    this.playBufferedAudio();
+  }
+
+  private adjustQueueSize() {
+    if (this.missedPackets > this.adjustmentThreshold) {
+      this.increaseQueueSize();
+    } else if (this.excessPackets > this.adjustmentThreshold) {
+      this.decreaseQueueSize();
     }
   }
 
-  async playBufferedAudio() {
-    if (!this.mainAudioContext) {
-      this.mainAudioContext = new AudioContext();
+  private increaseQueueSize() {
+    this.playQueueMaxSize = Math.min(this.playQueueMaxSize + 5, this.maxQueueSize);
+    console.log(`增加队列大小到: ${this.playQueueMaxSize}`);
+    this.missedPackets = 0;
+  }
+
+  private decreaseQueueSize() {
+    this.playQueueMaxSize = Math.max(this.playQueueMaxSize - 5, this.minQueueSize);
+    console.log(`减小队列大小到: ${this.playQueueMaxSize}`);
+    this.excessPackets = 0;
+  }
+
+  private async playBufferedAudio() {
+    if (!this.playbackAudioContext) return;
+
+    if (this.playbackAudioContext.state === 'suspended') {
+      try {
+        await this.playbackAudioContext.resume();
+      } catch (err) {
+        console.error('无法恢复播放上下文:', err);
+        this.errorMessage = '无法开始音频播放。请重试。';
+        return;
+      }
     }
 
     while (this.playQueue.length > 0) {
       const audioData = this.playQueue.shift();
       if (audioData) {
-        const channelCount = 1;
-        const sampleRate = this.mainAudioContext.sampleRate;
-        const totalSamples = audioData.length;
+        const audioBuffer = this.playbackAudioContext.createBuffer(1, audioData.length, this.playbackAudioContext.sampleRate);
+        audioBuffer.getChannelData(0).set(audioData);
 
-        const audioBuffer = this.mainAudioContext.createBuffer(channelCount, totalSamples, sampleRate);
-        const channelData = audioBuffer.getChannelData(0);
-
-        channelData.set(audioData);
-
-        const source = this.mainAudioContext.createBufferSource();
+        const source = this.playbackAudioContext.createBufferSource();
         source.buffer = audioBuffer;
-        source.connect(this.mainAudioContext.destination);
+        source.connect(this.playbackAudioContext.destination);
         source.start();
 
-        // Wait for the audio to finish playing before proceeding
         await new Promise(resolve => {
           source.onended = resolve;
         });
       }
     }
-  }
-
-  mergeArrays(arrays: Float32Array[]): Float32Array {
-    let totalLength = arrays.reduce((sum, array) => sum + array.length, 0);
-    let result = new Float32Array(totalLength);
-    let offset = 0;
-
-    arrays.forEach((array) => {
-      result.set(array, offset);
-      offset += array.length;
-    });
-
-    return result;
   }
 }

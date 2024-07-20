@@ -57,7 +57,7 @@
                     "builder": "@angular-devkit/build-angular:dev-server",
                     "options": {
                         "host": "::",
-                        "ssl": true,
+                        "ssl": false,
                         "sslCert": "ssl/full_chain.pem",
                         "sslKey": "ssl/private.key"
                     },
