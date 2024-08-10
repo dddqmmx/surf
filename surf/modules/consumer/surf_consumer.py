@@ -240,8 +240,8 @@ class SurfConsumer(BaseConsumer):
         :param text_data:
         :return:
         """
-        flag = await self.userPool.connect_user_to_single_channel_by_id(text_data['session_id'],
-                                                                        text_data['channel_id'])
+        flag = await self.userPool.remove_user_from_single_channel_by_id(text_data['session_id'],
+                                                                         text_data['channel_id'])
         result = setResult(f"{text_data['command']}_result", flag, 'server')
         await self.send(result)
 
@@ -293,8 +293,9 @@ class SurfConsumer(BaseConsumer):
         :return:
         """
         text_data["is_audio"] = True
+        text_data['user_id'] = self.userPool.get_user_by_session_id(text_data["session_id"]).get_user_id()
+        del text_data['session_id']
         text_data['content'] = json.loads(text_data['content'])
-        print(len(text_data['content']))
         await self.userPool.broadcast_to_all_user_in_channel(text_data)
 
     async def revoke_message(self, text_data):

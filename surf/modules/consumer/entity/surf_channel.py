@@ -43,6 +43,7 @@ class SurfChannel(object):
                 for user in self.channel_users:
                     if user.check_user_id(user_id):
                         self.channel_users.remove(user)
+                        logger.info(f"remove user:{user.user_name} from channel:{self.channel_id}")
                         return True
         except Exception as e:
             logger.error(f"remove user:{user.user_name} from channel:{self.channel_id} error:{e}")

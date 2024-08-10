@@ -52,3 +52,6 @@ class SurfUser(object):
 
     def get_user_data(self):
         return self.__um.get_userdata_by_userid(self.__user_id)[0]
+
+    def get_user_id(self):
+        return self.__user_id

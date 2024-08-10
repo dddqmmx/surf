@@ -20,9 +20,9 @@ from surf.modules.consumer.services import UserService, ServerService
 con_log = get_logger('connections')
 
 
-class UserPool(object):
+class UserPool:
     _instance = None
-    _lock = threading.Lock()  # 类级别的锁，用于线程安全
+    _lock = threading.Lock()
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
@@ -39,29 +39,27 @@ class UserPool(object):
             self._initialized = True
             self.__user_service = UserService()
             self.__server_service = ServerService()
-            con_log.info(f'UserPool initialized:{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
+            con_log.info(f'UserPool initialized: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
 
     def get_users(self):
         return self.__connected_user.copy()
 
     def get_user_by_session_id(self, session_id):
-        return self.__connected_user.get(session_id, None)
+        return self.__connected_user.get(session_id)
 
     def get_broadcast_by_server_id(self, server_id):
-        return self.__broadcast_map.copy().get(server_id, {})
+        return self.__broadcast_map.get(server_id, {}).copy()
 
     async def connect_user_to_pool(self, session, user):
         async with self.lock:
             session_id = session.session_id
-            if self.__connected_user.get(session_id, None):
+            if session_id in self.__connected_user:
                 con_log.info(f"session_id:{session_id} has already logged in, user\'s info might be infiltrated")
                 return False
-            for k, exist_user in self.get_users().items():
-                if exist_user.check_user_id_by_session_id(session_id):
-                    con_log.info(
-                        f"session_id:{session_id}'s bound user_id has logged in already"
-                        f", user\'s info might be infiltrated")
-                    return False
+            if any(exist_user.check_user_id_by_session_id(session_id) for exist_user in self.__connected_user.values()):
+                con_log.info(
+                    f"session_id:{session_id}'s bound user_id has logged in already, user\'s info might be infiltrated")
+                return False
             self.__connected_user[session_id] = user
             return True
 
@@ -72,24 +70,23 @@ class UserPool(object):
         flag = await self.connect_user_to_pool(session, surf_user)
         if flag:
             await self.init_users_broadcast_map(session, surf_user)
-        if return_id:
-            return flag, session.session_id
-        return flag
+        return (flag, session.session_id) if return_id else flag
 
     async def add_user_to_channel(self, session_id, channel_id):
-        user = self.get_users().get(session_id, None)
+        user = self.__connected_user.get(session_id)
+        if not user:
+            return False
         try:
-            if user:
-                server_id = self.__server_service.get_server_by_channel_id(channel_id)
-                await self.__broadcast_map[server_id][channel_id].add_user(user)
-                return True
+            server_id = self.__server_service.get_server_by_channel_id(channel_id)
+            await self.__broadcast_map[server_id][channel_id].add_user(user)
+            return True
         except Exception as e:
             logger.error(f"添加用户:{user.user_name} 到频道：{channel_id}失败:{e}\n{traceback.format_exc()}")
-        return False
+            return False
 
     async def remove_user_from_channel(self, session_id, channel_id):
-        user_id = Session.get_session_by_id(session_id).get('user_id')
         try:
+            user_id = Session.get_session_by_id(session_id).get('user_id')
             if user_id:
                 server_id = self.__server_service.get_server_by_channel_id(channel_id)
                 await self.__broadcast_map[server_id][channel_id].remove_user(user_id)
@@ -99,113 +96,101 @@ class UserPool(object):
         return False
 
     async def broadcast_to_all_user_in_channel(self, text_data):
-        if text_data.get('is_audio', False):
-            channel_id = text_data['channel_id']
-            server_id = self.__server_service.get_server_by_channel_id(channel_id)
-            channel = self.get_broadcast_by_server_id(server_id).get(channel_id, [])
-            tasks = []
-            for user in channel.channel_users:
-                if user.check_user_id_by_session_id(text_data['session_id']):
-                    continue
-                tasks.append(user.broadcast(json.dumps(text_data)))
-        else:
-            channel_id = text_data['messages']['channel_id']
-            server_id = self.__server_service.get_server_by_channel_id(channel_id)
-            channel = self.get_broadcast_by_server_id(server_id).get(channel_id, [])
-            tasks = [user.broadcast(json.dumps(text_data)) for user in channel.channel_users]
-        await asyncio.gather(*tasks)
-        logger.info(f'broadcast to all user in channel:{channel_id} done, total:{len(tasks)}')
+        channel_id = text_data['channel_id'] if text_data.get('is_audio', False) else text_data['messages'][
+            'channel_id']
+        server_id = self.__server_service.get_server_by_channel_id(channel_id)
+        channel = self.get_broadcast_by_server_id(server_id).get(channel_id, None)
+        if channel:
+            tasks = [
+                user.broadcast(json.dumps(text_data))
+                for user in channel.channel_users
+                if not user.check_user_id(text_data.get('user_id', ''))
+            ]
+            await asyncio.gather(*tasks)
+            logger.info(f'broadcast to all user in channel:{channel_id} done, total:{len(tasks)}')
 
     async def init_users_broadcast_map(self, session: Session, surf_user):
         user_id = session.get('user_id')
         ids = self.__server_service.get_channels_by_user_id(user_id)
-        if ids is not False:
+        if ids:
             async with self.lock:
                 for channel_id in ids:
                     server_id = self.__server_service.get_server_by_channel_id(channel_id['id'])
-                    if not self.__broadcast_map.get(server_id, None):
-                        self.__broadcast_map[server_id] = {}
+                    self.__broadcast_map.setdefault(server_id, {})
                     channel = self.__server_service.get_channel_details_by_channel_id(channel_id['id'])
-                    if not self.__broadcast_map[server_id].get(channel_id['id'], None):
+                    if channel_id['id'] not in self.__broadcast_map[server_id]:
                         self.__broadcast_map[server_id][channel_id['id']] = SurfChannel(
                             channel_id['id'],
-                            True if channel[0]['type'] == "voice" else False,
+                            channel[0]['type'] == "voice",
                             int(channel[0]['max_members'])
                         )
                     if channel[0]['type'] == "text":
                         await self.__broadcast_map[server_id][channel_id['id']].add_user(surf_user)
                     logger.info(
-                        f"add userid:{user_id} to channel:{channel_id} done, "
-                        f"current user in channel: {self.__broadcast_map[server_id][channel_id['id']].size()}")
+                        f"add userid:{user_id} to channel:{channel_id['id']} done, current user in channel: {self.__broadcast_map[server_id][channel_id['id']].size()}")
 
     async def detach_user_from_pool_by_session_id(self, session_id):
         async with self.lock:
             user_id = Session.get_session_by_id(session_id).get('user_id')
             ids = self.__server_service.get_channels_by_user_id(user_id)
-            if ids is not False:
+            if ids:
                 for channel_id in ids:
                     server_id = self.__server_service.get_server_by_channel_id(channel_id['id'])
                     await self.__broadcast_map[server_id][channel_id['id']].remove_user(user_id)
                     logger.info(
                         f"remove userid:{user_id} from channel:{channel_id['id']} done, current user in channel: {self.__broadcast_map[server_id][channel_id['id']].size()}")
-        del self.__connected_user[session_id]
-        con_log.info(f'session_id:{session_id} has disconnect from surf, current online: {len(self.__connected_user)}')
+            self.__connected_user.pop(session_id, None)
+            con_log.info(
+                f'session_id:{session_id} has disconnect from surf, current online: {len(self.__connected_user)}')
 
     def check_online(self, session_id: str) -> bool:
-        return self.get_users().get(session_id, False)
+        return session_id in self.__connected_user
 
     async def connect_user_to_single_channel_by_id(self, session_id, channel_id: str) -> Tuple[bool, str]:
-        user: SurfUser = self.get_users()[session_id]
+        user = self.__connected_user.get(session_id)
+        if not user:
+            return False, "User not found"
         server_id = self.__server_service.get_server_by_channel_id(channel_id)
-        flag, rtn_str = await self.__broadcast_map[server_id][channel_id].add_user(user)
-        return flag, rtn_str
+        return await self.__broadcast_map[server_id][channel_id].add_user(user)
 
     async def remove_user_from_single_channel_by_id(self, session_id, channel_id: str) -> bool:
         server_id = self.__server_service.get_server_by_channel_id(channel_id)
         user_id = Session.get_session_by_id(session_id).get('user_id')
-        flag = await self.__broadcast_map[server_id][channel_id].remove_user(user_id)
-        return flag
+        return await self.__broadcast_map[server_id][channel_id].remove_user(user_id)
 
     def get_channel_users(self, channel_id: str) -> List[Dict[str, str]]:
-        user_list = []
         server_id = self.__server_service.get_server_by_channel_id(channel_id)
-        for user in self.__broadcast_map[server_id][channel_id].get_users_in_channel():
-            user_list.append(user.get_user_data())
-        return user_list
+        return [user.get_user_data() for user in self.__broadcast_map[server_id][channel_id].get_users_in_channel()]
 
 
 def session_check(func):
     async def wrapper(*args, **kwargs):
-        flag = False
-        up = UserPool()
         text_data = json.loads(kwargs['text_data'])
-        session_id = text_data.get('session_id', None)
-        error_str = ""
-        rtn_str = ""
+        session_id = text_data.get('session_id')
+        up = UserPool()
 
-        if text_data['zedfeorius_test_code'] == 'sbsb123':
+        if text_data.get('zedfeorius_test_code') == 'sbsb123' or text_data.get('command') in ('login', 'key_exchange'):
             return await func(*args, **kwargs)
 
-        if text_data['command'] != 'login' and text_data['command'] != 'key_exchange':
-            if session_id:
-                user = up.get_user_by_session_id(session_id)
-                session = Session.get_session_by_id(session_id)
-                if user and user.check_user_id(session.get('user_id')) and session_id == args[0].session_id:
-                    flag = up.check_online(session_id)
-                    if not flag:
-                        error_str = "用户已离线，无法操作"
-                        rtn_str = "已离线"
-                else:
-                    error_str = f"发现无效session进行操作：{session_id}， 已拦截"
-                    rtn_str = "无效session"
-        else:
-            flag = True
+        if not session_id:
+            return await handle_invalid_session(args, text_data, "无效session")
 
-        if flag:
-            return await func(*args, **kwargs)
+        user = up.get_user_by_session_id(session_id)
+        session = Session.get_session_by_id(session_id)
+
+        if user and user.check_user_id(session.get('user_id')) and session_id == args[0].session_id:
+            if up.check_online(session_id):
+                return await func(*args, **kwargs)
+            else:
+                return await handle_invalid_session(args, text_data, "用户已离线，无法操作")
         else:
-            logger.error(text_data)
-            logger.error(error_str)
-            await args[0].send(errorResult(text_data['command'], rtn_str, text_data['path']))
+            return await handle_invalid_session(args, text_data, f"发现无效session进行操作：{session_id}， 已拦截")
+
+    async def handle_invalid_session(args, text_data, error_str):
+        logger.error(text_data)
+        logger.error(error_str)
+        await args[0].send(
+            errorResult(text_data['command'], "已离线" if "离线" in error_str else "无效session", text_data['path']))
+        return None
 
     return wrapper
