@@ -1,6 +1,4 @@
 import {Component, OnInit} from '@angular/core';
-import * as forge from 'node-forge';
-import {encryptData} from "../../util/encryption/encryption_ras";
 import {CryptoService} from "../../services/crypto/crypto.service";
 import {ActivatedRoute, Router} from "@angular/router";
 import {NgForOf, NgIf} from "@angular/common";
@@ -8,6 +6,7 @@ import {LocalDataService} from "../../services/local_data/local-data.service";
 import {FormsModule} from "@angular/forms";
 import {SocketManagerService} from "../../services/socket/socket-manager.service";
 import {Subscription} from "rxjs";
+
 @Component({
     selector: 'app-chat',
     standalone: true,
@@ -71,12 +70,15 @@ export class ChatComponent implements OnInit{
         });
     }
 
-    onScroll(event: any) {
-        const element = event.target;
-        if (element.scrollTop === 0) {
-            this.getMessageFromHistory();
-        }
-    }
+onScroll(event: any) {
+  const element = event.target;
+  if (element.scrollTop === 0) {
+      const previousHeight = element.scrollHeight;
+      this.getMessageFromHistory()
+      const newHeight = element.scrollHeight;
+      element.scrollTop = newHeight - previousHeight;
+  }
+}
     getMessageFromHistory(){
         const self = this;
         const oldestMessage = this.messageList[0]

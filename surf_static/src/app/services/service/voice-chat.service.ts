@@ -1,11 +1,14 @@
 import { Injectable } from '@angular/core';
 import {LocalDataService} from "../local_data/local-data.service";
+import {SocketManagerService} from "../socket/socket-manager.service";
+import {CryptoService} from "../crypto/crypto.service";
+import {Subscription} from "rxjs";
 
 @Injectable({
   providedIn: 'root'
 })
 export class VoiceChatService {
-    constructor(private localDataService:LocalDataService) { }
+    constructor(private cryptoService:CryptoService,private socketMangerService:SocketManagerService,private localDataService:LocalDataService) { }
 
     private audioContext: AudioContext | null = null;
     private mediaStream: MediaStream | null = null;
@@ -22,6 +25,7 @@ export class VoiceChatService {
     private minQueueSize: number = 10;
     private maxQueueSize: number = 50;
     private debug = true;
+    private subscriptions: Subscription[] = [];
 
     private async initializeAudioContext() {
       if (!this.isAudioContextInitialized) {
@@ -38,53 +42,74 @@ export class VoiceChatService {
       }
     }
 
+
     async startRecording(serverId:string,channelId:string) {
-        this.localDataService.voiceCallServerName = this.localDataService.getServerById(serverId)?.name
-        this.localDataService.voiceCallChannelName = this.localDataService.getChannelById(channelId)?.name
+        this.socketMangerService.send( "server", "connect_to_channel",{
+            "session_id": this.cryptoService.session,
+            "channel_id": channelId
+        });
+        const sendAudioSubject = this.socketMangerService.getMessageSubject("server", "connect_to_channel_result").subscribe(
+            async message => {
+                const data = JSON.parse(message.data).messages;
+                if (data) {
+                    this.localDataService.voiceCallServerName = this.localDataService.getServerById(serverId)?.name
+                    this.localDataService.voiceCallChannelName = this.localDataService.getChannelById(channelId)?.name
+                    if (this.localDataService.isInVoiceCall) return;
 
-      if (this.localDataService.isInVoiceCall) return;
+                    this.errorMessage = ''; // 清除之前的错误消息
 
-      this.errorMessage = ''; // 清除之前的错误消息
+                    try {
+                        await this.initializeAudioContext();
+                        const self = this;
+                        const sendAudioSubject = this.socketMangerService.getMessageSubject("chat", "send_audio").subscribe(
+                            message => {
+                                const data = JSON.parse(message.data).content;
+                                self.handleAudioData(data)
+                            })
+                        this.subscriptions.push(sendAudioSubject);
 
-      try {
-        await this.initializeAudioContext();
+                        if (this.audioContext?.state === 'suspended') {
+                            await this.audioContext.resume();
+                        }
 
-        if (this.audioContext?.state === 'suspended') {
-          await this.audioContext.resume();
-        }
+                        if (this.playbackAudioContext?.state === 'suspended') {
+                            await this.playbackAudioContext.resume();
+                        }
 
-        if (this.playbackAudioContext?.state === 'suspended') {
-          await this.playbackAudioContext.resume();
-        }
+                        this.mediaStream = await navigator.mediaDevices.getUserMedia({audio: true});
+                        const source = this.audioContext!.createMediaStreamSource(this.mediaStream);
 
-        this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const source = this.audioContext!.createMediaStreamSource(this.mediaStream);
+                        this.workletNode = new AudioWorkletNode(this.audioContext!, 'audio-processor');
+                        this.workletNode.port.onmessage = (event) => {
+                            // this.handleAudioData(event.data);
+                            this.sendAudioData(channelId, event.data)
+                        };
 
-        this.workletNode = new AudioWorkletNode(this.audioContext!, 'audio-processor');
-        this.workletNode.port.onmessage = (event) => {
-          this.handleAudioData(event.data);
-        };
+                        source.connect(this.workletNode);
+                        this.workletNode.connect(this.audioContext!.destination);
 
-        source.connect(this.workletNode);
-        this.workletNode.connect(this.audioContext!.destination);
-
-        this.localDataService.isInVoiceCall = true;
-      } catch (err) {
-        console.error('无法开始录音:', err);
-        if (err instanceof DOMException) {
-          if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-            this.errorMessage = '麦克风访问被拒绝。请检查您的浏览器设置并允许麦克风访问。';
-          } else if (err.name === 'NotFoundError') {
-            this.errorMessage = '未找到麦克风设备。请确保您的设备已正确连接。';
-          } else if (err.name === 'AbortError') {
-            this.errorMessage = '录音请求被中断。请重试。';
-          } else {
-            this.errorMessage = '录音过程中发生错误。请重试。';
-          }
-        } else {
-          this.errorMessage = '发生未知错误。请重试。';
-        }
-      }
+                        this.localDataService.isInVoiceCall = true;
+                    } catch (err) {
+                        console.error('无法开始录音:', err);
+                        if (err instanceof DOMException) {
+                            if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                                this.errorMessage = '麦克风访问被拒绝。请检查您的浏览器设置并允许麦克风访问。';
+                            } else if (err.name === 'NotFoundError') {
+                                this.errorMessage = '未找到麦克风设备。请确保您的设备已正确连接。';
+                            } else if (err.name === 'AbortError') {
+                                this.errorMessage = '录音请求被中断。请重试。';
+                            } else {
+                                this.errorMessage = '录音过程中发生错误。请重试。';
+                            }
+                        } else {
+                            this.errorMessage = '发生未知错误。请重试。';
+                        }
+                    }
+                }
+                this.subscriptions = this.subscriptions.filter(item => item !== sendAudioSubject);
+                sendAudioSubject.unsubscribe()
+            })
+        this.subscriptions.push(sendAudioSubject);
     }
 
     stopRecording() {
@@ -99,6 +124,18 @@ export class VoiceChatService {
         this.mediaStream.getTracks().forEach((track) => track.stop());
         this.mediaStream = null;
       }
+    }
+
+     sendAudioData(channelId:string,audioData: Float32Array) {
+        const regularArray: number[] = Array.from(audioData);
+        // 将普通数组转换为 JSON 字符串
+        const jsonArray: string = JSON.stringify(regularArray);
+        // 发送音频数据
+        this.socketMangerService.send( "chat", "send_audio",{
+            "session_id": this.cryptoService.session,
+            "channel_id": channelId,
+            "content": jsonArray,
+        });
     }
 
     private handleAudioData(audioData: Float32Array) {
@@ -116,7 +153,6 @@ export class VoiceChatService {
         this.excessPackets = 0;
       }
       this.adjustQueueSize();
-
       if (this.debug){
           this.playBufferedAudio();
       }
