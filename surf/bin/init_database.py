@@ -4,7 +4,13 @@ import subprocess
 
 def execute_sql_files(base_dir, database):
     # 获取目标sql文件夹的路径
-    sql_dir = os.path.join(base_dir, 'sql', 'tables')
+    sql_dir = os.path.join(base_dir, 'sql')
+    command = f'sudo -u postgres psql -d {database} -f \"{os.path.join(sql_dir, "new_surf_sql.sql")}\"'
+    try:
+        subprocess.run(command, shell=True, check=True)
+        print("database init executed successfully")
+    except subprocess.CalledProcessError as e:
+        print(f"Error executing new_surf_sql.sql: {e}")
 
     # 检查目录是否存在
     if not os.path.exists(sql_dir):
