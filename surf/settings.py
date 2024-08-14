@@ -86,7 +86,7 @@ WSGI_APPLICATION = "surf.wsgi.application"
 #         'NAME': 'surf',  # 数据库名称
 #         'USER': 'postgres',  # 拥有者，这个一般没修改
 #         'PASSWORD': '114514',  # 密码，自己设定的
-#         'HOST': 'www.dddqmmx.asia',  # 默认的就没写
+#         'HOST': 'surf.dddqmmx.asia',  # 默认的就没写
 #         'PORT': '',
 #     }
 # }

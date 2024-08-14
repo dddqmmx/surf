@@ -5,7 +5,7 @@ from surf.appsGlobal import get_logger
 
 logger = get_logger('session')
 
-redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
+redis_client = redis.StrictRedis(host='http://surf.dddqmmx.asia', port=6379, db=0)
 
 
 class Session:

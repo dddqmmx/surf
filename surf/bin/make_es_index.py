@@ -8,8 +8,8 @@ Last Edit Time  :
 
 from elasticsearch import Elasticsearch
 
-es_cluster = ["www.dddqmmx.asia:9200"]
-es = Elasticsearch(es_cluster)
+es_cluster = ["http://van.dddqmmx.asia:9200"]
+es = Elasticsearch(es_cluster, verify_certs=False)
 
 index_name = "chat_message"
 body = {

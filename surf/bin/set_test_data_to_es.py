@@ -15,7 +15,7 @@ from elasticsearch import Elasticsearch, helpers
 from surf.appsGlobal import CHAT_TEMP
 from surf.modules.util.es_client import ESClient
 
-es_cluster = ["www.dddqmmx.asia:9200"]
+es_cluster = ["surf.dddqmmx.asia:9200"]
 ec = ESClient()
 es = Elasticsearch(es_cluster)
 
