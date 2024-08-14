@@ -1,0 +1,9 @@
+INSERT INTO public.t_channel_chats (c_chat_id, c_referenced_chat_id, c_channel_id, c_status) VALUES ('2aad344b-30d3-4af4-81ae-64f193fddbda', null, 'aa6cd21b-7080-4e65-9059-8a6a8c303cbb', 0);
+INSERT INTO public.t_channel_chats (c_chat_id, c_referenced_chat_id, c_channel_id, c_status) VALUES ('6119b821-8b66-4548-b6e2-cf00cfbbf224', null, 'aa6cd21b-7080-4e65-9059-8a6a8c303cbb', 0);
+INSERT INTO public.t_channel_chats (c_chat_id, c_referenced_chat_id, c_channel_id, c_status) VALUES ('9c9f1f7a-673f-45aa-88c1-2a9052f0a5bd', null, 'aa6cd21b-7080-4e65-9059-8a6a8c303cbb', 0);
+INSERT INTO public.t_channel_chats (c_chat_id, c_referenced_chat_id, c_channel_id, c_status) VALUES ('4ee9ae41-3458-4e85-919d-cf54087d241a', null, 'aa6cd21b-7080-4e65-9059-8a6a8c303cbb', 0);
+INSERT INTO public.t_channel_chats (c_chat_id, c_referenced_chat_id, c_channel_id, c_status) VALUES ('8f33a6b4-4c0c-4c39-b381-9faa1796907a', null, 'aa6cd21b-7080-4e65-9059-8a6a8c303cbb', 0);
+INSERT INTO public.t_channel_chats (c_chat_id, c_referenced_chat_id, c_channel_id, c_status) VALUES ('7aa8df88-a2c8-41b9-8d3d-e3430938df57', null, 'aa6cd21b-7080-4e65-9059-8a6a8c303cbb', 0);
+INSERT INTO public.t_channel_chats (c_chat_id, c_referenced_chat_id, c_channel_id, c_status) VALUES ('e643c979-caaf-4339-b46c-ff336962ed7a', null, 'aa6cd21b-7080-4e65-9059-8a6a8c303cbb', 0);
+INSERT INTO public.t_channel_chats (c_chat_id, c_referenced_chat_id, c_channel_id, c_status) VALUES ('1f05b79b-c1d1-4e02-abe0-2e053be9921d', null, 'aa6cd21b-7080-4e65-9059-8a6a8c303cbb', 0);
+INSERT INTO public.t_channel_chats (c_chat_id, c_referenced_chat_id, c_channel_id, c_status) VALUES ('82c82265-d6d5-4f81-b175-d455d603c907', null, 'aa6cd21b-7080-4e65-9059-8a6a8c303cbb', 0);
