@@ -11,7 +11,7 @@ def execute_sql_files(base_dir, database):
     except subprocess.CalledProcessError as e:
         print(f"Error executing new_surf_sql.sql: {e}")
 
-    sql_dir = os.path.join(base_dir, 'tables')
+    sql_dir = os.path.join(sql_dir, 'tables')
 
     # 检查目录是否存在
     if not os.path.exists(sql_dir):
