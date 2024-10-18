@@ -1,15 +1,13 @@
 import uuid
-import redis
-
+import time
 from surf.appsGlobal import get_logger
 
 logger = get_logger('session')
 
-redis_client = redis.StrictRedis(host='http://surf.dddqmmx.asia', port=6379, db=0)
-
 
 class Session:
     sessions = {}  # 存储会话对象的字典
+    expiration_times = {}  # 存储每个会话的过期时间
 
     def __init__(self, session_id):
         self.session_id = session_id
@@ -18,8 +16,6 @@ class Session:
     def set(self, key, value):
         self.is_session_active()
         self.data[key] = value
-        # logger.info(f"sessions count:{len(self.sessions)}, sessions ids are:{self.sessions.keys()}")
-        # logger.info(f"")
         for session_id, session in self.sessions.items():
             logger.info(f"session:{session_id}'s info: {session.data}")
             logger.info(f"")
@@ -37,20 +33,26 @@ class Session:
     def create_session(cls):
         session_id = str(uuid.uuid4())
         cls.sessions[session_id] = cls(session_id)
-        # 将会话 ID 存储到 Redis
-        redis_client.set(session_id, 'active', ex=3600)
+        cls.expiration_times[session_id] = time.time() + 3600  # 设置过期时间为1小时
         return cls.sessions[session_id]
 
     @classmethod
     def is_session_exist(cls, session_id):
-        redis_client.expire(session_id, 3600)
-        return redis_client.exists(session_id)
+        # 检查会话是否存在以及是否过期
+        if session_id in cls.expiration_times:
+            if time.time() < cls.expiration_times[session_id]:
+                # 更新过期时间
+                cls.expiration_times[session_id] = time.time() + 3600
+                return True
+            else:
+                # 会话已过期，删除
+                cls.delete_session(session_id)
+                return False
+        return False
 
     def is_session_active(self):
-        flag = redis_client.exists(self.session_id)
-        if flag:
-            redis_client.expire(self.session_id, 3600)
-        else:
+        flag = self.is_session_exist(self.session_id)
+        if not flag:
             del self.sessions[self.session_id]
         return flag
 
@@ -61,12 +63,19 @@ class Session:
         else:
             return None
 
+    @classmethod
+    def delete_session(cls, session_id):
+        if session_id in cls.sessions:
+            del cls.sessions[session_id]
+        if session_id in cls.expiration_times:
+            del cls.expiration_times[session_id]
+
 
 if __name__ == '__main__':
     session = Session.create_session()
     session = Session.get_session_by_id(session.session_id)
     session.set('username', 'example_user')
     session.set('user_id', 12345)
-    print(session.session_id)  # Output: True
-    print(session.get('username'))  # Output: example_user
-    print(session.get('user_id'))  # Output: 12345
+    print(session.session_id)  # 输出会话ID
+    print(session.get('username'))  # 输出: example_user
+    print(session.get('user_id'))  # 输出: 12345
