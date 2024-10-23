@@ -39,7 +39,7 @@ def get_logger(logfile=APPNAME):
     if not os.path.exists(logroot):
         os.mkdir(logroot)
     filehandle = TimedRotatingFileHandler(os.path.normpath(logroot + "/" + \
-                                                           logfile + ".log"), 'midnight', encoding='utf-8')
+                                                           logfile + ".log"), 'midnight', encoding='utf-8',    delay=True)
     filehandle.suffix = "%Y-%m-%d"
     filehandle.setLevel(logging.DEBUG)
     consolehandle = logging.StreamHandler()
