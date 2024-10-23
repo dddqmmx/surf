@@ -1,0 +1,25 @@
+.title-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #2e2e2e; /* 自定义背景颜色 */
+    color: white; /* 字体颜色 */
+    padding: 10px;
+}
+
+.title-bar-buttons {
+    display: flex;
+}
+
+.title-bar-buttons img {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 16px;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.title-bar-buttons button:hover {
+    opacity: 0.7; /* 鼠标悬停效果 */
+}
