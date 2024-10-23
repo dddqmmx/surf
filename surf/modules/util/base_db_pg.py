@@ -22,7 +22,7 @@ class BaseDBPG(object):
             self.conn_pool = SimpleConnectionPool(
                 minconn="1",
                 maxconn="50",
-                host='surf.dddqmmx.asia',
+                host='www.dddqmmx.asia',
                 port='5432',
                 database="surf",
                 user='postgres',

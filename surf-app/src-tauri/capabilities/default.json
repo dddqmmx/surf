@@ -1,0 +1,32 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Capability for the main window",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "shell:allow-open",
+    "core:window:default",
+    "core:window:allow-close",
+    "core:window:allow-minimize",
+    "core:window:allow-start-dragging",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-internal-toggle-maximize",
+    "core:path:allow-resolve-directory"
+  ],
+  "capabilities": [
+    {
+      "identifier": "draggable-windows",
+      "windows":["*"],
+      "permissions": [
+        "core:window:allow-toggle-maximize",
+        "core:window:allow-maximize",
+        "core:window:allow-minimize",
+        "core:window:allow-close",
+        "core:window:allow-start-dragging",
+        "core:window:default",
+        "core:path:allow-resolve-directory"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "surf-app",
+  "version": "0.1.0",
+  "identifier": "asia.dddqmmx.surf",
+  "build": {
+    "beforeDevCommand": "yarn start",
+    "devUrl": "http://localhost:14201",
+    "beforeBuildCommand": "yarn build",
+    "frontendDist": "../dist/surf-app/browser"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "surf-app",
+        "width": 1250,
+        "height": 750,
+        "center": true,
+        "resizable": true,
+        "decorations": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}
