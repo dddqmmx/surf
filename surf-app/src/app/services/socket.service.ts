@@ -141,11 +141,14 @@ export class SocketService {
     }
 
     public send(path: string, command: string, messages: any) {
-        const respond_json = {
-            'path': path,
-            "command": command,
-            ...messages
+        if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
+            throw new Error('WebSocket is not connected');
         }
-        this.socket.send(JSON.stringify(respond_json))
+        const message = {
+            path,
+            command,
+            ...messages
+        };
+        this.socket.send(JSON.stringify(message));
     }
 }
