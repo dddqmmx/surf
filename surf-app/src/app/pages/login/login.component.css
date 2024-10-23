@@ -12,12 +12,12 @@
 }
 
 
-
 @media (min-aspect-ratio: 1/1) {
     .background {
         justify-content: flex-end; /* 水平靠右 */
-        align-items: center;       /* 垂直居中 */
+        align-items: center; /* 垂直居中 */
     }
+
     .login-tabs {
         margin-left: auto; /* 将 .login-tabs 推到右侧 */
         margin-right: 7%;
@@ -41,18 +41,18 @@
     color: #057feb;
 }
 
-.user-avatar{
+.user-avatar {
     margin-top: 2rem;
     width: 120px;
     height: 120px;
     border-radius: 50%;
 }
 
-.select-username{
+.select-username {
     margin-top: 1rem;
 }
 
-.login-button{
+.login-button {
     margin-top: 3rem;
     width: 150px;
     height: 40px;
@@ -61,6 +61,7 @@
     border: none;
     color: white;
 }
+
 .to_user_manager {
     color: #057feb;
     margin-top: auto; /* 自动填充上边距，推到底部 */

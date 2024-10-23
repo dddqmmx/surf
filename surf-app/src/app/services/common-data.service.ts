@@ -1,10 +1,12 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class CommonDataService {
 
-  constructor() { }
-  session: string | undefined;
+    constructor() {
+    }
+
+    session: string | undefined;
 }

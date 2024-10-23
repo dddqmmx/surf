@@ -10,34 +10,38 @@ import {connect, Subscription} from "rxjs";
 import {CommonDataService} from "../../services/common-data.service";
 
 interface User {
-  name: string;
-  file: string;
-  // 其他用户属性可以根据需要添加
+    name: string;
+    file: string;
+    // 其他用户属性可以根据需要添加
 }
 
 @Component({
-  selector: 'app-login',
-  standalone: true,
-  imports: [
-    NgOptimizedImage,
-    TitleBarComponent,
-    NgForOf,
-    FormsModule
-  ],
-  templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+    selector: 'app-login',
+    standalone: true,
+    imports: [
+        NgOptimizedImage,
+        TitleBarComponent,
+        NgForOf,
+        FormsModule
+    ],
+    templateUrl: './login.component.html',
+    styleUrl: './login.component.css'
 })
-export class LoginComponent implements OnInit,OnDestroy{
-  constructor(
-      private router: Router,
-      private socket: SocketService,
-      private commonData: CommonDataService) {}
-  subscriptions: Subscription[] = [];
-  ngOnDestroy(){
-    this.subscriptions.forEach(subscription => subscription.unsubscribe());
-  }
-  users:User[]=[]
-  selectedUserPath = "";
+export class LoginComponent implements OnInit, OnDestroy {
+    constructor(
+        private router: Router,
+        private socket: SocketService,
+        private commonData: CommonDataService) {
+    }
+
+    subscriptions: Subscription[] = [];
+
+    ngOnDestroy() {
+        this.subscriptions.forEach(subscription => subscription.unsubscribe());
+    }
+
+    users: User[] = []
+    selectedUserPath = "";
 
     ngOnInit(): void {
         this.loadUserProfiles();
@@ -46,7 +50,7 @@ export class LoginComponent implements OnInit,OnDestroy{
     private async loadUserProfiles() {
         try {
             const dir = await appDataDir();
-            const profiles = await invoke("read_file", { path: `${dir}\\user-profiles.json` });
+            const profiles = await invoke("read_file", {path: `${dir}\\user-profiles.json`});
             this.processProfiles(profiles);
         } catch (error) {
             console.error("Error during initialization:", error);
@@ -69,7 +73,6 @@ export class LoginComponent implements OnInit,OnDestroy{
     }
 
 
-
     async login() {
         if (!this.selectedUserPath) {
             console.error('No user selected');
@@ -83,7 +86,7 @@ export class LoginComponent implements OnInit,OnDestroy{
             const filePath = `${dir}\\keys\\${this.selectedUserPath}`;
             console.log(filePath);
 
-            const profiles = await invoke("read_file", { path: filePath });
+            const profiles = await invoke("read_file", {path: filePath});
 
             if (typeof profiles !== "string") {
                 console.error("Invalid profile data");
@@ -124,7 +127,7 @@ export class LoginComponent implements OnInit,OnDestroy{
         this.subscriptions.push(toURLSubject);
     }
 
-    sendLoginRequest(publicKey:string) {
+    sendLoginRequest(publicKey: string) {
         this.socket.send("user", "login", {
             "public_key": publicKey,
         });
