@@ -1,0 +1,11 @@
+<div class="background">
+    <div class="login-tabs">
+        <span class="login-title">登录</span>
+        <img class="user-avatar" alt="" src="assets/images/avatar/default-avatar.png">
+        <select class="select-username" [(ngModel)]="selectedUserPath">
+            <option *ngFor="let user of users" [value]="user.file">{{user.name}}</option>
+        </select>
+        <button class="login-button" (click)="login()">登录</button>
+        <a class="to_user_manager">管理用户</a>
+    </div>
+</div>

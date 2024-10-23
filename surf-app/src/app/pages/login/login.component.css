@@ -1,0 +1,67 @@
+.background {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-position: center center;
+    background-size: cover;
+    background-image: url('/assets/images/background/login.png');
+    background-color: rgba(0, 0, 0, 0.3); /* 直接在背景层添加黑色遮罩 */
+    background-blend-mode: darken; /* 混合模式，使遮罩与图片融合 */
+}
+
+
+
+@media (min-aspect-ratio: 1/1) {
+    .background {
+        justify-content: flex-end; /* 水平靠右 */
+        align-items: center;       /* 垂直居中 */
+    }
+    .login-tabs {
+        margin-left: auto; /* 将 .login-tabs 推到右侧 */
+        margin-right: 7%;
+    }
+}
+
+.login-tabs {
+    width: 400px;
+    min-height: 478px;
+    align-items: center;
+    background: white;
+    border-radius: 25px;
+    display: flex;
+    flex-direction: column; /* 垂直排列 */
+    box-sizing: border-box; /* 包括边框和内边距在内 */
+    padding: 3rem;
+}
+
+.login-title {
+    font-size: 32px;
+    color: #057feb;
+}
+
+.user-avatar{
+    margin-top: 2rem;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+}
+
+.select-username{
+    margin-top: 1rem;
+}
+
+.login-button{
+    margin-top: 3rem;
+    width: 150px;
+    height: 40px;
+    border-radius: 25px;
+    background: #057feb;
+    border: none;
+    color: white;
+}
+.to_user_manager {
+    color: #057feb;
+    margin-top: auto; /* 自动填充上边距，推到底部 */
+}

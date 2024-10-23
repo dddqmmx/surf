@@ -8,7 +8,7 @@ fn greet(name: &str) -> String {
 }
 
 #[tauri::command]
-fn read_user_profiles(path: String) -> Result<String, String> {
+fn read_file(path: String) -> Result<String, String> {
     let path_buf = PathBuf::from(path);
     // 读取文件内容
     match fs::read_to_string(path_buf) {
@@ -21,7 +21,7 @@ fn read_user_profiles(path: String) -> Result<String, String> {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![greet,read_user_profiles])
+        .invoke_handler(tauri::generate_handler![greet,read_file])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
