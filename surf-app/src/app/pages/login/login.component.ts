@@ -47,17 +47,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         this.loadUserProfiles();
     }
 
-    private async loadUserProfiles() {
-        try {
-            const dir = await appDataDir();
-            const profiles = await invoke("read_file", {path: `${dir}\\user-profiles.json`});
-            this.processProfiles(profiles);
-        } catch (error) {
-            console.error("Error during initialization:", error);
-        }
-    }
-
-    private processProfiles(profiles: unknown) {
+    async processProfiles(profiles: unknown) {
         if (typeof profiles !== "string") {
             console.error("Invalid profiles data");
             return;
@@ -66,10 +56,31 @@ export class LoginComponent implements OnInit, OnDestroy {
         const profilesJson = JSON.parse(profiles);
         this.users = profilesJson['user-keys'] || [];
 
+        const automaticLogin: number = profilesJson['automatic-login']
+        if (automaticLogin != null) {
+            console.log(automaticLogin)
+            this.selectedUserPath = this.users[automaticLogin].file;
+            await this.login()
+        }
+
         // 设置默认选中第一个用户
         if (this.users.length > 0) {
             this.selectedUserPath = this.users[0].file;
         }
+    }
+
+    subscribeToMessages() {
+        const toURLSubject = this.socket.getMessageSubject("user", "to_url").subscribe((message: Record<string, any>) => {
+            this.commonData.session = message['session_id'];
+            if (message['address'] === 'main') {
+                console.log('Navigating to main');
+                this.router.navigate(['main']);
+            }
+
+            toURLSubject.unsubscribe();
+        });
+
+        this.subscriptions.push(toURLSubject);
     }
 
 
@@ -109,22 +120,14 @@ export class LoginComponent implements OnInit, OnDestroy {
         }
     }
 
-    subscribeToMessages() {
-        const toURLSubject = this.socket.getMessageSubject("user", "to_url").subscribe(message => {
-            const data = JSON.parse(message.data).messages;
-            console.log(data);
-
-            this.commonData.session = data.session_id;
-
-            if (data.address === 'main') {
-                console.log('Navigating to main');
-                this.router.navigate(['main']);
-            }
-
-            toURLSubject.unsubscribe();
-        });
-
-        this.subscriptions.push(toURLSubject);
+    private async loadUserProfiles() {
+        try {
+            const dir = await appDataDir();
+            const profiles = await invoke("read_file", {path: `${dir}\\user-profiles.json`});
+            await this.processProfiles(profiles);
+        } catch (error) {
+            console.error("Error during initialization:", error);
+        }
     }
 
     sendLoginRequest(publicKey: string) {
