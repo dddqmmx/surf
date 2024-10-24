@@ -1,12 +1,13 @@
 import {Injectable} from '@angular/core';
 import {Observable, Subject} from 'rxjs';
+import {CommonDataService} from "./common-data.service";
 
 @Injectable({
     providedIn: 'root'
 })
 export class SocketService {
 
-    constructor() {
+    constructor(private commonDataService: CommonDataService) {
     }
 
     // 这是主连接的 Socket
@@ -88,7 +89,7 @@ export class SocketService {
 
                         const messageSubject = this.getMessageSubject(path, command);
                         if (messageSubject) {
-                            messageSubject.next(event);
+                            messageSubject.next(jsonMessage['messages']);
                         }
                     } catch (error) {
                         console.error('Error processing message:', error);
@@ -140,15 +141,25 @@ export class SocketService {
         }
     }
 
-    public send(path: string, command: string, messages: any) {
+    public send(path: string, command: string, messages: any = {}) {
         if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
             throw new Error('WebSocket is not connected');
         }
+
+        // 如果没有提供 messages 则初始化为空对象
         const message = {
             path,
             command,
             ...messages
         };
+
+        // 如果 session 存在，则将其添加到消息中
+        if (this.commonDataService.session) {
+            message['session_id'] = this.commonDataService.session;
+        }
+
+        // 发送消息
         this.socket.send(JSON.stringify(message));
     }
+
 }
